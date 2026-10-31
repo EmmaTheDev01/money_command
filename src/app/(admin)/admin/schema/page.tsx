@@ -17,7 +17,6 @@ import { auditLedgerIntegrity } from '@/lib/ledger';
 
 export default function AdminSchemaPage() {
   const [state, setState] = useState<AppState>(getInitialState());
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     saveState(state);
@@ -45,7 +44,7 @@ export default function AdminSchemaPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -60,29 +59,29 @@ export default function AdminSchemaPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <Database className="w-6 h-6 text-rose-400" />
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                <Database className="w-5 h-5 text-rose-500" />
+                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                   Supabase PostgreSQL Financial Schema
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono font-semibold border border-emerald-500/20">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-semibold border border-emerald-500/20">
                   16 Tables Ready
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Schema file located at <code>supabase/schema.sql</code> and seed at <code>supabase/seed.sql</code>.
               </p>
             </div>
           </div>
 
           {/* Tables Summary Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {tables.map((t) => (
-              <div key={t.name} className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 space-y-1 text-xs">
+              <div key={t.name} className="p-4 rounded-2xl border border-border bg-card space-y-1.5 text-xs shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-emerald-400">{t.name}</span>
-                  <span className="text-[10px] text-slate-500 font-mono">{t.rows}</span>
+                  <span className="font-mono font-bold text-foreground">{t.name}</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">{t.rows}</span>
                 </div>
-                <p className="text-slate-400 text-[11px] leading-snug">
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
                   {t.purpose}
                 </p>
               </div>
@@ -90,22 +89,22 @@ export default function AdminSchemaPage() {
           </div>
 
           {/* Invariant Rules Information */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-3">
-            <h3 className="font-semibold text-slate-100 text-sm flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               PostgreSQL Triggers & Invariant Enforcement
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-emerald-400 font-bold block">1. verify_transaction_balance()</span>
-                <p className="text-slate-400 font-sans text-[11px]">
+              <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-1.5">
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold block">1. verify_transaction_balance()</span>
+                <p className="text-muted-foreground font-sans text-[11px] leading-relaxed">
                   Enforces that for any posted transaction, <code>SUM(debit_minor) == SUM(credit_minor)</code>. Imbalanced entries are rejected before commit.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-rose-400 font-bold block">2. protect_posted_transaction() (MC-010)</span>
-                <p className="text-slate-400 font-sans text-[11px]">
+              <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-1.5">
+                <span className="text-rose-500 font-bold block">2. protect_posted_transaction() (MC-010)</span>
+                <p className="text-muted-foreground font-sans text-[11px] leading-relaxed">
                   Prevents direct SQL updates to amounts, currencies, or accounts of posted transactions. Corrections must occur through linked reversal journals.
                 </p>
               </div>
@@ -116,4 +115,3 @@ export default function AdminSchemaPage() {
     </div>
   );
 }
-

@@ -5,11 +5,6 @@ import {
   Scale, 
   Sparkles, 
   CheckCircle2, 
-  ArrowRight, 
-  ShieldCheck, 
-  MessageSquare, 
-  FileText,
-  Clock,
   Check
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -63,7 +58,7 @@ export default function NegotiationsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -79,15 +74,15 @@ export default function NegotiationsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <Scale className="w-6 h-6 text-emerald-400" />
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                <Scale className="w-6 h-6 text-emerald-500" />
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Permissioned Bill Negotiation
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono font-semibold border border-emerald-500/20">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-mono font-semibold border border-emerald-500/20">
                   Target: Lower Fixed Costs
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Deterministic target price and walk-away bounds. Any term change, fee, or contract extension requires explicit human approval.
               </p>
             </div>
@@ -95,13 +90,13 @@ export default function NegotiationsPage() {
 
           {/* Status Toast */}
           {statusMessage && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/30 p-3.5 flex items-center justify-between text-xs text-emerald-300">
+            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 flex items-center justify-between text-xs text-foreground animate-in fade-up">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 <span>{statusMessage}</span>
               </div>
               <button onClick={() => setStatusMessage(null)}>
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               </button>
             </div>
           )}
@@ -111,34 +106,34 @@ export default function NegotiationsPage() {
             {entityNegotiations.map((neg) => (
               <div
                 key={neg.id}
-                className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 space-y-5 shadow-xl"
+                className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-6 shadow-sm"
               >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-800/80 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-border pb-5">
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <h3 className="text-lg font-bold text-white">{neg.providerName}</h3>
-                      <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                      <h3 className="text-lg font-bold text-foreground">{neg.providerName}</h3>
+                      <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 font-semibold border border-emerald-500/20">
                         Acct ending {neg.accountNumberLast4}
                       </span>
-                      <span className="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                      <span className="text-xs font-mono uppercase px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
                         Mode: {neg.mode.replace('_', ' ')}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Gigabit Fibre Internet &middot; Price recently jumped from $95 to $115/mo
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-4 text-right">
+                  <div className="flex items-center gap-5 text-right">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Current Bill</span>
-                      <span className="text-xl font-bold font-mono text-rose-400">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-mono">Current Bill</span>
+                      <span className="text-xl font-bold font-mono text-rose-500">
                         {formatCAD(neg.currentBillMinor)}/mo
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-emerald-400 uppercase tracking-wider block">Target Rate</span>
-                      <span className="text-xl font-bold font-mono text-emerald-400">
+                      <span className="text-[10px] text-emerald-500 uppercase tracking-wider block font-mono">Target Rate</span>
+                      <span className="text-xl font-bold font-mono text-emerald-500">
                         {formatCAD(neg.targetBillMinor)}/mo
                       </span>
                     </div>
@@ -146,52 +141,52 @@ export default function NegotiationsPage() {
                 </div>
 
                 {/* Script and Evidence Box */}
-                <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
-                    <span className="flex items-center gap-1.5 text-emerald-400">
-                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                <div className="rounded-2xl border border-border bg-secondary/40 p-5 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+                    <span className="flex items-center gap-1.5 text-amber-500">
+                      <Sparkles className="w-4 h-4 text-amber-500" />
                       Generated Negotiation Script & Counter-Arguments:
                     </span>
-                    <span className="text-[11px] text-slate-400 font-mono">
+                    <span className="text-[11px] text-muted-foreground font-mono">
                       Acceptable Range: {formatCAD(neg.targetBillMinor)} - {formatCAD(neg.minAcceptableBillMinor)}/mo
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 font-mono bg-slate-900/90 p-3 rounded-lg border border-slate-800 leading-relaxed">
+                  <p className="text-xs text-foreground font-mono bg-card p-4 rounded-xl border border-border leading-relaxed">
                     &ldquo;{neg.scriptDraft}&rdquo;
                   </p>
                 </div>
 
                 {/* Counteroffer Review Card */}
                 {neg.counterofferReceived && (
-                  <div className="rounded-xl border border-cyan-500/40 bg-cyan-950/20 p-4 space-y-3">
+                  <div className="rounded-2xl border border-cyan-500/40 bg-cyan-500/5 p-5 space-y-3.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="p-1 rounded bg-cyan-500/20 text-cyan-400">
+                        <span className="p-1 rounded bg-cyan-500/20 text-cyan-500">
                           <CheckCircle2 className="w-4 h-4" />
                         </span>
-                        <h4 className="text-xs font-bold text-cyan-200 uppercase tracking-wider">
+                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                           Counteroffer Received from Retention Department
                         </h4>
                       </div>
-                      <span className="text-xs font-mono text-emerald-400 font-bold">
+                      <span className="text-xs font-mono text-emerald-500 font-bold">
                         Verified Savings: CAD $420.00/yr
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs space-y-1.5">
+                    <div className="p-3.5 rounded-xl bg-card border border-border text-xs space-y-1.5">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Offered New Monthly Rate:</span>
-                        <span className="font-mono font-bold text-emerald-400">
+                        <span className="text-muted-foreground">Offered New Monthly Rate:</span>
+                        <span className="font-mono font-bold text-emerald-500">
                           {formatCAD(neg.counterofferReceived.offeredBillMinor)}/mo (Saved $35/mo)
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Contract Term Commitment:</span>
-                        <span className="font-medium text-slate-200">
-                          {neg.counterofferReceived.termMonths} Months (No early exit fee)
+                        <span className="text-muted-foreground">Contract Term Commitment:</span>
+                        <span className="font-medium text-foreground">
+                          {neg.counterofferReceived.termMonths} Months (No early exit penalty)
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-800">
+                      <div className="text-[11px] text-muted-foreground pt-1.5 border-t border-border">
                         {neg.counterofferReceived.notes}
                       </div>
                     </div>
@@ -200,13 +195,13 @@ export default function NegotiationsPage() {
                       {neg.status !== 'accepted' ? (
                         <button
                           onClick={() => setSelectedNegForAuth(neg)}
-                          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                          className="px-5 py-2.5 bg-primary hover:opacity-90 text-primary-foreground font-bold text-xs rounded-full transition-opacity flex items-center gap-1.5 shadow-md"
                         >
                           <Check className="w-4 h-4" />
                           <span>Authorize & Accept Counteroffer</span>
                         </button>
                       ) : (
-                        <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5 bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-500/30">
+                        <span className="text-xs font-mono text-emerald-500 flex items-center gap-1.5 bg-emerald-500/10 px-3.5 py-1.5 rounded-full border border-emerald-500/20">
                           <CheckCircle2 className="w-4 h-4" />
                           Accepted and active on account!
                         </span>
@@ -230,4 +225,3 @@ export default function NegotiationsPage() {
     </div>
   );
 }
-

@@ -8,13 +8,9 @@ import {
   ArrowUpRight, 
   ArrowDownRight, 
   Inbox, 
-  Repeat, 
   ArrowRightLeft, 
-  FileText, 
   Sparkles, 
   MessageSquare,
-  AlertCircle,
-  CheckCircle2,
   ChevronRight
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -39,7 +35,6 @@ export default function ClientDashboardPage() {
   const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id);
   const pendingProposals = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending');
 
-  // Compute Balances
   const totalAssetsMinor = entityAccounts
     .filter((a) => a.type === 'asset')
     .reduce((sum, a) => sum + a.balanceMinor, 0);
@@ -51,7 +46,7 @@ export default function ClientDashboardPage() {
   const netWorthMinor = totalAssetsMinor - totalLiabilitiesMinor;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -69,37 +64,37 @@ export default function ClientDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   {activeEntity.name}
                 </h1>
-                <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="text-[11px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
                   {activeEntity.type.replace('_', ' ')}
                 </span>
                 {activeEntity.taxIdentifier && (
-                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                     BN: {activeEntity.taxIdentifier}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Deterministic Financial Position &middot; Multi-Entity Separation
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setShowAskMoney(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:border-emerald-400 transition-colors flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-full bg-card hover:bg-muted border border-border text-foreground text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm"
               >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>Ask My Money</span>
               </button>
 
               <button
                 onClick={() => setShowWhatsAppSim(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-full bg-secondary hover:bg-muted text-foreground border border-border text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Capture via WhatsApp</span>
               </button>
             </div>
@@ -107,24 +102,24 @@ export default function ClientDashboardPage() {
 
           {/* Pending Proposal Inbox Notification Banner (Release First Slice) */}
           {pendingProposals.length > 0 && (
-            <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
+            <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-up">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400">
+                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-500">
                   <Inbox className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-amber-300">
+                  <h4 className="text-xs sm:text-sm font-semibold text-foreground">
                     {pendingProposals.length} Inbound Proposal{pendingProposals.length > 1 ? 's' : ''} Awaiting Confirmation
                   </h4>
-                  <p className="text-[11px] text-amber-200/80">
-                    Latest: <strong>{pendingProposals[0].merchant}</strong> ({formatCAD(pendingProposals[0].amountMinor)}) extracted via WhatsApp AI. Untrusted until you confirm.
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Latest: <strong>{pendingProposals[0].merchant}</strong> ({formatCAD(pendingProposals[0].amountMinor)}) extracted via WhatsApp AI. Untrusted until verified.
                   </p>
                 </div>
               </div>
 
               <Link
                 href="/client/proposals"
-                className="self-start sm:self-auto px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1 shadow-sm"
+                className="self-start sm:self-auto px-4 py-2 rounded-full bg-primary text-primary-foreground font-semibold text-xs transition-all flex items-center gap-1 shadow-sm hover:opacity-90"
               >
                 <span>Review & Post Journal</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -134,53 +129,53 @@ export default function ClientDashboardPage() {
 
           {/* Financial Summary Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground block">
                 Total Liquid Assets
               </span>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl font-bold font-mono text-emerald-400">
+                <span className="text-2xl font-bold font-mono text-emerald-500">
                   {formatCAD(totalAssetsMinor)}
                 </span>
-                <span className="p-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-mono border border-emerald-500/20">
                   {entityAccounts.filter((a) => a.type === 'asset').length} Accounts
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1.5">
                 Checking, Emergency HISA & Reserves
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground block">
                 Current Liabilities
               </span>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl font-bold font-mono text-rose-400">
+                <span className="text-2xl font-bold font-mono text-rose-500">
                   {formatCAD(totalLiabilitiesMinor)}
                 </span>
-                <span className="p-1 rounded bg-rose-500/10 text-rose-400 text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 text-[10px] font-mono border border-rose-500/20">
                   Credit & Tax Due
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1.5">
                 Credit cards & collected CRA GST/HST
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground block">
                 Net Entity Position
               </span>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl font-bold font-mono text-white">
+                <span className="text-2xl font-bold font-mono text-foreground">
                   {formatCAD(netWorthMinor)}
                 </span>
-                <span className="p-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-mono border border-blue-500/20">
                   Reconciled
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1.5">
                 Assets minus liabilities (Double-entry)
               </p>
             </div>
@@ -199,13 +194,13 @@ export default function ClientDashboardPage() {
           {/* Accounts Breakdown & Recent Ledger Transactions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Accounts Subledger */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="font-semibold text-slate-100 text-sm flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-emerald-400" />
+            <div className="rounded-3xl border border-border bg-card p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-emerald-500" />
                   Chart of Accounts ({activeEntity.type})
                 </h3>
-                <span className="text-[11px] font-mono text-slate-400">
+                <span className="text-[11px] font-mono text-muted-foreground">
                   Source: PostgreSQL
                 </span>
               </div>
@@ -214,25 +209,25 @@ export default function ClientDashboardPage() {
                 {entityAccounts.map((acc) => (
                   <div
                     key={acc.id}
-                    className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs hover:border-slate-700 transition-colors"
+                    className="p-3 rounded-2xl bg-secondary/40 border border-border flex items-center justify-between text-xs hover:border-foreground/30 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-lg bg-card text-muted-foreground border border-border">
                         {acc.code}
                       </span>
                       <div>
-                        <div className="font-medium text-slate-200">{acc.name}</div>
-                        <div className="text-[10px] text-slate-500 uppercase">{acc.type} &middot; {acc.subtype}</div>
+                        <div className="font-medium text-foreground">{acc.name}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">{acc.type} &middot; {acc.subtype}</div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div
                         className={`font-mono font-semibold ${
                           acc.type === 'asset'
-                            ? 'text-emerald-400'
+                            ? 'text-emerald-500'
                             : acc.type === 'liability'
-                            ? 'text-rose-400'
-                            : 'text-slate-200'
+                            ? 'text-rose-500'
+                            : 'text-foreground'
                         }`}
                       >
                         {formatCAD(acc.balanceMinor)}
@@ -244,17 +239,17 @@ export default function ClientDashboardPage() {
             </div>
 
             {/* Recent Posted Double-Entry Transactions */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="rounded-3xl border border-border bg-card p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-border pb-3">
                 <div className="flex items-center gap-2">
-                  <ArrowRightLeft className="w-4 h-4 text-emerald-400" />
-                  <h3 className="font-semibold text-slate-100 text-sm">
+                  <ArrowRightLeft className="w-4 h-4 text-emerald-500" />
+                  <h3 className="font-semibold text-foreground text-sm">
                     Recent Posted Journals
                   </h3>
                 </div>
                 <Link
                   href="/client/transactions"
-                  className="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-0.5"
+                  className="text-xs text-muted-foreground hover:text-foreground font-medium flex items-center gap-0.5"
                 >
                   View full ledger
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -262,7 +257,7 @@ export default function ClientDashboardPage() {
               </div>
 
               {entityTransactions.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-500">
+                <div className="p-8 text-center text-xs text-muted-foreground">
                   No posted transactions yet for this entity.
                 </div>
               ) : (
@@ -270,22 +265,22 @@ export default function ClientDashboardPage() {
                   {entityTransactions.slice(0, 4).map((tx) => (
                     <div
                       key={tx.id}
-                      className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs"
+                      className="p-3 rounded-2xl bg-secondary/40 border border-border flex items-center justify-between text-xs hover:border-foreground/30 transition-colors"
                     >
                       <div className="space-y-0.5">
-                        <div className="font-medium text-slate-200 flex items-center gap-1.5">
+                        <div className="font-medium text-foreground flex items-center gap-1.5">
                           <span>{tx.merchant || tx.description}</span>
                           <span
-                            className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                            className={`text-[9px] px-2 py-0.2 rounded-full font-mono ${
                               tx.status === 'posted'
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
                             }`}
                           >
                             {tx.status}
                           </span>
                         </div>
-                        <div className="text-[10px] text-slate-500">
+                        <div className="text-[10px] text-muted-foreground">
                           {tx.txDate} &middot; {tx.category} &middot; {tx.lines.length} balanced lines
                         </div>
                       </div>
@@ -294,13 +289,13 @@ export default function ClientDashboardPage() {
                         <div
                           className={`font-mono font-semibold ${
                             tx.type === 'income'
-                              ? 'text-emerald-400'
-                              : 'text-slate-100'
+                              ? 'text-emerald-500'
+                              : 'text-foreground'
                           }`}
                         >
                           {tx.type === 'income' ? '+' : '-'}{formatCAD(tx.totalMinor)}
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-muted-foreground">
                           {tx.accountantStatus.replace('_', ' ')}
                         </div>
                       </div>
@@ -339,4 +334,3 @@ export default function ClientDashboardPage() {
     </div>
   );
 }
-

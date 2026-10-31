@@ -4,13 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   Download, 
-  ShieldCheck, 
   CheckCircle2, 
-  AlertCircle, 
-  Building2, 
-  FileText, 
-  Percent,
-  Check
+  Building2 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
@@ -41,11 +36,9 @@ export default function TaxPage() {
 
   const netBusinessIncomeMinor = grossRevenueMinor - totalExpensesMinor;
 
-  // 13% Ontario HST collected payable
   const hstAccount = state.accounts.find((a) => a.entityId === activeEntity.id && a.code === '2050');
-  const hstCollectedMinor = hstAccount?.balanceMinor || 71500; // $715.00
+  const hstCollectedMinor = hstAccount?.balanceMinor || 71500;
 
-  // 25% Tax reserve target
   const recommendedReserveMinor = Math.round(netBusinessIncomeMinor * 0.25);
   const currentReserveAcc = state.accounts.find((a) => a.entityId === activeEntity.id && (a.code === '1030' || a.name.includes('Tax Reserve')));
   const currentReserveMinor = currentReserveAcc?.balanceMinor || 620000;
@@ -83,7 +76,7 @@ export default function TaxPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -99,15 +92,15 @@ export default function TaxPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-6 h-6 text-emerald-400" />
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                <FileSpreadsheet className="w-6 h-6 text-emerald-500" />
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Canada-First Tax Readiness
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-mono border border-border">
                   Tax Year {taxYear} &middot; Ontario (CA_ON)
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Organize deductible records, GST/HST remittances, and T2125 schedules. (No official e-filing in MVP).
               </p>
             </div>
@@ -115,7 +108,7 @@ export default function TaxPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportTaxSchedule}
-                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md shadow-emerald-500/20"
+                className="px-5 py-2.5 rounded-full bg-primary hover:opacity-90 text-primary-foreground font-semibold text-xs flex items-center gap-1.5 transition-opacity shadow-md"
               >
                 <Download className="w-4 h-4" />
                 <span>Export CRA Schedule & Receipts</span>
@@ -125,106 +118,106 @@ export default function TaxPage() {
 
           {/* Status Toast */}
           {statusMessage && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/30 p-3.5 flex items-center justify-between text-xs text-emerald-300">
+            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 flex items-center justify-between text-xs text-foreground animate-in fade-up">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 <span>{statusMessage}</span>
               </div>
               <button onClick={() => setStatusMessage(null)}>
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               </button>
             </div>
           )}
 
           {/* Tax Metrics Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
                 Gross Business Revenue
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-emerald-400">
+              <div className="mt-1 text-2xl font-bold font-mono text-emerald-500">
                 {formatCAD(grossRevenueMinor)}
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">Reportable income</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Reportable income</p>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
                 Deductible Expenses
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-slate-200">
+              <div className="mt-1 text-2xl font-bold font-mono text-foreground">
                 {formatCAD(totalExpensesMinor)}
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">Categorized CRA write-offs</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Categorized CRA write-offs</p>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
                 Ontario 13% HST Collected
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-amber-400">
+              <div className="mt-1 text-2xl font-bold font-mono text-amber-500">
                 {formatCAD(hstCollectedMinor)}
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">Earmarked CRA remittance</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Earmarked CRA remittance</p>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
                 Current Tax Reserve (HISA)
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-emerald-400">
+              <div className="mt-1 text-2xl font-bold font-mono text-emerald-500">
                 {formatCAD(currentReserveMinor)}
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">Recommended: {formatCAD(recommendedReserveMinor)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Recommended: {formatCAD(recommendedReserveMinor)}</p>
             </div>
           </div>
 
           {/* CRA Schedule Breakdown Box */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-emerald-400" />
-                <h3 className="font-semibold text-slate-100 text-sm">
+                <Building2 className="w-4 h-4 text-emerald-500" />
+                <h3 className="font-semibold text-foreground text-sm">
                   CRA Form T2125 Alignment & Bookkeeping Categories
                 </h3>
               </div>
-              <span className="text-xs font-mono text-emerald-400">
+              <span className="text-xs font-mono text-emerald-500">
                 CRA Compliant Audit Trail
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <span className="text-slate-400 font-bold block text-[11px] font-sans">
+              <div className="p-4 rounded-2xl bg-secondary/40 border border-border space-y-2">
+                <span className="text-muted-foreground font-bold block text-[11px] font-sans">
                   Part 1 &middot; Business Income (Line 8000)
                 </span>
-                <div className="flex justify-between text-slate-200">
+                <div className="flex justify-between text-foreground">
                   <span>Gross consulting & service retainers:</span>
-                  <span className="text-emerald-400 font-semibold">{formatCAD(grossRevenueMinor)}</span>
+                  <span className="text-emerald-500 font-semibold font-mono">{formatCAD(grossRevenueMinor)}</span>
                 </div>
-                <div className="flex justify-between text-slate-200">
+                <div className="flex justify-between text-foreground">
                   <span>13% HST collected on sales:</span>
-                  <span className="text-amber-400 font-semibold">{formatCAD(hstCollectedMinor)}</span>
+                  <span className="text-amber-500 font-semibold font-mono">{formatCAD(hstCollectedMinor)}</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <span className="text-slate-400 font-bold block text-[11px] font-sans">
+              <div className="p-4 rounded-2xl bg-secondary/40 border border-border space-y-2">
+                <span className="text-muted-foreground font-bold block text-[11px] font-sans">
                   Part 2 &middot; Business Expenses (Line 8521/8810)
                 </span>
-                <div className="flex justify-between text-slate-200">
+                <div className="flex justify-between text-foreground">
                   <span>Office & Software (Line 8810):</span>
-                  <span className="text-slate-300 font-semibold">{formatCAD(totalExpensesMinor)}</span>
+                  <span className="text-foreground font-semibold font-mono">{formatCAD(totalExpensesMinor)}</span>
                 </div>
-                <div className="flex justify-between text-slate-200">
+                <div className="flex justify-between text-foreground">
                   <span>Net Business Profit (Line 9369):</span>
-                  <span className="text-emerald-400 font-bold">{formatCAD(netBusinessIncomeMinor)}</span>
+                  <span className="text-emerald-500 font-bold font-mono">{formatCAD(netBusinessIncomeMinor)}</span>
                 </div>
               </div>
             </div>
 
             {/* Disclaimer & Non-claim rule */}
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 leading-relaxed font-sans">
+            <div className="p-4 rounded-2xl bg-secondary/30 border border-border text-[11px] text-muted-foreground leading-relaxed font-sans">
               <strong>Statutory Compliance Guardrail: </strong>
               Money Command provides deterministic record preparation, deduction tracking, and audit packages. We do not claim to be a CRA-certified e-filer or provide regulated tax advice.
             </div>
@@ -234,4 +227,3 @@ export default function TaxPage() {
     </div>
   );
 }
-

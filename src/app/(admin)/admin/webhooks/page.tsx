@@ -38,7 +38,7 @@ export default function AdminWebhooksPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -52,15 +52,15 @@ export default function AdminWebhooksPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <Webhook className="w-6 h-6 text-rose-400" />
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              <Webhook className="w-5 h-5 text-rose-500" />
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Meta WhatsApp Webhooks & Replay Inspector
               </h1>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-mono font-medium">
                 API 3.1 &middot; Idempotency Active
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Verify signed Meta webhook callbacks, SHA-256 HMAC signature validation, and deduplication guarantees.
             </p>
           </div>
@@ -69,41 +69,41 @@ export default function AdminWebhooksPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={runReplayTest}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors"
+              className="px-4 py-2 rounded-full bg-secondary hover:bg-muted text-foreground border border-border text-xs font-medium flex items-center gap-2 transition-colors shadow-xs"
             >
-              <Play className="w-3.5 h-3.5 text-emerald-400" />
+              <Play className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Run MC-003 Webhook Replay Test</span>
             </button>
 
             <button
               onClick={runInvalidSignatureTest}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors"
+              className="px-4 py-2 rounded-full bg-secondary hover:bg-muted text-foreground border border-border text-xs font-medium flex items-center gap-2 transition-colors shadow-xs"
             >
-              <Play className="w-3.5 h-3.5 text-rose-400" />
+              <Play className="w-3.5 h-3.5 text-rose-500" />
               <span>Run MC-002 Signature Rejection Test</span>
             </button>
           </div>
 
           {testResult && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/30 p-4 text-xs text-emerald-300 font-mono flex items-center gap-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs text-emerald-600 dark:text-emerald-400 font-mono flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{testResult}</span>
             </div>
           )}
 
           {/* Webhook Log Sample Inspection */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="font-semibold text-slate-100 text-sm flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-rose-400" />
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-rose-500" />
                 Latest Processed Inbound Webhook Payload (Verified)
               </h3>
-              <span className="text-[11px] font-mono text-emerald-400">
+              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                 HTTP 200 OK &middot; Signature Validated
               </span>
             </div>
 
-            <pre className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed">
+            <pre className="p-4 rounded-2xl bg-secondary/50 border border-border text-xs font-mono text-foreground overflow-x-auto leading-relaxed">
 {`{
   "object": "whatsapp_business_account",
   "entry": [
@@ -141,4 +141,3 @@ export default function AdminWebhooksPage() {
     </div>
   );
 }
-

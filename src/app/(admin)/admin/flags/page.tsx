@@ -36,7 +36,7 @@ export default function AdminFlagsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -50,58 +50,58 @@ export default function AdminFlagsPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <Sliders className="w-6 h-6 text-rose-400" />
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              <Sliders className="w-5 h-5 text-rose-500" />
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Feature Flags & Operational Risk Controls
               </h1>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-mono font-medium">
                 Dynamic Circuit Breakers
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Safely isolate capabilities, halt third-party messaging integrations, or restrict action authorizations in real time.
             </p>
           </div>
 
           {toastMessage && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/30 p-3 text-xs text-emerald-300 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{toastMessage}</span>
             </div>
           )}
 
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {state.featureFlags.map((flag) => (
               <div
                 key={flag.id}
-                className="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+                className="p-5 rounded-3xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs"
               >
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-slate-100 text-sm">
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-mono font-semibold text-foreground text-sm">
                       {flag.key}
                     </span>
                     <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full font-semibold ${
                         flag.enabled
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-slate-800 text-slate-400'
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                          : 'bg-secondary text-muted-foreground border border-border'
                       }`}
                     >
                       {flag.enabled ? 'Active (100% Rollout)' : 'Disabled'}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {flag.description}
                   </p>
                 </div>
 
                 <button
                   onClick={() => toggleFlag(flag.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 self-start sm:self-auto ${
+                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 self-start sm:self-auto shadow-xs ${
                     flag.enabled
-                      ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                      : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                      ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                      : 'bg-foreground text-background hover:opacity-90'
                   }`}
                 >
                   {flag.enabled ? (
@@ -124,4 +124,3 @@ export default function AdminFlagsPage() {
     </div>
   );
 }
-

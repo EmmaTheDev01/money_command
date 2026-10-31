@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, 
   ShieldCheck, 
-  Sliders, 
   Building2, 
   FileCheck2, 
   CheckCircle2, 
@@ -28,7 +27,7 @@ export default function SettingsPage() {
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -42,53 +41,54 @@ export default function SettingsPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <Settings className="w-6 h-6 text-emerald-400" />
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              <Settings className="w-5 h-5 text-muted-foreground" />
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Workspace Settings & Consent Receipts
               </h1>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Configure multi-entity parameters, privacy scopes, and deterministic buffer thresholds.
             </p>
           </div>
 
           {notification && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/30 p-3 text-xs text-emerald-300">
-              {notification}
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{notification}</span>
             </div>
           )}
 
           {/* Entities List */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
-            <h3 className="font-semibold text-slate-100 text-sm flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-emerald-400" />
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-muted-foreground" />
               Configured Entities ({state.entities.length})
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
               {state.entities.map((ent) => (
                 <div
                   key={ent.id}
-                  className={`p-4 rounded-xl border transition-colors ${
+                  className={`p-4 rounded-2xl border transition-all ${
                     ent.id === state.selectedEntityId
-                      ? 'border-emerald-500/50 bg-emerald-950/10'
-                      : 'border-slate-800 bg-slate-950'
+                      ? 'border-primary/50 bg-primary/5 shadow-xs'
+                      : 'border-border bg-secondary/30 hover:bg-secondary/60'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="font-semibold text-slate-200">{ent.name}</div>
-                      <div className="text-[11px] text-slate-500 uppercase mt-0.5">
+                      <div className="font-semibold text-foreground text-sm">{ent.name}</div>
+                      <div className="text-[11px] text-muted-foreground uppercase mt-0.5 font-medium">
                         {ent.type.replace('_', ' ')} &middot; {ent.currency}
                       </div>
                       {ent.taxIdentifier && (
-                        <div className="text-[11px] font-mono text-emerald-400 mt-1">
+                        <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
                           BN: {ent.taxIdentifier}
                         </div>
                       )}
                     </div>
                     {ent.isDefault && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-medium">
                         Default
                       </span>
                     )}
@@ -99,44 +99,44 @@ export default function SettingsPage() {
           </div>
 
           {/* Privacy & Consent Records (Blueprint requirement) */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <FileCheck2 className="w-4 h-4 text-emerald-400" />
-                <h3 className="font-semibold text-slate-100 text-sm">
+                <FileCheck2 className="w-4 h-4 text-muted-foreground" />
+                <h3 className="font-semibold text-foreground text-sm">
                   User Consent Receipts (Policy v2.0)
                 </h3>
               </div>
-              <span className="text-xs text-emerald-400 font-mono">
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
                 Revocable & Scoped
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="p-4 rounded-2xl bg-secondary/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <div className="font-semibold text-slate-200">
+                  <div className="font-semibold text-foreground">
                     WhatsApp Message OCR & Structured Extraction
                   </div>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     Permission to temporarily process inbound text & receipts to propose ledger candidate fields.
                   </p>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold self-start sm:self-auto">
+                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 self-start sm:self-auto shrink-0">
                   Active Consent
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="p-4 rounded-2xl bg-secondary/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <div className="font-semibold text-slate-200">
+                  <div className="font-semibold text-foreground">
                     Accountant Read-Only Document Review
                   </div>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     Permit invited external CPA/bookkeeper to verify ledger transactions and export tax schedules.
                   </p>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold self-start sm:self-auto">
+                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 self-start sm:self-auto shrink-0">
                   Active Consent
                 </span>
               </div>
@@ -147,4 +147,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
