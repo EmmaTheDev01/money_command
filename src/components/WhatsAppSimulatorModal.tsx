@@ -123,13 +123,13 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-secondary/50">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-              <MessageSquare className="w-5 h-5 text-emerald-500" />
+            <div className="p-2 rounded-xl bg-background text-foreground border border-border">
+              <MessageSquare className="w-5 h-5 text-foreground" />
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-sm flex items-center gap-1.5">
                 Meta WhatsApp Webhook Simulator
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border">
                   MC-002 &middot; MC-006 Validated
                 </span>
               </h3>
@@ -163,7 +163,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
               <button
                 onClick={handleSimulateWebhook}
                 disabled={isProcessing}
-                className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-xl transition-opacity flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
+                className="px-4 py-2 bg-foreground hover:opacity-90 text-background font-semibold rounded-xl transition-opacity flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
               >
                 {isProcessing ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -183,7 +183,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 <button
                   key={i}
                   onClick={() => setInputText(msg)}
-                  className="text-[11px] px-3 py-1 rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors shadow-sm"
+                  className="text-[11px] px-3 py-1 rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors shadow-xs"
                 >
                   {msg}
                 </button>
@@ -193,10 +193,10 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
 
           {/* Result Card */}
           {testResult && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3 animate-in fade-in duration-200">
+            <div className="rounded-2xl border border-border bg-secondary/50 p-4 space-y-3 animate-in fade-in duration-200">
               <div className="flex items-center justify-between">
-                <span className="text-emerald-500 font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" />
+                <span className="text-foreground font-semibold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-foreground" />
                   Webhook Verified & Proposal Staged
                 </span>
                 <span className="text-[10px] font-mono text-muted-foreground">
@@ -213,7 +213,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 </div>
                 <div className="p-2.5 rounded-xl bg-card border border-border">
                   <span className="text-muted-foreground block text-[10px]">Signature Check:</span>
-                  <span className="text-emerald-500 font-semibold">
+                  <span className="text-foreground font-semibold">
                     ✓ Valid HMAC-SHA256
                   </span>
                 </div>
@@ -222,7 +222,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
               <div className="p-3 rounded-xl bg-card border border-border text-xs space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Extracted Amount:</span>
-                  <span className="font-mono font-bold text-emerald-500">
+                  <span className="font-mono font-bold text-foreground">
                     {formatCAD(testResult.extractedProposal.amountMinor || 0)}
                   </span>
                 </div>
@@ -240,17 +240,17 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">AI Confidence:</span>
-                  <span className="font-mono text-emerald-500 font-semibold">
+                  <span className="font-mono text-foreground font-semibold">
                     {((testResult.extractedProposal.confidence || 0) * 100).toFixed(0)}%
                   </span>
                 </div>
               </div>
 
-              <div className="text-[11px] text-muted-foreground bg-secondary/80 p-2.5 rounded-xl flex items-center justify-between">
+              <div className="text-[11px] text-muted-foreground bg-secondary p-2.5 rounded-xl flex items-center justify-between">
                 <span>The candidate is in your <strong>Proposal Inbox</strong> awaiting verification.</span>
                 <button
                   onClick={onClose}
-                  className="px-3 py-1 bg-primary text-primary-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1 shadow-sm"
+                  className="px-3 py-1 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1 shadow-xs"
                 >
                   Review Proposal
                   <ArrowRight className="w-3 h-3" />

@@ -3,10 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Webhook, 
-  ShieldCheck, 
-  AlertTriangle, 
   CheckCircle2, 
-  RefreshCw, 
   Play, 
   Code2 
 } from 'lucide-react';
@@ -52,7 +49,7 @@ export default function AdminWebhooksPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <Webhook className="w-5 h-5 text-rose-500" />
+              <Webhook className="w-5 h-5 text-foreground" />
               <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Meta WhatsApp Webhooks & Replay Inspector
               </h1>
@@ -71,7 +68,7 @@ export default function AdminWebhooksPage() {
               onClick={runReplayTest}
               className="px-4 py-2 rounded-full bg-secondary hover:bg-muted text-foreground border border-border text-xs font-medium flex items-center gap-2 transition-colors shadow-xs"
             >
-              <Play className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <Play className="w-3.5 h-3.5 text-foreground" />
               <span>Run MC-003 Webhook Replay Test</span>
             </button>
 
@@ -79,26 +76,26 @@ export default function AdminWebhooksPage() {
               onClick={runInvalidSignatureTest}
               className="px-4 py-2 rounded-full bg-secondary hover:bg-muted text-foreground border border-border text-xs font-medium flex items-center gap-2 transition-colors shadow-xs"
             >
-              <Play className="w-3.5 h-3.5 text-rose-500" />
+              <Play className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Run MC-002 Signature Rejection Test</span>
             </button>
           </div>
 
           {testResult && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs text-emerald-600 dark:text-emerald-400 font-mono flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="rounded-3xl border border-border bg-secondary/50 p-4 text-xs text-foreground font-mono flex items-center gap-2.5 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
               <span>{testResult}</span>
             </div>
           )}
 
           {/* Webhook Log Sample Inspection */}
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-rose-500" />
+                <Code2 className="w-4 h-4 text-muted-foreground" />
                 Latest Processed Inbound Webhook Payload (Verified)
               </h3>
-              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+              <span className="text-[11px] font-mono text-foreground font-semibold">
                 HTTP 200 OK &middot; Signature Validated
               </span>
             </div>

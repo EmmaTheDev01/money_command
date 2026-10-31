@@ -59,11 +59,11 @@ export default function AdminSchemaPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-rose-500" />
+                <Database className="w-5 h-5 text-foreground" />
                 <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                   Supabase PostgreSQL Financial Schema
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-semibold border border-emerald-500/20">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-foreground font-mono font-semibold border border-border">
                   16 Tables Ready
                 </span>
               </div>
@@ -91,19 +91,19 @@ export default function AdminSchemaPage() {
           {/* Invariant Rules Information */}
           <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
             <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <ShieldCheck className="w-4 h-4 text-foreground" />
               PostgreSQL Triggers & Invariant Enforcement
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
               <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-1.5">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold block">1. verify_transaction_balance()</span>
+                <span className="text-foreground font-bold block">1. verify_transaction_balance()</span>
                 <p className="text-muted-foreground font-sans text-[11px] leading-relaxed">
                   Enforces that for any posted transaction, <code>SUM(debit_minor) == SUM(credit_minor)</code>. Imbalanced entries are rejected before commit.
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-1.5">
-                <span className="text-rose-500 font-bold block">2. protect_posted_transaction() (MC-010)</span>
+                <span className="text-foreground font-bold block">2. protect_posted_transaction() (MC-010)</span>
                 <p className="text-muted-foreground font-sans text-[11px] leading-relaxed">
                   Prevents direct SQL updates to amounts, currencies, or accounts of posted transactions. Corrections must occur through linked reversal journals.
                 </p>

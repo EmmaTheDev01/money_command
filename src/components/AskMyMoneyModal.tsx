@@ -193,8 +193,8 @@ export const AskMyMoneyModal: React.FC<AskMyMoneyModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-secondary/50">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-              <Sparkles className="w-5 h-5 text-amber-500" />
+            <div className="p-2 rounded-xl bg-background text-foreground border border-border">
+              <Sparkles className="w-5 h-5 text-foreground" />
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-sm flex items-center gap-1.5">
@@ -228,7 +228,7 @@ export const AskMyMoneyModal: React.FC<AskMyMoneyModalProps> = ({
               <div
                 className={`max-w-[85%] rounded-2xl p-4 ${
                   m.sender === 'user'
-                    ? 'bg-primary text-primary-foreground rounded-br-none shadow-sm font-medium'
+                    ? 'bg-foreground text-background rounded-br-none shadow-sm font-medium'
                     : 'bg-secondary/70 border border-border text-foreground rounded-bl-none shadow-sm'
                 }`}
               >
@@ -237,8 +237,8 @@ export const AskMyMoneyModal: React.FC<AskMyMoneyModalProps> = ({
                 {/* Citations block for AI answers */}
                 {m.citations && m.citations.length > 0 && (
                   <div className="mt-3.5 pt-3 border-t border-border space-y-1.5">
-                    <span className="text-[10px] uppercase font-mono text-amber-500 tracking-wider flex items-center gap-1 font-semibold">
-                      <Database className="w-3 h-3 text-amber-500" />
+                    <span className="text-[10px] uppercase font-mono text-foreground tracking-wider flex items-center gap-1 font-semibold">
+                      <Database className="w-3 h-3 text-foreground" />
                       Deterministic Citations:
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -291,7 +291,7 @@ export const AskMyMoneyModal: React.FC<AskMyMoneyModalProps> = ({
           />
           <button
             onClick={() => handleAsk(inputQuery)}
-            className="p-2.5 rounded-xl bg-primary hover:opacity-90 text-primary-foreground font-bold transition-opacity"
+            className="p-2.5 rounded-xl bg-foreground hover:opacity-90 text-background font-bold transition-opacity"
           >
             <Send className="w-4 h-4" />
           </button>

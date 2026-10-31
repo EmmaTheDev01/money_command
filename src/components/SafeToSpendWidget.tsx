@@ -80,14 +80,11 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
 
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-xs relative overflow-hidden transition-all">
-      {/* Background Subtle Glow */}
-      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-52 h-52 rounded-full bg-[var(--stage-glow)] blur-3xl pointer-events-none" />
-
       {/* Header with Title and Horizon Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+            <span className="p-1.5 rounded-full bg-secondary text-foreground border border-border">
               <ShieldCheck className="w-4 h-4" />
             </span>
             <h3 className="font-semibold text-foreground text-sm tracking-tight">
@@ -131,13 +128,7 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
             Available Discretionary Capacity
           </span>
           <div className="flex items-baseline gap-2.5 mt-1.5">
-            <span
-              className={`text-3xl sm:text-5xl font-bold tracking-tight font-mono tabular-nums ${
-                breakdown.isNegative
-                  ? 'text-rose-600 dark:text-rose-400'
-                  : 'text-emerald-600 dark:text-emerald-400'
-              }`}
-            >
+            <span className="text-3xl sm:text-5xl font-bold tracking-tight font-mono tabular-nums text-foreground">
               {formatCAD(breakdown.safeToSpend)}
             </span>
             <span className="text-xs text-muted-foreground font-medium">
@@ -147,7 +138,7 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
         </div>
 
         {/* User Buffer Controller */}
-        <div className="bg-secondary/50 border border-border rounded-3xl p-4 min-w-[260px] shadow-xs">
+        <div className="bg-secondary/40 border border-border rounded-3xl p-4 min-w-[260px] shadow-xs">
           <div className="flex items-center justify-between text-xs mb-2">
             <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
               <Sliders className="w-3.5 h-3.5 text-muted-foreground" />
@@ -164,7 +155,7 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
             step={5000}
             value={customBuffer}
             onChange={handleBufferUpdate}
-            className="w-full accent-amber-500 h-1.5 bg-muted rounded-full cursor-pointer"
+            className="w-full accent-current text-foreground h-1.5 bg-muted rounded-full cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-muted-foreground font-mono mt-1.5">
             <span>$0</span>
@@ -181,7 +172,7 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
           className="w-full flex items-center justify-between p-4 text-xs text-foreground hover:bg-secondary/60 transition-colors"
         >
           <span className="flex items-center gap-2 font-medium">
-            <Info className="w-4 h-4 text-amber-500" />
+            <Info className="w-4 h-4 text-muted-foreground" />
             Inspect Safe-to-Spend Math & Component Breakdown
           </span>
           <span className="text-muted-foreground text-[11px] flex items-center gap-1">
@@ -204,60 +195,60 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
               <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground" />
                   Liquid Cash in Accounts:
                 </span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono tabular-nums">
+                <span className="text-foreground font-semibold font-mono tabular-nums">
                   +{formatCAD(breakdown.liquidCash)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground" />
                   Expected Income ({horizonDays}d):
                 </span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono tabular-nums">
+                <span className="text-foreground font-semibold font-mono tabular-nums">
                   +{formatCAD(breakdown.expectedIncome)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ArrowDownRight className="w-3.5 h-3.5 text-rose-500" />
+                  <ArrowDownRight className="w-3.5 h-3.5 text-muted-foreground" />
                   Essential Obligations (Rent/Bills):
                 </span>
-                <span className="text-rose-600 dark:text-rose-400 font-semibold font-mono tabular-nums">
+                <span className="text-muted-foreground font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.essentialObligations)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ArrowDownRight className="w-3.5 h-3.5 text-rose-500" />
+                  <ArrowDownRight className="w-3.5 h-3.5 text-muted-foreground" />
                   Minimum Debt Payments:
                 </span>
-                <span className="text-rose-600 dark:text-rose-400 font-semibold font-mono tabular-nums">
+                <span className="text-muted-foreground font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.minimumDebtPayments)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ArrowDownRight className="w-3.5 h-3.5 text-amber-500" />
+                  <ArrowDownRight className="w-3.5 h-3.5 text-muted-foreground" />
                   Committed Tax Reserve (25%):
                 </span>
-                <span className="text-amber-600 dark:text-amber-400 font-semibold font-mono tabular-nums">
+                <span className="text-muted-foreground font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.taxReserveRequirement)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ArrowDownRight className="w-3.5 h-3.5 text-indigo-400" />
+                  <ArrowDownRight className="w-3.5 h-3.5 text-muted-foreground" />
                   Committed Savings Target:
                 </span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-semibold font-mono tabular-nums">
+                <span className="text-muted-foreground font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.committedSavings)}
                 </span>
               </div>
@@ -267,27 +258,27 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
                   <ArrowDownRight className="w-3.5 h-3.5 text-muted-foreground" />
                   User-Defined Buffer:
                 </span>
-                <span className="text-foreground font-semibold font-mono tabular-nums">
+                <span className="text-muted-foreground font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.userDefinedBuffer)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ArrowDownRight className="w-3.5 h-3.5 text-amber-500" />
+                  <ArrowDownRight className="w-3.5 h-3.5 text-muted-foreground" />
                   Pending Inbound Proposals:
                 </span>
-                <span className="text-amber-600 dark:text-amber-400 font-semibold font-mono tabular-nums">
+                <span className="text-muted-foreground font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.pendingOutflows)}
                 </span>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-card border border-border flex justify-between items-center text-xs shadow-xs">
+            <div className="p-3.5 rounded-2xl bg-secondary/60 border border-border flex justify-between items-center text-xs shadow-xs">
               <span className="font-semibold text-foreground">
                 Deterministic Safe-to-Spend Balance:
               </span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono text-sm tabular-nums">
+              <span className="font-bold text-foreground font-mono text-sm tabular-nums">
                 = {formatCAD(breakdown.safeToSpend)}
               </span>
             </div>

@@ -37,7 +37,7 @@ export default function BudgetsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <PieChart className="w-6 h-6 text-emerald-500" />
+                <PieChart className="w-5 h-5 text-foreground" />
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Budgets & Spending Guardrails
                 </h1>
@@ -60,9 +60,7 @@ export default function BudgetsPage() {
               return (
                 <div
                   key={b.id}
-                  className={`rounded-3xl border p-6 space-y-4 bg-card shadow-sm ${
-                    isOverThreshold ? 'border-amber-500/50 bg-amber-500/5' : 'border-border'
-                  }`}
+                  className="rounded-3xl border border-border p-6 space-y-4 bg-card shadow-xs"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -73,10 +71,10 @@ export default function BudgetsPage() {
                     </div>
 
                     <div className="text-right">
-                      <span className="text-xl font-bold font-mono text-foreground">
+                      <span className="text-xl font-bold font-mono text-foreground tabular-nums">
                         {formatCAD(b.spentMinor)}
                       </span>
-                      <span className="text-xs text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block font-mono">
                         of {formatCAD(b.amountMinor)}
                       </span>
                     </div>
@@ -85,19 +83,17 @@ export default function BudgetsPage() {
                   {/* Progress Bar */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs font-mono">
-                      <span className={isOverThreshold ? 'text-amber-500 font-bold' : 'text-emerald-500'}>
+                      <span className="text-foreground font-semibold tabular-nums">
                         {percent}% utilized
                       </span>
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground tabular-nums">
                         Remaining: {formatCAD(b.amountMinor - b.spentMinor)}
                       </span>
                     </div>
 
                     <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all ${
-                          isOverThreshold ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`}
+                        className="h-full rounded-full transition-all bg-foreground"
                         style={{ width: `${percent}%` }}
                       />
                     </div>
@@ -105,8 +101,8 @@ export default function BudgetsPage() {
 
                   {/* Behaviour Engine Guardrail Alert */}
                   {isOverThreshold && (
-                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-foreground flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                    <div className="p-3.5 rounded-2xl bg-secondary/80 border border-border text-xs text-foreground flex items-center gap-2.5">
+                      <AlertTriangle className="w-4 h-4 text-muted-foreground shrink-0" />
                       <span>
                         <strong>Guardrail Trigger: </strong>
                         You have crossed {b.alertThresholdPercent}% of your {b.category} allocation. Suggest slowing discretionary spend until next payday.

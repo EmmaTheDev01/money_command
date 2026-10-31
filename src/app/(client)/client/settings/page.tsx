@@ -3,17 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Settings, 
-  ShieldCheck, 
   Building2, 
   FileCheck2, 
-  CheckCircle2, 
-  User, 
-  Lock 
+  CheckCircle2 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
-import { formatCAD } from '@/lib/ledger';
 
 export default function SettingsPage() {
   const [state, setState] = useState<AppState>(getInitialState());
@@ -41,7 +37,7 @@ export default function SettingsPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <Settings className="w-5 h-5 text-muted-foreground" />
+              <Settings className="w-5 h-5 text-foreground" />
               <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Workspace Settings & Consent Receipts
               </h1>
@@ -52,14 +48,14 @@ export default function SettingsPage() {
           </div>
 
           {notification && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <div className="rounded-3xl border border-border bg-secondary/50 p-4 text-xs text-foreground flex items-center gap-2 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground" />
               <span>{notification}</span>
             </div>
           )}
 
           {/* Entities List */}
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs space-y-4">
             <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
               <Building2 className="w-4 h-4 text-muted-foreground" />
               Configured Entities ({state.entities.length})
@@ -71,24 +67,24 @@ export default function SettingsPage() {
                   key={ent.id}
                   className={`p-4 rounded-2xl border transition-all ${
                     ent.id === state.selectedEntityId
-                      ? 'border-primary/50 bg-primary/5 shadow-xs'
-                      : 'border-border bg-secondary/30 hover:bg-secondary/60'
+                      ? 'border-foreground/40 bg-secondary/50 shadow-xs'
+                      : 'border-border bg-secondary/20 hover:bg-secondary/40'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="font-semibold text-foreground text-sm">{ent.name}</div>
-                      <div className="text-[11px] text-muted-foreground uppercase mt-0.5 font-medium">
+                      <div className="text-[11px] text-muted-foreground uppercase mt-0.5 font-medium font-mono">
                         {ent.type.replace('_', ' ')} &middot; {ent.currency}
                       </div>
                       {ent.taxIdentifier && (
-                        <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
+                        <div className="text-[11px] font-mono text-foreground mt-1 font-medium">
                           BN: {ent.taxIdentifier}
                         </div>
                       )}
                     </div>
                     {ent.isDefault && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-medium">
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-medium">
                         Default
                       </span>
                     )}
@@ -98,8 +94,8 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Privacy & Consent Records (Blueprint requirement) */}
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
+          {/* Privacy & Consent Records */}
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <FileCheck2 className="w-4 h-4 text-muted-foreground" />
@@ -107,13 +103,13 @@ export default function SettingsPage() {
                   User Consent Receipts (Policy v2.0)
                 </h3>
               </div>
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+              <span className="text-xs text-muted-foreground font-mono font-medium">
                 Revocable & Scoped
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-4 rounded-2xl bg-secondary/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-2xl bg-secondary/30 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <div className="font-semibold text-foreground">
                     WhatsApp Message OCR & Structured Extraction
@@ -122,12 +118,12 @@ export default function SettingsPage() {
                     Permission to temporarily process inbound text & receipts to propose ledger candidate fields.
                   </p>
                 </div>
-                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 self-start sm:self-auto shrink-0">
+                <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-secondary text-foreground font-semibold border border-border self-start sm:self-auto shrink-0">
                   Active Consent
                 </span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-secondary/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-2xl bg-secondary/30 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <div className="font-semibold text-foreground">
                     Accountant Read-Only Document Review
@@ -136,7 +132,7 @@ export default function SettingsPage() {
                     Permit invited external CPA/bookkeeper to verify ledger transactions and export tax schedules.
                   </p>
                 </div>
-                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 self-start sm:self-auto shrink-0">
+                <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-secondary text-foreground font-semibold border border-border self-start sm:self-auto shrink-0">
                   Active Consent
                 </span>
               </div>

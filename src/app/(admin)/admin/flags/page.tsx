@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Sliders, 
-  ShieldCheck, 
-  AlertTriangle, 
   CheckCircle2, 
   Check, 
   X 
@@ -50,7 +48,7 @@ export default function AdminFlagsPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-rose-500" />
+              <Sliders className="w-5 h-5 text-foreground" />
               <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Feature Flags & Operational Risk Controls
               </h1>
@@ -64,8 +62,8 @@ export default function AdminFlagsPage() {
           </div>
 
           {toastMessage && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="rounded-3xl border border-border bg-secondary/50 p-4 text-xs text-foreground flex items-center gap-2 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-foreground" />
               <span>{toastMessage}</span>
             </div>
           )}
@@ -81,13 +79,7 @@ export default function AdminFlagsPage() {
                     <span className="font-mono font-semibold text-foreground text-sm">
                       {flag.key}
                     </span>
-                    <span
-                      className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full font-semibold ${
-                        flag.enabled
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                          : 'bg-secondary text-muted-foreground border border-border'
-                      }`}
-                    >
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full font-semibold bg-secondary text-foreground border border-border">
                       {flag.enabled ? 'Active (100% Rollout)' : 'Disabled'}
                     </span>
                   </div>
@@ -100,7 +92,7 @@ export default function AdminFlagsPage() {
                   onClick={() => toggleFlag(flag.id)}
                   className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 self-start sm:self-auto shadow-xs ${
                     flag.enabled
-                      ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                      ? 'border border-border bg-secondary hover:bg-muted text-foreground'
                       : 'bg-foreground text-background hover:opacity-90'
                   }`}
                 >

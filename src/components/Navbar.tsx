@@ -62,13 +62,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Left: Brand & Surface Switcher */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-foreground text-background flex items-center justify-center font-bold text-sm tracking-tight transition-transform group-hover:scale-105">
+            <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-sm tracking-tight transition-transform group-hover:scale-105">
               M
             </div>
             <div>
-              <span className="font-bold tracking-tight text-foreground flex items-center gap-1.5 text-sm">
+              <span className="font-semibold tracking-tight text-foreground flex items-center gap-1.5 text-sm">
                 MONEY COMMAND
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
                   v2.0
                 </span>
               </span>
@@ -79,19 +79,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           </Link>
 
           {/* Navigation Hub Tabs */}
-          <nav className="hidden md:flex items-center gap-1 p-1 bg-secondary rounded-xl border border-border text-xs">
+          <nav className="hidden md:flex items-center gap-1 p-1 bg-secondary rounded-full border border-border text-xs">
             <Link
               href="/client"
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 ${
                 isClient
-                  ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                  ? 'bg-foreground text-background font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <User className="w-3.5 h-3.5" />
-              Client Dashboard
+              <span>Client Dashboard</span>
               {pendingProposalsCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-amber-500 text-black font-bold text-[10px]">
+                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-background text-foreground font-bold text-[10px]">
                   {pendingProposalsCount}
                 </span>
               )}
@@ -99,16 +99,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <Link
               href="/admin"
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 ${
                 isAdmin
-                  ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                  ? 'bg-foreground text-background font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <ShieldAlert className="w-3.5 h-3.5" />
-              Admin Console
+              <span>Admin Console</span>
               {unreconciledCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-rose-500 text-white font-bold text-[10px]">
+                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-background text-foreground font-bold text-[10px]">
                   !
                 </span>
               )}
@@ -116,14 +116,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <Link
               href="/accountant"
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 ${
                 isAccountant
-                  ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                  ? 'bg-foreground text-background font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
-              Accountant Portal
+              <span>Accountant Portal</span>
             </Link>
           </nav>
         </div>
@@ -134,10 +134,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenAskMoney && (
             <button
               onClick={onOpenAskMoney}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-foreground hover:bg-muted text-xs font-medium transition-colors shadow-sm"
+              className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-card border border-border text-foreground hover:bg-secondary text-xs font-medium transition-colors shadow-xs"
               title="Query deterministic financial metrics with natural language"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Ask My Money</span>
             </button>
           )}
@@ -146,21 +146,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenWhatsAppSimulator && (
             <button
               onClick={onOpenWhatsAppSimulator}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary hover:bg-muted border border-border text-foreground text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-secondary hover:bg-muted border border-border text-foreground text-xs font-medium transition-colors"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
+              <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="hidden sm:inline">WhatsApp Sandbox</span>
             </button>
           )}
 
           {/* Entity Switcher dropdown */}
           <div className="relative">
-            <div className="flex items-center gap-1.5 bg-card border border-border rounded-xl p-1 pr-2 shadow-sm">
-              <div className="w-6 h-6 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
+            <div className="flex items-center gap-1.5 bg-card border border-border rounded-full p-1 pr-2 shadow-xs">
+              <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
                 {currentEntity?.type === 'personal' ? (
-                  <User className="w-3.5 h-3.5 text-blue-500" />
+                  <User className="w-3.5 h-3.5" />
                 ) : (
-                  <Building2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <Building2 className="w-3.5 h-3.5" />
                 )}
               </div>
               <select
@@ -182,20 +182,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={toggleTheme}
             aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            className="size-9 grid place-items-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-transparent hover:border-border"
+            className="size-9 grid place-items-center rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors border border-border"
           >
             {isDark ? (
-              <Sun className="size-4.5 transition-transform duration-200" />
+              <Sun className="size-4" />
             ) : (
-              <Moon className="size-4.5 transition-transform duration-200" />
+              <Moon className="size-4" />
             )}
           </button>
 
           {/* Ledger Health Status Indicator */}
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border text-[11px] shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-muted-foreground">PostgreSQL Core:</span>
-            <span className="text-emerald-500 font-mono font-medium">Reconciled (0 Err)</span>
+          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border border-border text-[11px] shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-foreground" />
+            <span className="text-muted-foreground">Core Ledger:</span>
+            <span className="text-foreground font-mono font-medium">Reconciled (0 Err)</span>
           </div>
         </div>
       </div>

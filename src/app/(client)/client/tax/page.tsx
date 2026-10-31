@@ -4,8 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   Download, 
+  Building2, 
+  ShieldCheck, 
   CheckCircle2, 
-  Building2 
+  Calendar, 
+  X 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
@@ -14,7 +17,7 @@ import { formatCAD } from '@/lib/ledger';
 
 export default function TaxPage() {
   const [state, setState] = useState<AppState>(getInitialState());
-  const [taxYear, setTaxYear] = useState(2026);
+  const [taxYear, setTaxYear] = useState<number>(2026);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +28,7 @@ export default function TaxPage() {
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
   const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id);
 
-  // Compute revenue & expenses for CRA Schedule T2125
+  // Calculate gross income & deductions
   const grossRevenueMinor = entityTransactions
     .filter((t) => t.type === 'income')
     .reduce((sum, t) => sum + t.totalMinor, 0);
@@ -36,43 +39,52 @@ export default function TaxPage() {
 
   const netBusinessIncomeMinor = grossRevenueMinor - totalExpensesMinor;
 
-  const hstAccount = state.accounts.find((a) => a.entityId === activeEntity.id && a.code === '2050');
-  const hstCollectedMinor = hstAccount?.balanceMinor || 71500;
+  // 13% Ontario HST collected estimate
+  const hstCollectedMinor = Math.round(grossRevenueMinor * 0.13);
 
-  const recommendedReserveMinor = Math.round(netBusinessIncomeMinor * 0.25);
-  const currentReserveAcc = state.accounts.find((a) => a.entityId === activeEntity.id && (a.code === '1030' || a.name.includes('Tax Reserve')));
-  const currentReserveMinor = currentReserveAcc?.balanceMinor || 620000;
+  // Recommended 25% tax reserve requirement
+  const recommendedReserveMinor = Math.round(grossRevenueMinor * 0.25);
+
+  // Current balance in HISA Tax Reserve account
+  const currentReserveMinor = state.accounts
+    .filter((a) => a.id === 'acc-rbc-tax-reserve')
+    .reduce((sum, a) => sum + a.balanceMinor, 0);
 
   const handleExportTaxSchedule = () => {
-    const lines = [
-      `CRA T2125 STATEMENT OF BUSINESS ACTIVITIES - TAX YEAR ${taxYear}`,
-      `Entity: ${activeEntity.name}`,
-      `Business Number: ${activeEntity.taxIdentifier || 'N/A'}`,
-      `Jurisdiction: Ontario (CA_ON)`,
-      `Reporting Method: Cash`,
+    const csvContent = [
+      `CRA T2125 STATEMENT OF BUSINESS ACTIVITIES - MONEY COMMAND EXPORT`,
+      `Entity: ${activeEntity.name} | BN: ${activeEntity.taxIdentifier || 'Sole Proprietorship'}`,
+      `Tax Year: ${taxYear} | Jurisdiction: Ontario (CA_ON)`,
       ``,
-      `PART 1 - BUSINESS INCOME`,
-      `Gross Retainers & Services: CAD ${(grossRevenueMinor / 100).toFixed(2)}`,
-      `HST Collected (13%): CAD ${(hstCollectedMinor / 100).toFixed(2)}`,
+      `Part 1: Business Income (Line 8000)`,
+      `Gross Business Revenue (CAD),${(grossRevenueMinor / 100).toFixed(2)}`,
+      `Estimated 13% HST Collected Payable (CAD),${(hstCollectedMinor / 100).toFixed(2)}`,
       ``,
-      `PART 2 - DEDUCTIBLE EXPENSES`,
-      `Software & Cloud Subscriptions: CAD ${(totalExpensesMinor / 100).toFixed(2)}`,
+      `Part 2: Business Expenses`,
+      `Total Deductible Expenses (CAD),${(totalExpensesMinor / 100).toFixed(2)}`,
+      `Net Business Income (Line 9369) (CAD),${(netBusinessIncomeMinor / 100).toFixed(2)}`,
       ``,
-      `NET BUSINESS INCOME: CAD ${(netBusinessIncomeMinor / 100).toFixed(2)}`,
-      `RECOMMENDED TAX RESERVE (25%): CAD ${(recommendedReserveMinor / 100).toFixed(2)}`,
-      ``,
-      `DISCLAIMER: Prepared by Money Command v2.0 for bookkeeping readiness. Official CRA filing must be completed via certified tax professional.`,
-    ];
+      `Transaction Details:`,
+      `Date,Merchant,Category,Amount CAD,Accountant Status`,
+      ...entityTransactions.map(
+        (t) =>
+          `${t.txDate},"${t.merchant || t.description}","${t.category}",${(t.totalMinor / 100).toFixed(
+            2
+          )},${t.accountantStatus}`
+      ),
+    ].join('\n');
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8;' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `CRA_T2125_${activeEntity.name.replace(/\s+/g, '_')}_${taxYear}.txt`);
+    link.setAttribute('download', `CRA_T2125_${activeEntity.name.replace(/\s+/g, '_')}_${taxYear}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setStatusMessage(`CRA Tax Readiness package exported for Tax Year ${taxYear}.`);
+
+    setStatusMessage(`CRA T2125 schedule exported for ${activeEntity.name}.`);
+    setTimeout(() => setStatusMessage(null), 3000);
   };
 
   return (
@@ -92,7 +104,7 @@ export default function TaxPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-6 h-6 text-emerald-500" />
+                <FileSpreadsheet className="w-5 h-5 text-foreground" />
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Canada-First Tax Readiness
                 </h1>
@@ -108,7 +120,7 @@ export default function TaxPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportTaxSchedule}
-                className="px-5 py-2.5 rounded-full bg-primary hover:opacity-90 text-primary-foreground font-semibold text-xs flex items-center gap-1.5 transition-opacity shadow-md"
+                className="px-5 py-2.5 rounded-full bg-foreground text-background hover:opacity-90 font-semibold text-xs flex items-center gap-1.5 transition-opacity shadow-xs"
               >
                 <Download className="w-4 h-4" />
                 <span>Export CRA Schedule & Receipts</span>
@@ -118,70 +130,70 @@ export default function TaxPage() {
 
           {/* Status Toast */}
           {statusMessage && (
-            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 flex items-center justify-between text-xs text-foreground animate-in fade-up">
+            <div className="rounded-3xl border border-border bg-secondary/50 p-4 flex items-center justify-between text-xs text-foreground shadow-xs animate-in fade-up">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-foreground" />
                 <span>{statusMessage}</span>
               </div>
               <button onClick={() => setStatusMessage(null)}>
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
           {/* Tax Metrics Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block font-medium">
                 Gross Business Revenue
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-emerald-500">
+              <div className="mt-1 text-2xl font-bold font-mono text-foreground tabular-nums">
                 {formatCAD(grossRevenueMinor)}
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Reportable income</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Reportable income</p>
             </div>
 
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block font-medium">
                 Deductible Expenses
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-foreground">
+              <div className="mt-1 text-2xl font-bold font-mono text-foreground tabular-nums">
                 {formatCAD(totalExpensesMinor)}
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Categorized CRA write-offs</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Categorized CRA write-offs</p>
             </div>
 
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block font-medium">
                 Ontario 13% HST Collected
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-amber-500">
+              <div className="mt-1 text-2xl font-bold font-mono text-foreground tabular-nums">
                 {formatCAD(hstCollectedMinor)}
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Earmarked CRA remittance</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Earmarked CRA remittance</p>
             </div>
 
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block font-medium">
                 Current Tax Reserve (HISA)
               </span>
-              <div className="mt-1 text-2xl font-bold font-mono text-emerald-500">
+              <div className="mt-1 text-2xl font-bold font-mono text-foreground tabular-nums">
                 {formatCAD(currentReserveMinor)}
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Recommended: {formatCAD(recommendedReserveMinor)}</p>
+              <p className="text-[11px] text-muted-foreground mt-1 font-mono">Recommended: {formatCAD(recommendedReserveMinor)}</p>
             </div>
           </div>
 
           {/* CRA Schedule Breakdown Box */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-5 shadow-sm">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-5 shadow-xs">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-emerald-500" />
+                <Building2 className="w-4 h-4 text-muted-foreground" />
                 <h3 className="font-semibold text-foreground text-sm">
                   CRA Form T2125 Alignment & Bookkeeping Categories
                 </h3>
               </div>
-              <span className="text-xs font-mono text-emerald-500">
+              <span className="text-xs font-mono text-muted-foreground">
                 CRA Compliant Audit Trail
               </span>
             </div>
@@ -193,11 +205,11 @@ export default function TaxPage() {
                 </span>
                 <div className="flex justify-between text-foreground">
                   <span>Gross consulting & service retainers:</span>
-                  <span className="text-emerald-500 font-semibold font-mono">{formatCAD(grossRevenueMinor)}</span>
+                  <span className="text-foreground font-semibold font-mono tabular-nums">{formatCAD(grossRevenueMinor)}</span>
                 </div>
                 <div className="flex justify-between text-foreground">
                   <span>13% HST collected on sales:</span>
-                  <span className="text-amber-500 font-semibold font-mono">{formatCAD(hstCollectedMinor)}</span>
+                  <span className="text-foreground font-semibold font-mono tabular-nums">{formatCAD(hstCollectedMinor)}</span>
                 </div>
               </div>
 
@@ -207,11 +219,11 @@ export default function TaxPage() {
                 </span>
                 <div className="flex justify-between text-foreground">
                   <span>Office & Software (Line 8810):</span>
-                  <span className="text-foreground font-semibold font-mono">{formatCAD(totalExpensesMinor)}</span>
+                  <span className="text-foreground font-semibold font-mono tabular-nums">{formatCAD(totalExpensesMinor)}</span>
                 </div>
                 <div className="flex justify-between text-foreground">
                   <span>Net Business Profit (Line 9369):</span>
-                  <span className="text-emerald-500 font-bold font-mono">{formatCAD(netBusinessIncomeMinor)}</span>
+                  <span className="text-foreground font-bold font-mono tabular-nums">{formatCAD(netBusinessIncomeMinor)}</span>
                 </div>
               </div>
             </div>

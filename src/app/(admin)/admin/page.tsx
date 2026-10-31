@@ -7,11 +7,7 @@ import {
   Activity, 
   CheckCircle2, 
   AlertTriangle, 
-  Database, 
   ScrollText, 
-  Users, 
-  DollarSign, 
-  Cpu, 
   Lock,
   ArrowRight
 } from 'lucide-react';
@@ -28,7 +24,6 @@ export default function AdminOverviewPage() {
   }, [state]);
 
   const ledgerAudit = auditLedgerIntegrity(state.transactions);
-  const pendingProposalsCount = state.proposals.filter((p) => p.status === 'pending').length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
@@ -47,11 +42,11 @@ export default function AdminOverviewPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-rose-500" />
+                <ShieldAlert className="w-5 h-5 text-foreground" />
                 <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                   Admin Console & Governance
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono font-semibold border border-rose-500/20">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-foreground font-mono font-semibold border border-border">
                   Role: Super Admin
                 </span>
               </div>
@@ -62,28 +57,16 @@ export default function AdminOverviewPage() {
 
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border text-xs font-mono text-foreground font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-foreground" />
                 <span>DB Engine: PostgreSQL 16</span>
               </span>
             </div>
           </div>
 
           {/* Release Gate #1: 0 Unreconciled Journals Status */}
-          <div
-            className={`rounded-3xl border p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-xs ${
-              ledgerAudit.isAllBalanced
-                ? 'border-emerald-500/30 bg-emerald-500/5'
-                : 'border-rose-500/30 bg-rose-500/5'
-            }`}
-          >
+          <div className="rounded-3xl border border-border bg-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-xs">
             <div className="flex items-center gap-3.5">
-              <div
-                className={`p-3 rounded-2xl ${
-                  ledgerAudit.isAllBalanced
-                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                }`}
-              >
+              <div className="p-3 rounded-2xl bg-secondary text-foreground border border-border">
                 {ledgerAudit.isAllBalanced ? (
                   <CheckCircle2 className="w-6 h-6" />
                 ) : (
@@ -93,13 +76,7 @@ export default function AdminOverviewPage() {
               <div>
                 <h3 className="font-semibold text-foreground text-base flex items-center gap-2">
                   <span>Ledger Reconciliation Gate:</span>
-                  <span
-                    className={`font-mono text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-                      ledgerAudit.isAllBalanced
-                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                        : 'bg-rose-500 text-white font-bold'
-                    }`}
-                  >
+                  <span className="font-mono text-xs px-2.5 py-0.5 rounded-full font-semibold bg-secondary text-foreground border border-border">
                     {ledgerAudit.unreconciledCount} Unreconciled Journals
                   </span>
                 </h3>
@@ -110,13 +87,13 @@ export default function AdminOverviewPage() {
             </div>
 
             <div className="flex items-center gap-3 text-right font-mono text-xs">
-              <div className="p-3 rounded-2xl bg-card border border-border shadow-xs">
+              <div className="p-3 rounded-2xl bg-secondary/50 border border-border shadow-xs">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-medium">Total Transactions</span>
-                <span className="font-bold text-foreground text-sm">{ledgerAudit.totalTransactions}</span>
+                <span className="font-bold text-foreground text-sm tabular-nums">{ledgerAudit.totalTransactions}</span>
               </div>
-              <div className="p-3 rounded-2xl bg-card border border-border shadow-xs">
+              <div className="p-3 rounded-2xl bg-secondary/50 border border-border shadow-xs">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-medium">Reversals Posted</span>
-                <span className="font-bold text-foreground text-sm">{ledgerAudit.reversedCount}</span>
+                <span className="font-bold text-foreground text-sm tabular-nums">{ledgerAudit.reversedCount}</span>
               </div>
             </div>
           </div>
@@ -143,10 +120,10 @@ export default function AdminOverviewPage() {
                 AI Extraction Benchmark
               </span>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl font-bold font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
+                <span className="text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                   96.4%
                 </span>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                <span className="text-xs text-muted-foreground font-mono font-medium">
                   Target: &ge;95%
                 </span>
               </div>
@@ -158,10 +135,10 @@ export default function AdminOverviewPage() {
                 Model COGS / Active User
               </span>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl font-bold font-mono tracking-tight text-foreground">
+                <span className="text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                   CAD $0.42
                 </span>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                <span className="text-xs text-muted-foreground font-mono font-medium">
                   82% Gross Margin
                 </span>
               </div>
@@ -173,7 +150,7 @@ export default function AdminOverviewPage() {
                 Audit Stream Events
               </span>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl font-bold font-mono tracking-tight text-foreground">
+                <span className="text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                   {state.auditLogs.length} Events
                 </span>
                 <span className="text-xs text-muted-foreground font-mono font-medium">
@@ -190,14 +167,14 @@ export default function AdminOverviewPage() {
             <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div className="flex items-center gap-2">
-                  <ScrollText className="w-4 h-4 text-rose-500" />
+                  <ScrollText className="w-4 h-4 text-muted-foreground" />
                   <h3 className="font-semibold text-foreground text-sm">
                     Recent Consequential Audit Events
                   </h3>
                 </div>
                 <Link
                   href="/admin/audit"
-                  className="text-xs text-rose-500 hover:opacity-80 font-medium flex items-center gap-1 transition-opacity"
+                  className="text-xs text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors"
                 >
                   View full stream
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -211,7 +188,7 @@ export default function AdminOverviewPage() {
                     className="p-3.5 rounded-2xl bg-secondary/40 border border-border text-xs space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-semibold border border-rose-500/20">
+                      <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-secondary text-foreground font-semibold border border-border">
                         {log.action}
                       </span>
                       <span className="text-[10px] text-muted-foreground font-mono">{log.createdAt}</span>
@@ -220,7 +197,7 @@ export default function AdminOverviewPage() {
                       {log.details}
                     </p>
                     {log.termsHash && (
-                      <span className="text-[9px] font-mono text-amber-600 dark:text-amber-400 block truncate">
+                      <span className="text-[9px] font-mono text-muted-foreground block truncate">
                         Hash: {log.termsHash}
                       </span>
                     )}
@@ -233,14 +210,14 @@ export default function AdminOverviewPage() {
             <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-rose-500" />
+                  <Lock className="w-4 h-4 text-muted-foreground" />
                   <h3 className="font-semibold text-foreground text-sm">
                     Operational Risk & Safety Gates
                   </h3>
                 </div>
                 <Link
                   href="/admin/flags"
-                  className="text-xs text-rose-500 hover:opacity-80 font-medium flex items-center gap-1 transition-opacity"
+                  className="text-xs text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors"
                 >
                   Manage flags
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -257,13 +234,7 @@ export default function AdminOverviewPage() {
                       <div className="font-mono font-semibold text-foreground">{flag.key}</div>
                       <div className="text-[11px] text-muted-foreground">{flag.description}</div>
                     </div>
-                    <span
-                      className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full ${
-                        flag.enabled
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                          : 'bg-secondary text-muted-foreground border border-border'
-                      }`}
-                    >
+                    <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-secondary text-foreground border border-border">
                       {flag.enabled ? 'ENABLED' : 'DISABLED'}
                     </span>
                   </div>

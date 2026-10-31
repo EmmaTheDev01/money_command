@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   ShieldAlert,
-  Server,
   Building,
   ScrollText,
   Activity,
@@ -27,28 +26,28 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
       href: '/admin',
       icon: Activity,
       badge: unreconciledCount === 0 ? '0 Errors' : `${unreconciledCount} Errors`,
-      badgeColor: unreconciledCount === 0 ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500 text-white',
+      badgeColor: 'bg-secondary text-foreground border border-border',
     },
     {
       label: 'Tenants & Entities',
       href: '/admin/tenants',
       icon: Building,
       badge: 'Isolated',
-      badgeColor: 'bg-muted text-muted-foreground',
+      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
     {
       label: 'Append-Only Audit Stream',
       href: '/admin/audit',
       icon: ScrollText,
       badge: 'SHA-256',
-      badgeColor: 'bg-muted text-muted-foreground',
+      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
     {
       label: 'Meta Webhooks & Replay',
       href: '/admin/webhooks',
       icon: Webhook,
       badge: 'Meta Cloud',
-      badgeColor: 'bg-blue-500/10 text-blue-500 border border-blue-500/20',
+      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
     {
       label: 'Feature Flags & Risk',
@@ -61,17 +60,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
       href: '/admin/schema',
       icon: Database,
       badge: '16 Tables',
-      badgeColor: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
+      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
   ];
 
   return (
-    <aside className="w-64 shrink-0 border-r border-border bg-[var(--background)] p-4 hidden md:flex flex-col justify-between transition-colors">
+    <aside className="w-64 shrink-0 border-r border-border bg-background p-4 hidden md:flex flex-col justify-between transition-colors">
       <div className="space-y-6">
         <div>
-          <div className="px-3 flex items-center justify-between">
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-rose-500 flex items-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+          <div className="px-3">
+            <h2 className="text-[10px] font-mono font-medium uppercase tracking-wider text-muted-foreground">
               Admin Operations
             </h2>
           </div>
@@ -83,20 +81,20 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
+                  className={`flex items-center justify-between rounded-full px-3.5 py-2 text-xs font-medium transition-all ${
                     isActive
-                      ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30 font-semibold'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-secondary text-foreground font-semibold border border-border shadow-xs'
+                      : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-rose-400' : 'text-muted-foreground'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-foreground' : 'text-muted-foreground'}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
-                        item.badgeColor || 'bg-muted text-muted-foreground'
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-medium ${
+                        item.badgeColor || 'bg-secondary text-muted-foreground border border-border'
                       }`}
                     >
                       {item.badge}
@@ -108,20 +106,24 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
           </nav>
         </div>
 
-        {/* Security Rule Gate Card */}
-        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-3.5 text-xs">
-          <div className="flex items-center gap-1.5 text-rose-400 font-semibold mb-1">
-            Security Gate MC-001
+        {/* PostgreSQL Engine Info */}
+        <div className="rounded-3xl border border-border bg-secondary/30 p-4 space-y-2">
+          <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+            <span>Core Database</span>
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-secondary border border-border">
+              PostgreSQL 16
+            </span>
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Strict tenant isolation enforced at RLS & DB layer. No cross-tenant record leakage or existence probing permitted.
+            RLS tenant isolation, append-only trigger protection, and exact minor-unit arithmetic.
           </p>
         </div>
       </div>
 
-      <div className="pt-4 border-t border-border text-[11px] text-muted-foreground">
-        <p className="font-medium text-foreground">Ops Environment: PROD-READY</p>
-        <p className="text-[10px]">Zero Unreconciled Invariant Active</p>
+      {/* Footer Info */}
+      <div className="pt-4 border-t border-border px-3 text-[11px] text-muted-foreground font-mono">
+        <div>Release Gate #1</div>
+        <div className="text-[10px] text-muted-foreground/80 mt-0.5">0 Unreconciled Journals</div>
       </div>
     </aside>
   );

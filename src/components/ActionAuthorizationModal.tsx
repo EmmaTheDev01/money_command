@@ -58,9 +58,9 @@ export const ActionAuthorizationModal: React.FC<ActionAuthorizationModalProps> =
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
       <div className="w-full max-w-lg bg-card border border-border rounded-3xl shadow-2xl overflow-hidden flex flex-col text-foreground">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-border bg-amber-500/10 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-border bg-secondary flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500 border border-amber-500/30">
+            <div className="p-2 rounded-xl bg-background text-foreground border border-border">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
@@ -90,7 +90,7 @@ export const ActionAuthorizationModal: React.FC<ActionAuthorizationModalProps> =
 
             <div className="flex justify-between items-center text-[11px] border-b border-border pb-2">
               <span className="text-muted-foreground">Action Type:</span>
-              <span className="font-mono uppercase text-amber-500 font-semibold">
+              <span className="font-mono uppercase text-foreground font-semibold">
                 {actionType.replace('_', ' ')}
               </span>
             </div>
@@ -106,7 +106,7 @@ export const ActionAuthorizationModal: React.FC<ActionAuthorizationModalProps> =
 
             <div className="flex justify-between items-center text-[11px]">
               <span className="text-muted-foreground">Known Early Termination Fees:</span>
-              <span className="text-emerald-500 font-mono font-semibold">CAD $0.00 (None)</span>
+              <span className="text-foreground font-mono font-semibold">CAD $0.00 (None)</span>
             </div>
           </div>
 
@@ -116,7 +116,7 @@ export const ActionAuthorizationModal: React.FC<ActionAuthorizationModalProps> =
               <Hash className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Immutable Terms Hash (SHA-256):</span>
             </div>
-            <p className="text-amber-500 truncate text-[10px] bg-card p-2 rounded-lg border border-border">
+            <p className="text-foreground truncate text-[10px] bg-card p-2 rounded-lg border border-border">
               {simulatedHash}
             </p>
           </div>
@@ -148,7 +148,7 @@ export const ActionAuthorizationModal: React.FC<ActionAuthorizationModalProps> =
               type="checkbox"
               checked={hasConfirmedCheckbox}
               onChange={(e) => setHasConfirmedCheckbox(e.target.checked)}
-              className="mt-0.5 rounded border-border text-amber-500 focus:ring-0"
+              className="mt-0.5 rounded border-border text-foreground focus:ring-0"
             />
             <span className="text-[11px] leading-relaxed text-muted-foreground">
               I have inspected the terms shown above and explicitly authorize Money Command to execute this action within this exact scope.
@@ -167,7 +167,7 @@ export const ActionAuthorizationModal: React.FC<ActionAuthorizationModalProps> =
           <button
             onClick={handleApprove}
             disabled={!hasConfirmedCheckbox || pin.length < 4 || isAuthorizing}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors disabled:opacity-40 flex items-center gap-1.5 shadow-sm"
+            className="px-4 py-2 rounded-full text-xs font-semibold bg-foreground text-background hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-1.5 shadow-xs"
           >
             {isAuthorizing ? (
               <Clock className="w-3.5 h-3.5 animate-spin" />

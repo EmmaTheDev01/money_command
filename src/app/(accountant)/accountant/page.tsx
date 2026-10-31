@@ -78,11 +78,11 @@ export default function AccountantPortalPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-500" />
+              <FileText className="w-5 h-5 text-foreground" />
               <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Accountant Review Portal
               </h1>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-semibold border border-blue-500/20">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-foreground font-mono font-semibold border border-border">
                 Grant: Reviewer (Revocable)
               </span>
             </div>
@@ -101,8 +101,8 @@ export default function AccountantPortalPage() {
         </div>
 
         {notification && (
-          <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-3.5 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0" />
+          <div className="rounded-2xl border border-border bg-secondary p-3.5 text-xs text-foreground flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
             <span>{notification}</span>
           </div>
         )}
@@ -127,9 +127,9 @@ export default function AccountantPortalPage() {
                     <span
                       className={`text-[9px] font-mono px-2.5 py-0.5 rounded-full uppercase font-semibold ${
                         tx.accountantStatus === 'professional_reviewed'
-                          ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                          ? 'bg-foreground text-background border border-foreground'
                           : tx.accountantStatus === 'user_verified'
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                          ? 'bg-muted text-foreground border border-border'
                           : 'bg-secondary text-muted-foreground border border-border'
                       }`}
                     >

@@ -20,7 +20,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+      <body className="min-h-full flex flex-col font-sans selection:bg-foreground selection:text-background">
         {children}
       </body>
     </html>

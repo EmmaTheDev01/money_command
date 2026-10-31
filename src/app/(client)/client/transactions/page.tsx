@@ -3,27 +3,27 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRightLeft, 
-  Download, 
-  Filter, 
   RotateCcw, 
+  Download, 
   CheckCircle2, 
+  X, 
   ChevronDown, 
-  ChevronUp,
-  X
+  ChevronUp, 
+  Filter 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD, createReversalTransaction, validateBalancedJournal } from '@/lib/ledger';
-import { Transaction, AuditLog } from '@/lib/types';
+import { Transaction } from '@/lib/types';
 
 export default function TransactionsPage() {
   const [state, setState] = useState<AppState>(getInitialState());
+  const [filterCategory, setFilterCategory] = useState<string>('all');
   const [expandedTxId, setExpandedTxId] = useState<string | null>(null);
   const [reversalModalTx, setReversalModalTx] = useState<Transaction | null>(null);
-  const [reversalReason, setReversalReason] = useState('Customer entered incorrect amount');
+  const [reversalReason, setReversalReason] = useState<string>('Incorrect categorization / duplicate');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState<string>('all');
 
   useEffect(() => {
     saveState(state);
@@ -32,81 +32,82 @@ export default function TransactionsPage() {
   const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
 
-  const entityTransactions = state.transactions.filter((t) => {
-    if (t.entityId !== activeEntity.id) return false;
-    if (filterCategory !== 'all' && t.category !== filterCategory) return false;
-    return true;
-  });
+  const entityTransactions = state.transactions
+    .filter((t) => t.entityId === activeEntity.id)
+    .filter((t) => (filterCategory === 'all' ? true : t.category.toLowerCase() === filterCategory.toLowerCase()));
 
-  const categories = Array.from(new Set(state.transactions.filter((t) => t.entityId === activeEntity.id).map((t) => t.category)));
+  const categories = Array.from(
+    new Set(state.transactions.filter((t) => t.entityId === activeEntity.id).map((t) => t.category))
+  );
 
   const handleExecuteReversal = () => {
     if (!reversalModalTx) return;
 
-    const reversalTxId = `tx-rev-${Date.now()}`;
-    const { reversalTx, updatedOriginal } = createReversalTransaction(
-      reversalModalTx,
-      reversalReason,
-      reversalTxId
-    );
+    try {
+      const revTxId = `tx-rev-${Date.now()}`;
+      const { reversalTx, updatedOriginal } = createReversalTransaction(
+        reversalModalTx,
+        reversalReason,
+        revTxId
+      );
 
-    const auditEntry: AuditLog = {
-      id: `audit-${Date.now()}`,
-      tenantId: state.currentTenant.id,
-      userId: state.currentUser.id,
-      userName: state.currentUser.fullName,
-      action: 'REVERSE_POSTED_JOURNAL',
-      entityType: 'transaction',
-      entityId: reversalModalTx.id,
-      details: `MC-010 Applied: Non-destructive correction. Posted reversing journal ${reversalTxId.substring(0, 8)} to offset original ${reversalModalTx.id.substring(0, 8)}. Reason: ${reversalReason}.`,
-      ipAddress: '198.51.100.42 (Toronto, ON)',
-      createdAt: new Date().toISOString(),
-    };
+      setState((prev) => ({
+        ...prev,
+        transactions: [
+          reversalTx,
+          ...prev.transactions.map((t) => (t.id === reversalModalTx.id ? updatedOriginal : t)),
+        ],
+        auditLogs: [
+          {
+            id: `audit-${Date.now()}`,
+            tenantId: prev.currentTenant.id,
+            userId: prev.currentUser.id,
+            userName: prev.currentUser.fullName,
+            entityType: activeEntity.type,
+            action: 'EXECUTE_MC010_REVERSAL',
+            details: `Committed reversal transaction ${reversalTx.id} for posted transaction ${reversalModalTx.id} (${reversalModalTx.merchant}). Reason: ${reversalReason}. Double-entry invariant preserved.`,
+            termsHash: `sha256:rev-${reversalTx.id.substring(0, 8)}`,
+            createdAt: new Date().toISOString(),
+            ipAddress: '127.0.0.1 (Web Companion)',
+          },
+          ...prev.auditLogs,
+        ],
+      }));
 
-    setState((prev) => ({
-      ...prev,
-      transactions: [
-        reversalTx,
-        ...prev.transactions.map((t) => (t.id === reversalModalTx.id ? updatedOriginal : t)),
-      ],
-      auditLogs: [auditEntry, ...prev.auditLogs],
-    }));
-
-    setReversalModalTx(null);
-    setStatusMessage(`✓ Reversing transaction posted successfully. Original journal preserved in audit history.`);
+      setStatusMessage(`Transaction ${reversalModalTx.merchant || reversalModalTx.id} successfully reversed.`);
+      setReversalModalTx(null);
+      setTimeout(() => setStatusMessage(null), 5000);
+    } catch (err: any) {
+      alert(`Reversal failed: ${err.message}`);
+    }
   };
 
   const handleExportCSV = () => {
-    const headers = ['Transaction ID', 'Date', 'Type', 'Status', 'Description', 'Merchant', 'Category', 'Account Code', 'Account Name', 'Debit CAD', 'Credit CAD'];
-    const rows: string[] = [headers.join(',')];
+    const headers = ['id', 'txDate', 'type', 'category', 'merchant', 'description', 'status', 'accountantStatus', 'totalCAD'];
+    const rows = entityTransactions.map((t) => [
+      t.id,
+      t.txDate,
+      t.type,
+      `"${t.category}"`,
+      `"${t.merchant || ''}"`,
+      `"${t.description.replace(/"/g, '""')}"`,
+      t.status,
+      t.accountantStatus,
+      (t.totalMinor / 100).toFixed(2),
+    ]);
 
-    entityTransactions.forEach((tx) => {
-      tx.lines.forEach((line) => {
-        rows.push([
-          tx.id,
-          tx.txDate,
-          tx.type,
-          tx.status,
-          `"${tx.description.replace(/"/g, '""')}"`,
-          `"${(tx.merchant || '').replace(/"/g, '""')}"`,
-          `"${tx.category}"`,
-          line.accountCode || '',
-          `"${(line.accountName || '').replace(/"/g, '""')}"`,
-          (line.debitMinor / 100).toFixed(2),
-          (line.creditMinor / 100).toFixed(2),
-        ].join(','));
-      });
-    });
-
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `money_command_${activeEntity.name.replace(/\s+/g, '_')}_ledger.csv`);
+    link.setAttribute('download', `money_command_ledger_${activeEntity.name.replace(/\s+/g, '_')}_2026.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setStatusMessage(`Exported ${entityTransactions.length} balanced transactions to CSV.`);
+
+    setStatusMessage('Exported double-entry ledger to CSV.');
+    setTimeout(() => setStatusMessage(null), 3000);
   };
 
   return (
@@ -126,11 +127,11 @@ export default function TransactionsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <ArrowRightLeft className="w-6 h-6 text-emerald-500" />
+                <ArrowRightLeft className="w-5 h-5 text-foreground" />
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Double-Entry Ledger
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-mono font-semibold border border-emerald-500/20">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-foreground font-mono font-medium border border-border">
                   Debits = Credits Verified
                 </span>
               </div>
@@ -142,9 +143,9 @@ export default function TransactionsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportCSV}
-                className="px-4 py-2 rounded-full bg-card hover:bg-muted text-foreground border border-border text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+                className="px-4 py-2 rounded-full bg-card hover:bg-secondary text-foreground border border-border text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
               >
-                <Download className="w-4 h-4 text-emerald-500" />
+                <Download className="w-3.5 h-3.5 text-muted-foreground" />
                 <span>Export Ledger CSV</span>
               </button>
             </div>
@@ -152,9 +153,9 @@ export default function TransactionsPage() {
 
           {/* Status Toast */}
           {statusMessage && (
-            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-3.5 flex items-center justify-between text-xs text-foreground animate-in fade-up">
+            <div className="rounded-3xl border border-border bg-secondary/50 p-4 flex items-center justify-between text-xs text-foreground shadow-xs animate-in fade-up">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-foreground" />
                 <span>{statusMessage}</span>
               </div>
               <button onClick={() => setStatusMessage(null)}>
@@ -164,14 +165,14 @@ export default function TransactionsPage() {
           )}
 
           {/* Filters Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-card border border-border text-xs shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl bg-card border border-border text-xs shadow-xs">
             <div className="flex items-center gap-2">
               <Filter className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-muted-foreground">Filter Category:</span>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="bg-secondary border border-border rounded-lg px-2.5 py-1 text-foreground font-medium"
+                className="bg-secondary border border-border rounded-full px-3 py-1 text-foreground font-medium cursor-pointer"
               >
                 <option value="all">All Categories ({entityTransactions.length})</option>
                 {categories.map((c) => (
@@ -186,7 +187,7 @@ export default function TransactionsPage() {
           </div>
 
           {/* Transactions Ledger Table */}
-          <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
+          <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-xs">
             <div className="divide-y divide-border">
               {entityTransactions.length === 0 ? (
                 <div className="p-10 text-center text-xs text-muted-foreground">
@@ -198,13 +199,13 @@ export default function TransactionsPage() {
                   const balanceCheck = validateBalancedJournal(tx.lines);
 
                   return (
-                    <div key={tx.id} className="transition-colors hover:bg-secondary/40">
+                    <div key={tx.id} className="transition-colors hover:bg-secondary/30">
                       {/* Main Transaction Summary Row */}
                       <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                         <div className="flex items-start gap-3">
                           <button
                             onClick={() => setExpandedTxId(isExpanded ? null : tx.id)}
-                            className="p-1.5 rounded-lg bg-secondary text-muted-foreground hover:text-foreground mt-0.5"
+                            className="p-1.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground mt-0.5 transition-colors"
                           >
                             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                           </button>
@@ -214,17 +215,11 @@ export default function TransactionsPage() {
                               <span className="font-semibold text-foreground text-sm">
                                 {tx.merchant || tx.description}
                               </span>
-                              <span
-                                className={`text-[10px] font-mono px-2 py-0.2 rounded-full ${
-                                  tx.status === 'posted'
-                                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                                    : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                                }`}
-                              >
+                              <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-secondary text-muted-foreground border border-border">
                                 {tx.status}
                               </span>
                               {tx.reversalOfId && (
-                                <span className="text-[9px] font-mono px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                                <span className="text-[9px] font-mono px-2 py-0.2 rounded-full bg-secondary text-foreground border border-border">
                                   Reversal of {tx.reversalOfId.substring(0, 8)}
                                 </span>
                               )}
@@ -243,11 +238,7 @@ export default function TransactionsPage() {
                         {/* Amount & Actions */}
                         <div className="flex items-center gap-4 self-end sm:self-auto">
                           <div className="text-right">
-                            <div
-                              className={`text-base font-bold font-mono ${
-                                tx.type === 'income' ? 'text-emerald-500' : 'text-foreground'
-                              }`}
-                            >
+                            <div className="text-base font-bold font-mono text-foreground tabular-nums">
                               {tx.type === 'income' ? '+' : '-'}{formatCAD(tx.totalMinor)}
                             </div>
                             <span className="text-[10px] text-muted-foreground font-mono">
@@ -259,7 +250,7 @@ export default function TransactionsPage() {
                           {tx.status === 'posted' && (
                             <button
                               onClick={() => setReversalModalTx(tx)}
-                              className="p-2 rounded-lg bg-secondary hover:bg-rose-500/10 hover:text-rose-500 text-muted-foreground transition-colors"
+                              className="p-2 rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                               title="Reverse transaction (MC-010)"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
@@ -292,10 +283,10 @@ export default function TransactionsPage() {
                                     <td className="p-3 text-muted-foreground">{line.accountCode || 'N/A'}</td>
                                     <td className="p-3 text-foreground font-sans font-medium">{line.accountName || 'Unknown'}</td>
                                     <td className="p-3 text-muted-foreground font-sans">{line.description || tx.description}</td>
-                                    <td className="p-3 text-right text-emerald-500 font-bold">
+                                    <td className="p-3 text-right text-foreground font-bold tabular-nums">
                                       {line.debitMinor > 0 ? (line.debitMinor / 100).toFixed(2) : '-'}
                                     </td>
-                                    <td className="p-3 text-right text-foreground font-bold">
+                                    <td className="p-3 text-right text-foreground font-bold tabular-nums">
                                       {line.creditMinor > 0 ? (line.creditMinor / 100).toFixed(2) : '-'}
                                     </td>
                                   </tr>
@@ -304,10 +295,10 @@ export default function TransactionsPage() {
                                   <td colSpan={3} className="p-3 text-right text-foreground font-sans">
                                     Total Balanced:
                                   </td>
-                                  <td className="p-3 text-right text-emerald-500 font-mono">
+                                  <td className="p-3 text-right text-foreground font-mono tabular-nums">
                                     {(balanceCheck.totalDebit / 100).toFixed(2)}
                                   </td>
-                                  <td className="p-3 text-right text-foreground font-mono">
+                                  <td className="p-3 text-right text-foreground font-mono tabular-nums">
                                     {(balanceCheck.totalCredit / 100).toFixed(2)}
                                   </td>
                                 </tr>
@@ -330,8 +321,8 @@ export default function TransactionsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
           <div className="w-full max-w-md bg-card border border-border rounded-3xl shadow-2xl p-6 space-y-4 text-foreground">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2 text-rose-500 font-semibold text-sm">
-                <RotateCcw className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
+                <RotateCcw className="w-4 h-4 text-muted-foreground" />
                 <span>Post Correcting Reversal (MC-010)</span>
               </div>
               <button onClick={() => setReversalModalTx(null)} className="text-muted-foreground hover:text-foreground">
@@ -350,20 +341,20 @@ export default function TransactionsPage() {
                 type="text"
                 value={reversalReason}
                 onChange={(e) => setReversalReason(e.target.value)}
-                className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-ring"
+                className="w-full bg-secondary border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none"
               />
             </div>
 
             <div className="flex justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setReversalModalTx(null)}
-                className="px-4 py-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium"
+                className="px-4 py-2 rounded-full bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleExecuteReversal}
-                className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-sm"
+                className="px-5 py-2 rounded-full bg-foreground text-background font-semibold text-xs shadow-xs hover:opacity-90 transition-opacity"
               >
                 Post Balanced Reversal
               </button>

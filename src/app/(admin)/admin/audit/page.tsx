@@ -4,12 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   ScrollText, 
   Search, 
-  ShieldCheck, 
   Hash, 
   Clock, 
-  Filter, 
-  Copy, 
-  CheckCircle2 
+  Copy 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { AdminSidebar } from '@/components/AdminSidebar';
@@ -59,7 +56,7 @@ export default function AdminAuditPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <ScrollText className="w-5 h-5 text-rose-500" />
+              <ScrollText className="w-5 h-5 text-foreground" />
               <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Append-Only Consequential Audit Stream
               </h1>
@@ -94,7 +91,7 @@ export default function AdminAuditPage() {
                 <div key={log.id} className="p-4 sm:p-5 space-y-2.5 hover:bg-secondary/30 transition-colors text-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                      <span className="font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-secondary text-foreground border border-border">
                         {log.action}
                       </span>
                       <span className="text-foreground font-semibold">{log.userName}</span>
@@ -116,7 +113,7 @@ export default function AdminAuditPage() {
                   {/* Cryptographic Terms Hash */}
                   {log.termsHash && (
                     <div className="p-2.5 rounded-xl bg-secondary/50 border border-border font-mono text-[10px] flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 truncate">
+                      <div className="flex items-center gap-1.5 text-foreground truncate">
                         <Hash className="w-3 h-3 text-muted-foreground shrink-0" />
                         <span className="truncate">{log.termsHash}</span>
                       </div>

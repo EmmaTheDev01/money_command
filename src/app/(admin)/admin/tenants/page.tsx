@@ -3,10 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Building, 
-  ShieldCheck, 
-  Users, 
-  Database, 
-  Lock, 
   CheckCircle2 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -38,7 +34,7 @@ export default function AdminTenantsPage() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
           <div>
             <div className="flex items-center gap-2">
-              <Building className="w-5 h-5 text-rose-500" />
+              <Building className="w-5 h-5 text-foreground" />
               <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Tenants & Multi-Entity Operations
               </h1>
@@ -51,7 +47,7 @@ export default function AdminTenantsPage() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-5">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs space-y-5">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <h3 className="font-semibold text-foreground text-base">{state.currentTenant.name}</h3>
@@ -59,7 +55,7 @@ export default function AdminTenantsPage() {
                   Tenant ID: {state.currentTenant.id}
                 </span>
               </div>
-              <span className="text-xs font-mono uppercase px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20">
+              <span className="text-xs font-mono uppercase px-3 py-1 rounded-full bg-secondary text-foreground font-semibold border border-border">
                 Plan: {state.currentTenant.plan}
               </span>
             </div>
@@ -69,14 +65,14 @@ export default function AdminTenantsPage() {
                 <span className="text-muted-foreground font-bold block text-[11px] uppercase tracking-wider">Primary Tenant User</span>
                 <div className="font-semibold text-foreground text-sm">{state.currentUser.fullName}</div>
                 <div className="text-muted-foreground">{state.currentUser.email}</div>
-                <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+                <div className="text-[11px] font-mono text-foreground font-medium">
                   WhatsApp: {state.currentUser.whatsappPhone} (Verified)
                 </div>
               </div>
 
               <div className="p-4 rounded-2xl bg-secondary/40 border border-border space-y-2">
                 <span className="text-muted-foreground font-bold block text-[11px] uppercase tracking-wider">RLS Isolation Status (MC-001)</span>
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <div className="flex items-center gap-2 text-foreground font-semibold">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Enforced at PostgreSQL Engine Layer</span>
                 </div>
@@ -99,7 +95,7 @@ export default function AdminTenantsPage() {
                       Type: {e.type} &middot; Currency: {e.currency}
                     </div>
                     {e.taxIdentifier && (
-                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-medium pt-0.5">
+                      <div className="text-[11px] text-foreground font-mono font-medium pt-0.5">
                         Tax BN: {e.taxIdentifier}
                       </div>
                     )}

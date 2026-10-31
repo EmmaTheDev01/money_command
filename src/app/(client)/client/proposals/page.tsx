@@ -7,14 +7,14 @@ import {
   X, 
   Edit3, 
   CheckCircle2, 
-  FileText,
-  Clock
+  Clock, 
+  FileText 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
-import { Proposal, Transaction, TransactionLine, AuditLog } from '@/lib/types';
+import { Proposal, Transaction } from '@/lib/types';
 
 export default function ProposalsPage() {
   const [state, setState] = useState<AppState>(getInitialState());
@@ -32,6 +32,116 @@ export default function ProposalsPage() {
   const pendingProposals = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending');
   const pastProposals = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status !== 'pending');
 
+  const handleConfirmProposal = (proposal: Proposal) => {
+    const totalMinor = proposal.amountMinor;
+
+    const newTx: Transaction = {
+      id: `tx-user-${Date.now()}`,
+      tenantId: state.currentTenant.id,
+      entityId: proposal.entityId,
+      txDate: proposal.txDate,
+      type: proposal.type,
+      category: proposal.category,
+      merchant: proposal.merchant,
+      description: proposal.rawText || `${proposal.merchant} purchase`,
+      status: 'posted',
+      accountantStatus: 'user_verified',
+      currency: proposal.currency,
+      totalMinor: totalMinor,
+      source: 'whatsapp_text',
+      sourceId: proposal.id,
+      createdAt: new Date().toISOString(),
+      lines: [
+        {
+          id: `line-${Date.now()}-1`,
+          transactionId: `tx-user-${Date.now()}`,
+          accountId: 'acc-groceries-expense',
+          accountCode: '5010',
+          accountName: proposal.category || 'Operating Expense',
+          debitMinor: totalMinor,
+          creditMinor: 0,
+          currency: proposal.currency || 'CAD',
+        },
+        {
+          id: `line-${Date.now()}-2`,
+          transactionId: `tx-user-${Date.now()}`,
+          accountId: 'acc-td-chequing',
+          accountCode: '1010',
+          accountName: 'TD Everyday Chequing',
+          debitMinor: 0,
+          creditMinor: totalMinor,
+          currency: proposal.currency || 'CAD',
+        },
+      ],
+    };
+
+    setState((prev) => ({
+      ...prev,
+      proposals: prev.proposals.map((p) =>
+        p.id === proposal.id ? { ...p, status: 'confirmed', confirmedTransactionId: newTx.id } : p
+      ),
+      transactions: [newTx, ...prev.transactions],
+      accounts: prev.accounts.map((acc) => {
+        if (acc.id === 'acc-td-chequing') {
+          return { ...acc, balanceMinor: acc.balanceMinor - totalMinor };
+        }
+        if (acc.id === 'acc-groceries-expense') {
+          return { ...acc, balanceMinor: acc.balanceMinor + totalMinor };
+        }
+        return acc;
+      }),
+      auditLogs: [
+        {
+          id: `audit-${Date.now()}`,
+          tenantId: prev.currentTenant.id,
+          userId: prev.currentUser.id,
+          userName: prev.currentUser.fullName,
+          entityType: prev.entities.find((e) => e.id === proposal.entityId)?.type || 'personal',
+          action: 'CONFIRM_PROPOSAL_POST_JOURNAL',
+          details: `Confirmed proposal ${proposal.id} (${proposal.merchant}, CAD ${(totalMinor / 100).toFixed(
+            2
+          )}). Committed balanced double-entry journal ${newTx.id}. Invariant: Debit == Credit.`,
+          termsHash: `sha256:prop-${proposal.id.substring(0, 8)}-confirmed`,
+          createdAt: new Date().toISOString(),
+          ipAddress: '127.0.0.1 (Web Companion)',
+        },
+        ...prev.auditLogs,
+      ],
+    }));
+
+    setStatusNotification(
+      `Proposal confirmed. Balanced journal posted: Debit ${proposal.category} CAD ${(totalMinor / 100).toFixed(
+        2
+      )}, Credit TD Chequing CAD ${(totalMinor / 100).toFixed(2)}.`
+    );
+    setTimeout(() => setStatusNotification(null), 5000);
+  };
+
+  const handleRejectProposal = (proposal: Proposal) => {
+    setState((prev) => ({
+      ...prev,
+      proposals: prev.proposals.map((p) =>
+        p.id === proposal.id ? { ...p, status: 'rejected' } : p
+      ),
+      auditLogs: [
+        {
+          id: `audit-${Date.now()}`,
+          tenantId: prev.currentTenant.id,
+          userId: prev.currentUser.id,
+          userName: prev.currentUser.fullName,
+          entityType: prev.entities.find((e) => e.id === proposal.entityId)?.type || 'personal',
+          action: 'REJECT_PROPOSAL',
+          details: `Rejected unposted candidate proposal ${proposal.id} (${proposal.merchant}). Zero ledger impact.`,
+          createdAt: new Date().toISOString(),
+          ipAddress: '127.0.0.1 (Web Companion)',
+        },
+        ...prev.auditLogs,
+      ],
+    }));
+    setStatusNotification(`Candidate proposal for ${proposal.merchant} rejected.`);
+    setTimeout(() => setStatusNotification(null), 4000);
+  };
+
   const startEdit = (p: Proposal) => {
     setEditingProposalId(p.id);
     setEditMerchant(p.merchant);
@@ -39,127 +149,22 @@ export default function ProposalsPage() {
     setEditAmountCAD((p.amountMinor / 100).toFixed(2));
   };
 
-  const handleSaveEdit = (p: Proposal) => {
-    const updatedMinor = Math.round(parseFloat(editAmountCAD || '0') * 100);
+  const handleSaveEdit = (proposal: Proposal) => {
+    const newMinor = Math.round(parseFloat(editAmountCAD) * 100);
     setState((prev) => ({
       ...prev,
-      proposals: prev.proposals.map((item) =>
-        item.id === p.id
-          ? {
-              ...item,
-              merchant: editMerchant,
-              category: editCategory,
-              amountMinor: updatedMinor,
-              status: 'modified' as const,
-            }
-          : item
-      ),
-    }));
-    setEditingProposalId(null);
-  };
-
-  const handleConfirmProposal = (proposal: Proposal) => {
-    if (proposal.status === 'confirmed') {
-      setStatusNotification(`Proposal ${proposal.id.substring(0, 8)} is already confirmed. Replay prevented (MC-007).`);
-      return;
-    }
-
-    const newTxId = `tx-${Date.now()}`;
-
-    const debitAccount = state.accounts.find(
-      (a) => a.entityId === activeEntity.id && (a.id === proposal.proposedDebitAccountId || a.type === 'expense')
-    ) || state.accounts[0];
-
-    const creditAccount = state.accounts.find(
-      (a) => a.entityId === activeEntity.id && (a.id === proposal.proposedCreditAccountId || (a.type === 'asset' && a.subtype === 'checking'))
-    ) || state.accounts[1];
-
-    const lines: TransactionLine[] = [
-      {
-        id: `line-${Math.random().toString(36).substring(2, 9)}`,
-        transactionId: newTxId,
-        accountId: debitAccount.id,
-        accountName: debitAccount.name,
-        accountCode: debitAccount.code,
-        debitMinor: proposal.amountMinor,
-        creditMinor: 0,
-        currency: proposal.currency,
-        description: `${proposal.category} expense at ${proposal.merchant}`,
-        category: proposal.category,
-      },
-      {
-        id: `line-${Math.random().toString(36).substring(2, 9)}`,
-        transactionId: newTxId,
-        accountId: creditAccount.id,
-        accountName: creditAccount.name,
-        accountCode: creditAccount.code,
-        debitMinor: 0,
-        creditMinor: proposal.amountMinor,
-        currency: proposal.currency,
-        description: `Paid via ${creditAccount.name}`,
-        category: creditAccount.subtype || 'Cash',
-      },
-    ];
-
-    const newTransaction: Transaction = {
-      id: newTxId,
-      tenantId: state.currentTenant.id,
-      entityId: activeEntity.id,
-      type: proposal.type,
-      status: 'posted',
-      currency: proposal.currency,
-      totalMinor: proposal.amountMinor,
-      txDate: proposal.txDate,
-      description: `${proposal.merchant} - ${proposal.category}`,
-      merchant: proposal.merchant,
-      category: proposal.category,
-      source: 'whatsapp_text',
-      sourceId: proposal.id,
-      accountantStatus: 'user_verified',
-      lines,
-      createdAt: new Date().toISOString(),
-    };
-
-    const newAuditLog: AuditLog = {
-      id: `audit-${Date.now()}`,
-      tenantId: state.currentTenant.id,
-      userId: state.currentUser.id,
-      userName: state.currentUser.fullName,
-      action: 'CONFIRM_PROPOSAL_POST_JOURNAL',
-      entityType: 'proposal',
-      entityId: proposal.id,
-      details: `User confirmed proposal. Balanced journal ${newTxId.substring(0, 8)} posted: Dr ${debitAccount.code} CAD ${formatCAD(proposal.amountMinor)}, Cr ${creditAccount.code} CAD ${formatCAD(proposal.amountMinor)}.`,
-      ipAddress: '198.51.100.42 (Toronto, ON)',
-      createdAt: new Date().toISOString(),
-    };
-
-    setState((prev) => ({
-      ...prev,
-      transactions: [newTransaction, ...prev.transactions],
       proposals: prev.proposals.map((p) =>
         p.id === proposal.id
           ? {
               ...p,
-              status: 'confirmed' as const,
-              userVerified: true,
-              confirmedTransactionId: newTxId,
+              merchant: editMerchant,
+              category: editCategory,
+              amountMinor: isNaN(newMinor) ? p.amountMinor : newMinor,
             }
           : p
       ),
-      auditLogs: [newAuditLog, ...prev.auditLogs],
     }));
-
-    setStatusNotification(`✓ Balanced journal posted! ${proposal.merchant} (${formatCAD(proposal.amountMinor)}) is now committed in PostgreSQL ledger.`);
-  };
-
-  const handleRejectProposal = (proposal: Proposal) => {
-    setState((prev) => ({
-      ...prev,
-      proposals: prev.proposals.map((p) =>
-        p.id === proposal.id ? { ...p, status: 'rejected' as const } : p
-      ),
-    }));
-    setStatusNotification(`Proposal rejected and will not be posted to the financial ledger.`);
+    setEditingProposalId(null);
   };
 
   return (
@@ -179,11 +184,11 @@ export default function ProposalsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <Inbox className="w-6 h-6 text-amber-500" />
+                <Inbox className="w-5 h-5 text-foreground" />
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Proposal Inbox & Review
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-mono font-bold border border-amber-500/20">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-foreground font-mono font-medium border border-border">
                   {pendingProposals.length} Pending
                 </span>
               </div>
@@ -195,9 +200,9 @@ export default function ProposalsPage() {
 
           {/* Status Notification Toast */}
           {statusNotification && (
-            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 flex items-center justify-between text-xs text-foreground animate-in fade-up">
+            <div className="rounded-3xl border border-border bg-secondary/50 p-4 flex items-center justify-between text-xs text-foreground shadow-xs animate-in fade-up">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-foreground" />
                 <span>{statusNotification}</span>
               </div>
               <button
@@ -212,13 +217,13 @@ export default function ProposalsPage() {
           {/* Pending Proposals Section */}
           <div className="space-y-4">
             <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-500" />
+              <Clock className="w-4 h-4 text-muted-foreground" />
               Unposted Proposals Awaiting Confirmation
             </h2>
 
             {pendingProposals.length === 0 ? (
-              <div className="rounded-3xl border border-border bg-card p-10 text-center space-y-2.5 shadow-sm">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+              <div className="rounded-3xl border border-border bg-card p-10 text-center space-y-2.5 shadow-xs">
+                <CheckCircle2 className="w-8 h-8 text-foreground mx-auto" />
                 <h3 className="font-semibold text-foreground text-sm">All caught up!</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Zero pending proposals. Use the WhatsApp simulator to trigger an AI extraction candidate.
@@ -232,24 +237,24 @@ export default function ProposalsPage() {
                   return (
                     <div
                       key={proposal.id}
-                      className="rounded-3xl border border-amber-500/30 bg-card p-6 space-y-4 shadow-md hover:border-amber-500/60 transition-colors"
+                      className="rounded-3xl border border-border bg-card p-6 space-y-4 shadow-xs hover:border-foreground/30 transition-colors"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500 font-semibold uppercase">
+                            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-secondary text-foreground font-semibold uppercase border border-border">
                               Candidate Proposal
                             </span>
                             <span className="text-xs text-muted-foreground font-mono">
                               ID: {proposal.id.substring(0, 12)}
                             </span>
-                            <span className="text-xs text-emerald-500 font-mono font-medium">
+                            <span className="text-xs text-muted-foreground font-mono font-medium">
                               AI Confidence: {(proposal.confidence * 100).toFixed(0)}%
                             </span>
                           </div>
 
                           {proposal.rawText && (
-                            <p className="text-xs text-foreground italic bg-secondary p-2.5 rounded-xl border border-border">
+                            <p className="text-xs text-foreground italic bg-secondary p-3 rounded-2xl border border-border">
                               &ldquo;{proposal.rawText}&rdquo;
                             </p>
                           )}
@@ -257,10 +262,10 @@ export default function ProposalsPage() {
 
                         {/* Top Amount Display */}
                         <div className="text-right">
-                          <span className="text-2xl sm:text-3xl font-bold font-mono text-emerald-500">
+                          <span className="text-2xl sm:text-3xl font-bold font-mono text-foreground tabular-nums">
                             {formatCAD(proposal.amountMinor)}
                           </span>
-                          <span className="block text-[11px] text-muted-foreground">
+                          <span className="block text-[11px] text-muted-foreground font-mono">
                             {proposal.txDate}
                           </span>
                         </div>
@@ -300,13 +305,13 @@ export default function ProposalsPage() {
                           <div className="sm:col-span-3 flex justify-end gap-2 pt-1">
                             <button
                               onClick={() => setEditingProposalId(null)}
-                              className="px-3.5 py-1.5 rounded-xl bg-card border border-border text-muted-foreground"
+                              className="px-3.5 py-1.5 rounded-full bg-card border border-border text-muted-foreground"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={() => handleSaveEdit(proposal)}
-                              className="px-4 py-1.5 rounded-xl bg-primary text-primary-foreground font-semibold"
+                              className="px-4 py-1.5 rounded-full bg-foreground text-background font-semibold"
                             >
                               Save Edits
                             </button>
@@ -324,7 +329,7 @@ export default function ProposalsPage() {
                           </div>
                           <div className="p-3 rounded-2xl bg-secondary/40 border border-border">
                             <span className="text-[10px] text-muted-foreground block">Proposed Journal</span>
-                            <span className="font-semibold text-emerald-500 font-mono text-[11px]">
+                            <span className="font-semibold text-foreground font-mono text-[11px]">
                               Dr Expense / Cr Checking
                             </span>
                           </div>
@@ -351,7 +356,7 @@ export default function ProposalsPage() {
                           )}
                           <button
                             onClick={() => handleRejectProposal(proposal)}
-                            className="px-3.5 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-xs font-medium transition-colors flex items-center gap-1.5"
+                            className="px-3.5 py-1.5 rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground border border-border text-xs font-medium transition-colors flex items-center gap-1.5"
                           >
                             <X className="w-3.5 h-3.5" />
                             <span>Reject</span>
@@ -360,7 +365,7 @@ export default function ProposalsPage() {
 
                         <button
                           onClick={() => handleConfirmProposal(proposal)}
-                          className="px-5 py-2.5 rounded-full bg-primary hover:opacity-90 text-primary-foreground font-semibold text-xs transition-all flex items-center gap-1.5 shadow-md"
+                          className="px-5 py-2.5 rounded-full bg-foreground hover:opacity-90 text-background font-semibold text-xs transition-all flex items-center gap-1.5 shadow-xs"
                         >
                           <Check className="w-4 h-4" />
                           <span>Confirm & Post Journal (Balanced)</span>
@@ -384,30 +389,24 @@ export default function ProposalsPage() {
               {pastProposals.map((p) => (
                 <div
                   key={p.id}
-                  className="p-3.5 rounded-2xl bg-card border border-border flex items-center justify-between text-xs"
+                  className="p-3.5 rounded-2xl bg-card border border-border flex items-center justify-between text-xs shadow-xs"
                 >
                   <div className="flex items-center gap-3">
-                    <span
-                      className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full uppercase ${
-                        p.status === 'confirmed'
-                          ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                          : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                      }`}
-                    >
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full uppercase bg-secondary text-muted-foreground border border-border">
                       {p.status}
                     </span>
                     <div>
                       <div className="font-medium text-foreground">{p.merchant}</div>
-                      <div className="text-[10px] text-muted-foreground">{p.category} &middot; {p.txDate}</div>
+                      <div className="text-[10px] text-muted-foreground font-mono">{p.category} &middot; {p.txDate}</div>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="font-mono font-semibold text-foreground">
+                    <div className="font-mono font-semibold text-foreground tabular-nums">
                       {formatCAD(p.amountMinor)}
                     </div>
                     {p.confirmedTransactionId && (
-                      <span className="text-[9px] font-mono text-emerald-500">
+                      <span className="text-[9px] font-mono text-muted-foreground">
                         Linked Tx: {p.confirmedTransactionId.substring(0, 10)}
                       </span>
                     )}
