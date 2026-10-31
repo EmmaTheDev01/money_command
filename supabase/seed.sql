@@ -147,3 +147,4 @@ BEGIN
     ) ON CONFLICT (entity_id, tax_year) DO NOTHING;
 
 END $$;
+

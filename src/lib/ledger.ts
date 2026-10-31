@@ -117,3 +117,4 @@ export function auditLedgerIntegrity(transactions: Transaction[]): {
     isAllBalanced: unreconciledCount === 0,
   };
 }
+

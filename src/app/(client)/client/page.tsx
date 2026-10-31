@@ -339,3 +339,4 @@ export default function ClientDashboardPage() {
     </div>
   );
 }
+

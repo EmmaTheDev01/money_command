@@ -569,3 +569,4 @@ export const INITIAL_FEATURE_FLAGS: FeatureFlag[] = [
     rolloutPercentage: 100,
   },
 ];
+

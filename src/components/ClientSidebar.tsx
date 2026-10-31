@@ -145,3 +145,4 @@ export const ClientSidebar: React.FC<ClientSidebarProps> = ({ pendingProposalsCo
     </aside>
   );
 };
+

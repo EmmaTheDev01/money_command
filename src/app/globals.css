@@ -1,14 +1,97 @@
 @import "tailwindcss";
 
-:root {
-  --background: #090d16;
-  --foreground: #f1f5f9;
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background: oklch(14.5% 0 0); /* #131313 */
+  --foreground: oklch(98.5% 0 0); /* #fafafa */
+  --card: oklch(18.5% 0 0);       /* #1d1d1d */
+  --card-foreground: oklch(98.5% 0 0);
+  --primary: var(--foreground);
+  --primary-foreground: oklch(14.5% 0 0);
+  --secondary: oklch(22% 0 0);
+  --secondary-foreground: oklch(98.5% 0 0);
+  --muted: oklch(22% 0 0);
+  --muted-foreground: oklch(72% 0 0);
+  --accent: oklch(21% 0.046 32);
+  --accent-foreground: oklch(84% 0.086 32);
+  --destructive: oklch(57% 0.17 20);
+  --destructive-foreground: oklch(98.5% 0 0);
+  --border: oklch(28% 0 0);
+  --input: oklch(25% 0 0);
+  --ring: var(--foreground);
+  --peak: oklch(84% 0.086 32);
+  --peak-ink: #f59e0b;
+  --stage-glow: rgba(245, 158, 11, 0.08);
+  --chrome-glass: rgba(19, 19, 19, 0.78);
+  --scene-vignette-ink: rgba(14, 14, 14, 0.95);
+  --chip-surface: oklch(22% 0 0);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --background: oklch(100% 0 0); /* #ffffff */
+  --foreground: oklch(18% 0 0);  /* #1c1c1c */
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(18% 0 0);
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: oklch(96% 0 0);
+  --secondary-foreground: oklch(18% 0 0);
+  --muted: oklch(96% 0 0);
+  --muted-foreground: oklch(48% 0 0);
+  --accent: oklch(94.5% 0.027 32);
+  --accent-foreground: oklch(47.5% 0.128 32);
+  --destructive: oklch(57% 0.17 20);
+  --destructive-foreground: oklch(98.5% 0 0);
+  --border: oklch(89% 0 0);
+  --input: oklch(89% 0 0);
+  --ring: var(--foreground);
+  --peak: oklch(57% 0.151 32);
+  --peak-ink: #d97706;
+  --stage-glow: rgba(217, 119, 6, 0.06);
+  --chrome-glass: rgba(255, 255, 255, 0.82);
+  --scene-vignette-ink: rgba(255, 255, 255, 0.92);
+  --chip-surface: oklch(97% 0 0);
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+}
+
+/* Animations from Patensify */
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.04);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 8s ease-in-out infinite;
 }
 
 /* Custom scrollbar */
@@ -18,14 +101,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: var(--border);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.9);
+  background: var(--muted-foreground);
 }

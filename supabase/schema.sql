@@ -567,3 +567,4 @@ VALUES
     ('consequential_action_approval', true, 'Enforce cryptographic terms_hash and step-up authorization', 100),
     ('cra_tax_readiness_export', true, 'Enable Canada-first tax schedules and accountant exports', 100)
 ON CONFLICT (key) DO NOTHING;
+

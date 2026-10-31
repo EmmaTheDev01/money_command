@@ -81,3 +81,4 @@ export function saveState(state: AppState) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 }
+

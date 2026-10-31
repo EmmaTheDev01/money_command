@@ -268,3 +268,4 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
     </div>
   );
 };
+

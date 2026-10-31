@@ -43,3 +43,4 @@ export function calculateSafeToSpend(input: SafeToSpendInput): SafeToSpendBreakd
     isNegative: safeToSpend < 0,
   };
 }
+

@@ -299,3 +299,4 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
     </div>
   );
 };
+
