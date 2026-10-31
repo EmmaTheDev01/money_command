@@ -79,21 +79,21 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
   };
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-md relative overflow-hidden transition-colors">
-      {/* Background Subtle Gradient */}
-      <div className="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-xs relative overflow-hidden transition-all">
+      {/* Background Subtle Glow */}
+      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-52 h-52 rounded-full bg-[var(--stage-glow)] blur-3xl pointer-events-none" />
 
       {/* Header with Title and Horizon Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1 rounded-md bg-amber-500/10 text-amber-500">
+            <span className="p-1.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
               <ShieldCheck className="w-4 h-4" />
             </span>
             <h3 className="font-semibold text-foreground text-sm tracking-tight">
               Deterministic Safe-to-Spend
             </h3>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+            <span className="text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border font-medium">
               Zero Guesswork
             </span>
           </div>
@@ -103,7 +103,7 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
         </div>
 
         {/* Horizon selector buttons */}
-        <div className="flex items-center gap-1 bg-secondary p-1 rounded-xl border border-border self-start sm:self-auto text-xs">
+        <div className="flex items-center gap-1 bg-secondary p-1 rounded-full border border-border self-start sm:self-auto text-xs">
           {[
             { days: 7, label: '7 Days' },
             { days: 14, label: '14 Days (Payday)' },
@@ -112,9 +112,9 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
             <button
               key={h.days}
               onClick={() => onHorizonChange && onHorizonChange(h.days)}
-              className={`px-3 py-1 rounded-lg font-medium transition-all ${
+              className={`px-3.5 py-1 rounded-full font-medium transition-all ${
                 horizonDays === h.days
-                  ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                  ? 'bg-foreground text-background font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -127,27 +127,29 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
       {/* Main Big Number Display */}
       <div className="my-6 flex flex-col md:flex-row md:items-baseline justify-between gap-4">
         <div>
-          <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+          <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground block font-medium">
             Available Discretionary Capacity
           </span>
-          <div className="flex items-baseline gap-2.5 mt-1">
+          <div className="flex items-baseline gap-2.5 mt-1.5">
             <span
-              className={`text-3xl sm:text-4xl font-extrabold tracking-tight font-mono ${
-                breakdown.isNegative ? 'text-rose-500' : 'text-emerald-500'
+              className={`text-3xl sm:text-5xl font-bold tracking-tight font-mono tabular-nums ${
+                breakdown.isNegative
+                  ? 'text-rose-600 dark:text-rose-400'
+                  : 'text-emerald-600 dark:text-emerald-400'
               }`}
             >
               {formatCAD(breakdown.safeToSpend)}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground font-medium">
               for the next {horizonDays} days
             </span>
           </div>
         </div>
 
         {/* User Buffer Controller */}
-        <div className="bg-secondary/70 border border-border rounded-2xl p-3.5 min-w-[240px]">
-          <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="text-muted-foreground flex items-center gap-1">
+        <div className="bg-secondary/50 border border-border rounded-3xl p-4 min-w-[260px] shadow-xs">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
               <Sliders className="w-3.5 h-3.5 text-muted-foreground" />
               Safety Buffer:
             </span>
@@ -162,9 +164,9 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
             step={5000}
             value={customBuffer}
             onChange={handleBufferUpdate}
-            className="w-full accent-amber-500 h-1.5 bg-muted rounded-lg cursor-pointer"
+            className="w-full accent-amber-500 h-1.5 bg-muted rounded-full cursor-pointer"
           />
-          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+          <div className="flex justify-between text-[10px] text-muted-foreground font-mono mt-1.5">
             <span>$0</span>
             <span>$500</span>
             <span>$1,000</span>
@@ -173,19 +175,19 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
       </div>
 
       {/* Formula Breakdown Accordion / Inspector */}
-      <div className="rounded-2xl border border-border bg-secondary/30 overflow-hidden">
+      <div className="rounded-3xl border border-border bg-secondary/30 overflow-hidden">
         <button
           onClick={() => setShowFormulaDetails(!showFormulaDetails)}
-          className="w-full flex items-center justify-between p-3.5 text-xs text-foreground hover:bg-muted/40 transition-colors"
+          className="w-full flex items-center justify-between p-4 text-xs text-foreground hover:bg-secondary/60 transition-colors"
         >
-          <span className="flex items-center gap-1.5 font-medium">
-            <Info className="w-3.5 h-3.5 text-amber-500" />
+          <span className="flex items-center gap-2 font-medium">
+            <Info className="w-4 h-4 text-amber-500" />
             Inspect Safe-to-Spend Math & Component Breakdown
           </span>
           <span className="text-muted-foreground text-[11px] flex items-center gap-1">
             {showFormulaDetails ? 'Hide calculation' : 'Show formula & items'}
             <ChevronRight
-              className={`w-3.5 h-3.5 transition-transform ${
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${
                 showFormulaDetails ? 'rotate-90' : ''
               }`}
             />
@@ -193,99 +195,99 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
         </button>
 
         {showFormulaDetails && (
-          <div className="p-4 border-t border-border space-y-3 text-xs font-mono">
-            <div className="p-2.5 rounded-xl bg-card border border-border text-[11px] text-muted-foreground leading-relaxed font-sans">
-              <span className="font-bold text-foreground">Strict Engineering Rule: </span>
+          <div className="p-4 sm:p-5 border-t border-border space-y-3.5 text-xs font-mono">
+            <div className="p-3 rounded-2xl bg-card border border-border text-[11px] text-muted-foreground leading-relaxed font-sans shadow-xs">
+              <span className="font-semibold text-foreground">Strict Engineering Rule: </span>
               Safe-to-Spend is NEVER an LLM guess. Every figure corresponds to a verified ledger account, schedule, or pending proposal.
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowUpRight className="w-3 h-3 text-emerald-500" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
                   Liquid Cash in Accounts:
                 </span>
-                <span className="text-emerald-500 font-semibold font-mono">
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono tabular-nums">
                   +{formatCAD(breakdown.liquidCash)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowUpRight className="w-3 h-3 text-emerald-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
                   Expected Income ({horizonDays}d):
                 </span>
-                <span className="text-emerald-500 font-semibold font-mono">
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono tabular-nums">
                   +{formatCAD(breakdown.expectedIncome)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowDownRight className="w-3 h-3 text-rose-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowDownRight className="w-3.5 h-3.5 text-rose-500" />
                   Essential Obligations (Rent/Bills):
                 </span>
-                <span className="text-rose-500 font-semibold font-mono">
+                <span className="text-rose-600 dark:text-rose-400 font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.essentialObligations)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowDownRight className="w-3 h-3 text-rose-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowDownRight className="w-3.5 h-3.5 text-rose-500" />
                   Minimum Debt Payments:
                 </span>
-                <span className="text-rose-500 font-semibold font-mono">
+                <span className="text-rose-600 dark:text-rose-400 font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.minimumDebtPayments)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowDownRight className="w-3 h-3 text-amber-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowDownRight className="w-3.5 h-3.5 text-amber-500" />
                   Committed Tax Reserve (25%):
                 </span>
-                <span className="text-amber-500 font-semibold font-mono">
+                <span className="text-amber-600 dark:text-amber-400 font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.taxReserveRequirement)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowDownRight className="w-3 h-3 text-indigo-400" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowDownRight className="w-3.5 h-3.5 text-indigo-400" />
                   Committed Savings Target:
                 </span>
-                <span className="text-indigo-400 font-semibold font-mono">
+                <span className="text-indigo-600 dark:text-indigo-400 font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.committedSavings)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowDownRight className="w-3 h-3 text-muted-foreground" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowDownRight className="w-3.5 h-3.5 text-muted-foreground" />
                   User-Defined Buffer:
                 </span>
-                <span className="text-foreground font-semibold font-mono">
+                <span className="text-foreground font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.userDefinedBuffer)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ArrowDownRight className="w-3 h-3 text-amber-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ArrowDownRight className="w-3.5 h-3.5 text-amber-500" />
                   Pending Inbound Proposals:
                 </span>
-                <span className="text-amber-500 font-semibold font-mono">
+                <span className="text-amber-600 dark:text-amber-400 font-semibold font-mono tabular-nums">
                   -{formatCAD(breakdown.pendingOutflows)}
                 </span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-card border border-border flex justify-between items-center text-xs shadow-sm">
+            <div className="p-3.5 rounded-2xl bg-card border border-border flex justify-between items-center text-xs shadow-xs">
               <span className="font-semibold text-foreground">
                 Deterministic Safe-to-Spend Balance:
               </span>
-              <span className="font-bold text-emerald-500 font-mono text-sm">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono text-sm tabular-nums">
                 = {formatCAD(breakdown.safeToSpend)}
               </span>
             </div>
