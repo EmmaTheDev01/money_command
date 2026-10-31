@@ -13,7 +13,8 @@ import {
   Lock, 
   Building2, 
   FileSpreadsheet, 
-  ChevronDown
+  ChevronDown,
+  Key
 } from 'lucide-react';
 import { WhatsAppSimulatorModal } from '@/components/WhatsAppSimulatorModal';
 import { AskMyMoneyModal } from '@/components/AskMyMoneyModal';
@@ -189,6 +190,14 @@ export default function PatensifyStyleLandingPage() {
                     <Moon className="size-4" />
                   )}
                 </button>
+
+                <Link
+                  href="/login"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors border border-transparent hover:border-border"
+                >
+                  <Key className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Login</span>
+                </Link>
 
                 <Link
                   href="/admin"

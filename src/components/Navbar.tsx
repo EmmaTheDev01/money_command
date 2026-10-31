@@ -125,6 +125,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <FileText className="w-3.5 h-3.5" />
               <span>Accountant Portal</span>
             </Link>
+
+            <Link
+              href="/login"
+              className="px-3.5 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <span>Sessions</span>
+            </Link>
           </nav>
         </div>
 
