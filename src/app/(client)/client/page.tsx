@@ -1,0 +1,341 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { 
+  Building2, 
+  User, 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Inbox, 
+  Repeat, 
+  ArrowRightLeft, 
+  FileText, 
+  Sparkles, 
+  MessageSquare,
+  AlertCircle,
+  CheckCircle2,
+  ChevronRight
+} from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
+import { ClientSidebar } from '@/components/ClientSidebar';
+import { SafeToSpendWidget } from '@/components/SafeToSpendWidget';
+import { AskMyMoneyModal } from '@/components/AskMyMoneyModal';
+import { WhatsAppSimulatorModal } from '@/components/WhatsAppSimulatorModal';
+import { getInitialState, saveState, AppState } from '@/lib/store';
+import { formatCAD } from '@/lib/ledger';
+
+export default function ClientDashboardPage() {
+  const [state, setState] = useState<AppState>(getInitialState());
+  const [showAskMoney, setShowAskMoney] = useState(false);
+  const [showWhatsAppSim, setShowWhatsAppSim] = useState(false);
+
+  useEffect(() => {
+    saveState(state);
+  }, [state]);
+
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const entityAccounts = state.accounts.filter((a) => a.entityId === activeEntity.id);
+  const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id);
+  const pendingProposals = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending');
+
+  // Compute Balances
+  const totalAssetsMinor = entityAccounts
+    .filter((a) => a.type === 'asset')
+    .reduce((sum, a) => sum + a.balanceMinor, 0);
+
+  const totalLiabilitiesMinor = entityAccounts
+    .filter((a) => a.type === 'liability')
+    .reduce((sum, a) => sum + a.balanceMinor, 0);
+
+  const netWorthMinor = totalAssetsMinor - totalLiabilitiesMinor;
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+      <Navbar
+        entities={state.entities}
+        selectedEntityId={state.selectedEntityId}
+        onSelectEntity={(id) => setState((prev) => ({ ...prev, selectedEntityId: id }))}
+        onOpenWhatsAppSimulator={() => setShowWhatsAppSim(true)}
+        onOpenAskMoney={() => setShowAskMoney(true)}
+        pendingProposalsCount={pendingProposals.length}
+      />
+
+      <div className="flex-1 flex">
+        <ClientSidebar pendingProposalsCount={pendingProposals.length} />
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
+          {/* Header Title with Persona Badge */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                  {activeEntity.name}
+                </h1>
+                <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                  {activeEntity.type.replace('_', ' ')}
+                </span>
+                {activeEntity.taxIdentifier && (
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    BN: {activeEntity.taxIdentifier}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Deterministic Financial Position &middot; Multi-Entity Separation
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAskMoney(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:border-emerald-400 transition-colors flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Ask My Money</span>
+              </button>
+
+              <button
+                onClick={() => setShowWhatsAppSim(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-1.5"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Capture via WhatsApp</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Pending Proposal Inbox Notification Banner (Release First Slice) */}
+          {pendingProposals.length > 0 && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400">
+                  <Inbox className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-semibold text-amber-300">
+                    {pendingProposals.length} Inbound Proposal{pendingProposals.length > 1 ? 's' : ''} Awaiting Confirmation
+                  </h4>
+                  <p className="text-[11px] text-amber-200/80">
+                    Latest: <strong>{pendingProposals[0].merchant}</strong> ({formatCAD(pendingProposals[0].amountMinor)}) extracted via WhatsApp AI. Untrusted until you confirm.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/client/proposals"
+                className="self-start sm:self-auto px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1 shadow-sm"
+              >
+                <span>Review & Post Journal</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
+
+          {/* Financial Summary Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+                Total Liquid Assets
+              </span>
+              <div className="mt-1 flex items-baseline justify-between">
+                <span className="text-2xl font-bold font-mono text-emerald-400">
+                  {formatCAD(totalAssetsMinor)}
+                </span>
+                <span className="p-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono">
+                  {entityAccounts.filter((a) => a.type === 'asset').length} Accounts
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Checking, Emergency HISA & Reserves
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+                Current Liabilities
+              </span>
+              <div className="mt-1 flex items-baseline justify-between">
+                <span className="text-2xl font-bold font-mono text-rose-400">
+                  {formatCAD(totalLiabilitiesMinor)}
+                </span>
+                <span className="p-1 rounded bg-rose-500/10 text-rose-400 text-[10px] font-mono">
+                  Credit & Tax Due
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Credit cards & collected CRA GST/HST
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">
+                Net Entity Position
+              </span>
+              <div className="mt-1 flex items-baseline justify-between">
+                <span className="text-2xl font-bold font-mono text-white">
+                  {formatCAD(netWorthMinor)}
+                </span>
+                <span className="p-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-mono">
+                  Reconciled
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Assets minus liabilities (Double-entry)
+              </p>
+            </div>
+          </div>
+
+          {/* Deterministic Safe-to-Spend Engine */}
+          <SafeToSpendWidget
+            accounts={entityAccounts}
+            pendingProposals={pendingProposals}
+            bufferMinor={state.safeToSpendBufferMinor}
+            horizonDays={state.safeToSpendHorizonDays}
+            onBufferChange={(newBuffer) => setState((prev) => ({ ...prev, safeToSpendBufferMinor: newBuffer }))}
+            onHorizonChange={(newHorizon) => setState((prev) => ({ ...prev, safeToSpendHorizonDays: newHorizon }))}
+          />
+
+          {/* Accounts Breakdown & Recent Ledger Transactions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Accounts Subledger */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 className="font-semibold text-slate-100 text-sm flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-emerald-400" />
+                  Chart of Accounts ({activeEntity.type})
+                </h3>
+                <span className="text-[11px] font-mono text-slate-400">
+                  Source: PostgreSQL
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {entityAccounts.map((acc) => (
+                  <div
+                    key={acc.id}
+                    className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs hover:border-slate-700 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                        {acc.code}
+                      </span>
+                      <div>
+                        <div className="font-medium text-slate-200">{acc.name}</div>
+                        <div className="text-[10px] text-slate-500 uppercase">{acc.type} &middot; {acc.subtype}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div
+                        className={`font-mono font-semibold ${
+                          acc.type === 'asset'
+                            ? 'text-emerald-400'
+                            : acc.type === 'liability'
+                            ? 'text-rose-400'
+                            : 'text-slate-200'
+                        }`}
+                      >
+                        {formatCAD(acc.balanceMinor)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Posted Double-Entry Transactions */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <ArrowRightLeft className="w-4 h-4 text-emerald-400" />
+                  <h3 className="font-semibold text-slate-100 text-sm">
+                    Recent Posted Journals
+                  </h3>
+                </div>
+                <Link
+                  href="/client/transactions"
+                  className="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-0.5"
+                >
+                  View full ledger
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              {entityTransactions.length === 0 ? (
+                <div className="p-8 text-center text-xs text-slate-500">
+                  No posted transactions yet for this entity.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {entityTransactions.slice(0, 4).map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs"
+                    >
+                      <div className="space-y-0.5">
+                        <div className="font-medium text-slate-200 flex items-center gap-1.5">
+                          <span>{tx.merchant || tx.description}</span>
+                          <span
+                            className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                              tx.status === 'posted'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            }`}
+                          >
+                            {tx.status}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-500">
+                          {tx.txDate} &middot; {tx.category} &middot; {tx.lines.length} balanced lines
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div
+                          className={`font-mono font-semibold ${
+                            tx.type === 'income'
+                              ? 'text-emerald-400'
+                              : 'text-slate-100'
+                          }`}
+                        >
+                          {tx.type === 'income' ? '+' : '-'}{formatCAD(tx.totalMinor)}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {tx.accountantStatus.replace('_', ' ')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* Modals */}
+      <WhatsAppSimulatorModal
+        isOpen={showWhatsAppSim}
+        onClose={() => setShowWhatsAppSim(false)}
+        onNewProposal={(newProp) => {
+          setState((prev) => ({
+            ...prev,
+            proposals: [newProp, ...prev.proposals],
+          }));
+        }}
+        entityId={activeEntity.id}
+        tenantId={state.currentTenant.id}
+        userId={state.currentUser.id}
+      />
+
+      <AskMyMoneyModal
+        isOpen={showAskMoney}
+        onClose={() => setShowAskMoney(false)}
+        accounts={entityAccounts}
+        transactions={entityTransactions}
+        pendingProposals={pendingProposals}
+        safeToSpendMinor={state.safeToSpendBufferMinor + 120000}
+      />
+    </div>
+  );
+}
