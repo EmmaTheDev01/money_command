@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   ArrowRightLeft, 
   RotateCcw, 
@@ -16,14 +17,31 @@ import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD, createReversalTransaction, validateBalancedJournal } from '@/lib/ledger';
 import { Transaction } from '@/lib/types';
+import { db } from '@/lib/db';
 
 export default function TransactionsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [expandedTxId, setExpandedTxId] = useState<string | null>(null);
   const [reversalModalTx, setReversalModalTx] = useState<Transaction | null>(null);
   const [reversalReason, setReversalReason] = useState<string>('Incorrect categorization / duplicate');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/client/transactions');
+      return;
+    }
+
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const txs = await db.getTransactions(activeId);
+      setState((prev) => ({ ...prev, transactions: txs }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
 
   useEffect(() => {
     saveState(state);

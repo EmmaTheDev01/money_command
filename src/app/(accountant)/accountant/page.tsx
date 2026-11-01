@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   FileText, 
   CheckCircle2, 
@@ -18,11 +19,20 @@ import { Navbar } from '@/components/Navbar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
 import { Transaction } from '@/lib/types';
+import { db } from '@/lib/db';
 
 export default function AccountantPortalPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [notification, setNotification] = useState<string | null>(null);
   const [filterState, setFilterState] = useState<'all' | 'unreviewed' | 'user_verified' | 'professional_reviewed'>('all');
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/accountant');
+    }
+  }, [router]);
 
   useEffect(() => {
     saveState(state);

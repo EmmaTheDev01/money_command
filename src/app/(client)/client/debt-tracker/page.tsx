@@ -1,24 +1,42 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   CreditCard, 
   Plus, 
   ShieldAlert, 
   ArrowDownRight, 
   TrendingDown, 
-  Calendar,
-  CheckCircle2,
-  DollarSign
+  Calendar, 
+  CheckCircle2, 
+  DollarSign 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
 import { DebtItem } from '@/lib/types';
+import { db } from '@/lib/db';
 
 export default function DebtTrackerPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/client/debt-tracker');
+      return;
+    }
+
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const debts = await db.getDebts(activeId);
+      setState((prev) => ({ ...prev, debts }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
   const [payoffStrategy, setPayoffStrategy] = useState<'avalanche' | 'snowball'>('avalanche');
   const [showAddModal, setShowAddModal] = useState(false);
   const [name, setName] = useState('');

@@ -273,7 +273,7 @@ export default function MoneyCommandLandingPage() {
               </button>
 
               <Link
-                href="/client"
+                href="/login"
                 className="px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-full bg-foreground text-background hover:opacity-90 transition-all shadow-sm flex items-center gap-1.5 shrink-0"
               >
                 <span>Launch OS</span>
@@ -336,7 +336,7 @@ export default function MoneyCommandLandingPage() {
               </a>
 
               <Link
-                href="/client"
+                href="/login"
                 className="px-6 sm:px-7 py-3 rounded-full bg-secondary hover:bg-muted text-foreground border border-border font-medium text-xs sm:text-sm transition-colors shadow-sm"
               >
                 Launch Web OS &rarr;
@@ -738,7 +738,7 @@ export default function MoneyCommandLandingPage() {
 
                 <div className="pt-2">
                   <Link
-                    href="/client"
+                    href="/login"
                     className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm hover:opacity-90 transition-opacity shadow-sm block text-center"
                   >
                     Inspect in Web Dashboard &rarr;
@@ -941,7 +941,7 @@ export default function MoneyCommandLandingPage() {
                   </ul>
                 </div>
                 <Link
-                  href="/client"
+                  href="/login"
                   className="w-full py-3 rounded-full bg-secondary text-foreground font-semibold text-xs sm:text-sm hover:bg-muted transition-colors block text-center border border-border"
                 >
                   Start Personal
@@ -970,7 +970,7 @@ export default function MoneyCommandLandingPage() {
                   </ul>
                 </div>
                 <Link
-                  href="/client"
+                  href="/login"
                   className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm hover:opacity-90 transition-opacity block text-center shadow-md"
                 >
                   Start Founder OS

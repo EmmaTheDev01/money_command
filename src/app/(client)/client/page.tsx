@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Building2, 
   User, 
@@ -27,7 +28,8 @@ import {
   PiggyBank,
   CreditCard,
   ShieldCheck,
-  WalletCards
+  WalletCards,
+  Loader2
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
@@ -35,17 +37,113 @@ import { AskMyMoneyModal } from '@/components/AskMyMoneyModal';
 import { WhatsAppSimulatorModal } from '@/components/WhatsAppSimulatorModal';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
+import { db, AuthSession } from '@/lib/db';
 
 export default function ClientDashboardPage() {
-  const [state, setState] = useState<AppState>(getInitialState());
+  const router = useRouter();
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Initialize with empty dashboard data that will be populated strictly from the database
+  const [state, setState] = useState<AppState>(() => {
+    const initial = getInitialState();
+    return {
+      ...initial,
+      accounts: [],
+      transactions: [],
+      proposals: [],
+      budgets: [],
+      subscriptions: [],
+      sinkingFunds: [],
+      investments: [],
+    };
+  });
+
   const [showAskMoney, setShowAskMoney] = useState(false);
   const [showWhatsAppSim, setShowWhatsAppSim] = useState(false);
 
+  // 1. Session verification guard: Must login before viewing dashboard
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    const currentSession = db.getCurrentSession();
+    if (!currentSession) {
+      router.push('/login?redirect=/client');
+      return;
+    }
+    setSession(currentSession);
+    setIsLoadingAuth(false);
+  }, [router]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  // 2. Fetch live data from database service
+  useEffect(() => {
+    if (!session) return;
+
+    let isMounted = true;
+    async function fetchDatabaseData() {
+      setIsLoadingData(true);
+      try {
+        const entities = await db.getEntities();
+        const activeEntityId = state.selectedEntityId || entities[0]?.id || '33333333-3333-3333-3333-333333333331';
+
+        const [
+          accounts,
+          transactions,
+          budgets,
+          subscriptions,
+          proposals,
+          sinkingFunds,
+          investments,
+        ] = await Promise.all([
+          db.getAccounts(activeEntityId),
+          db.getTransactions(activeEntityId),
+          db.getBudgets(activeEntityId),
+          db.getSubscriptions(activeEntityId),
+          db.getProposals(activeEntityId),
+          db.getSinkingFunds(activeEntityId),
+          db.getInvestments(activeEntityId),
+        ]);
+
+        if (isMounted) {
+          setState((prev) => ({
+            ...prev,
+            entities: entities.length > 0 ? entities : prev.entities,
+            selectedEntityId: activeEntityId,
+            accounts,
+            transactions,
+            budgets,
+            subscriptions,
+            proposals,
+            sinkingFunds,
+            investments,
+          }));
+        }
+      } catch (err) {
+        console.warn('Database fetch error:', err);
+      } finally {
+        if (isMounted) setIsLoadingData(false);
+      }
+    }
+
+    fetchDatabaseData();
+    return () => {
+      isMounted = false;
+    };
+  }, [session, state.selectedEntityId]);
+
+  useEffect(() => {
+    if (!isLoadingData && !isLoadingAuth) {
+      saveState(state);
+    }
+  }, [state, isLoadingData, isLoadingAuth]);
+
+  // Active entity calculations
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-1',
+    name: 'Personal Account',
+    type: 'personal',
+    currency: 'CAD',
+  };
+
   const pendingProposals = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending');
   const entityAccounts = state.accounts.filter((a) => a.entityId === activeEntity.id);
   const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id);
@@ -55,7 +153,7 @@ export default function ClientDashboardPage() {
   const entityInvestments = state.investments.filter((i) => i.entityId === activeEntity.id);
 
   // Dynamic user name
-  const userName = state.currentUser?.fullName || 'Alex Tremblay';
+  const userName = session?.name || state.currentUser?.fullName || 'Alex Tremblay';
   const firstName = userName.split(' ')[0];
 
   // 1. Budget Card Dynamic Values
@@ -111,7 +209,6 @@ export default function ClientDashboardPage() {
 
   // 6. Outcome (Net Cash Flow)
   const netOutcomeMinor = totalIncomeMinor - totalExpenseMinor;
-  const isNetPositive = netOutcomeMinor >= 0;
 
   // 7. Planned Expenses / Recent Activity (Merged real transactions & pending proposals)
   const combinedPlannedList = [
@@ -136,7 +233,6 @@ export default function ClientDashboardPage() {
   // 8. Dynamic Budget Flow (12 Months)
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const monthlyFlowData = monthNames.map((m, idx) => {
-    // Dynamic month multiplier based on actual totals
     const incBase = Math.round((totalIncomeMinor / 10000) * 0.15) || 60;
     const expBase = Math.round((totalExpenseMinor / 1000) * 2) || 28;
     const variation = ((idx * 7) % 25) - 10;
@@ -179,6 +275,17 @@ export default function ClientDashboardPage() {
     URL.revokeObjectURL(url);
   };
 
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-foreground" />
+          <span className="text-xs font-mono text-muted-foreground">Verifying authenticated session...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors selection:bg-foreground selection:text-background">
       <Navbar />
@@ -191,14 +298,20 @@ export default function ClientDashboardPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground whitespace-nowrap">
                   Hello, {firstName}!
                 </h1>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border uppercase font-semibold">
-                  Overview
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border uppercase font-semibold shrink-0">
+                  Live DB
                 </span>
+                {isLoadingData && (
+                  <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Syncing...</span>
+                  </span>
+                )}
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">
                 Real-time double-entry overview for <strong className="text-foreground">{activeEntity.name}</strong>.
               </p>
             </div>
@@ -209,14 +322,14 @@ export default function ClientDashboardPage() {
                 className="px-3.5 py-1.5 rounded-full bg-card hover:bg-secondary border border-border text-xs font-medium text-foreground flex items-center gap-2 transition-colors shadow-xs"
               >
                 <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>This month</span>
+                <span className="whitespace-nowrap">This month</span>
                 <ChevronDown className="w-3 h-3 text-muted-foreground" />
               </button>
 
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="px-4 py-1.5 rounded-full bg-foreground text-background hover:opacity-90 text-xs font-semibold flex items-center gap-1.5 transition-opacity shadow-xs cursor-pointer"
+                className="px-4 py-1.5 rounded-full bg-foreground text-background hover:opacity-90 text-xs font-semibold flex items-center gap-1.5 transition-opacity shadow-xs cursor-pointer whitespace-nowrap"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Export CSV</span>
@@ -228,58 +341,58 @@ export default function ClientDashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Link
               href="/client/sinking-funds"
-              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group"
+              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group overflow-hidden"
             >
               <div className="w-10 h-10 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
                 <PiggyBank className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate">Sinking Funds</span>
-                <span className="text-xs font-bold text-foreground block truncate">{entitySinkingFunds.length} Active Goals</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate whitespace-nowrap">Sinking Funds</span>
+                <span className="text-xs font-bold text-foreground block truncate whitespace-nowrap">{entitySinkingFunds.length} Active Goals</span>
               </div>
             </Link>
 
             <Link
               href="/client/debt-tracker"
-              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group"
+              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group overflow-hidden"
             >
               <div className="w-10 h-10 rounded-2xl bg-secondary flex items-center justify-center text-foreground group-hover:scale-105 transition-transform shrink-0">
                 <CreditCard className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate">Debt Tracker</span>
-                <span className="text-xs font-bold text-foreground block truncate">Avalanche Focus</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate whitespace-nowrap">Debt Tracker</span>
+                <span className="text-xs font-bold text-foreground block truncate whitespace-nowrap">Avalanche Focus</span>
               </div>
             </Link>
 
             <Link
               href="/client/net-worth"
-              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group"
+              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group overflow-hidden"
             >
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate">True Net Worth</span>
-                <span className="text-xs font-bold text-foreground block truncate">+8.4% This Qtr</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate whitespace-nowrap">True Net Worth</span>
+                <span className="text-xs font-bold text-foreground block truncate whitespace-nowrap">+8.4% This Qtr</span>
               </div>
             </Link>
 
             <Link
               href="/client/paycheck-planner"
-              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group"
+              className="p-4 rounded-3xl border border-border bg-card hover:border-foreground/40 transition-all flex items-center gap-3 shadow-xs group overflow-hidden"
             >
               <div className="w-10 h-10 rounded-2xl bg-secondary flex items-center justify-center text-foreground group-hover:scale-105 transition-transform shrink-0">
                 <WalletCards className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate">Zero-Based</span>
-                <span className="text-xs font-bold text-foreground block truncate">Paycheck Planner</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-mono block truncate whitespace-nowrap">Zero-Based</span>
+                <span className="text-xs font-bold text-foreground block truncate whitespace-nowrap">Paycheck Planner</span>
               </div>
             </Link>
           </div>
 
-          {/* 8-CARD LAYOUT: PROPORTIONALLY FIT CHARTS IN ORANGE, GREEN, BLACK & WHITE */}
+          {/* 8-CARD LAYOUT: PROPORTIONALLY FIT CHARTS (NUMBERS STRICTLY ON 1 ROW) */}
           <div className="space-y-6">
             {/* ROW 1: Budget Hero, Saving Goal, Upcoming Bills */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -288,37 +401,38 @@ export default function ClientDashboardPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                     <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                    <span className="font-semibold text-foreground">Monthly Budget</span>
+                    <span className="font-semibold text-foreground whitespace-nowrap">Monthly Budget</span>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">
+                  <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
                     {Math.round((totalBudgetSpentMinor / totalBudgetLimitMinor) * 100)}% utilized
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end mt-4">
-                  <div className="sm:col-span-7 space-y-1.5">
-                    <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground font-mono tabular-nums">
+                  <div className="sm:col-span-7 space-y-1.5 min-w-0">
+                    {/* Number strictly on 1 row */}
+                    <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground font-mono tabular-nums whitespace-nowrap truncate block">
                       {formatCAD(totalBudgetLimitMinor)}
                     </div>
-                    <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500">
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                      <span>{formatCAD(totalBudgetLimitMinor - totalBudgetSpentMinor)} safe capacity</span>
+                    <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500 whitespace-nowrap truncate">
+                      <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{formatCAD(Math.max(0, totalBudgetLimitMinor - totalBudgetSpentMinor))} safe capacity</span>
                     </div>
 
                     <div className="pt-4">
                       <Link
                         href="/client/budgets"
-                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-card hover:bg-secondary border border-border text-foreground text-xs font-semibold transition-colors shadow-xs"
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-card hover:bg-secondary border border-border text-foreground text-xs font-semibold transition-colors shadow-xs whitespace-nowrap"
                       >
-                        <Pencil className="w-3 h-3 text-muted-foreground" />
+                        <Pencil className="w-3 h-3 text-muted-foreground shrink-0" />
                         <span>Manage Limits</span>
                       </Link>
                     </div>
                   </div>
 
-                  {/* 3-Bar Dynamic Chart: Green (Salary), Orange (Investments), Foreground (Savings) */}
+                  {/* 3-Bar Dynamic Chart */}
                   <div className="sm:col-span-5 flex items-end justify-end gap-2.5 h-32 pt-2 overflow-hidden">
-                    <div className="flex flex-col justify-between text-[9px] font-mono text-muted-foreground/80 h-full py-1 text-right pr-1">
+                    <div className="flex flex-col justify-between text-[9px] font-mono text-muted-foreground/80 h-full py-1 text-right pr-1 shrink-0 whitespace-nowrap">
                       <span>Max</span>
                       <span>75%</span>
                       <span>50%</span>
@@ -328,33 +442,33 @@ export default function ClientDashboardPage() {
 
                     <div className="flex items-end gap-2 h-full">
                       {/* Bar 1: Salary (Green) */}
-                      <div className="flex flex-col items-center gap-1.5 h-full justify-end">
+                      <div className="flex flex-col items-center gap-1.5 h-full justify-end min-w-0">
                         <div 
                           className="w-5 sm:w-6 rounded-t-lg bg-emerald-500 transition-all shadow-xs"
                           style={{ height: `${salaryBarHeight}%` }}
                           title={`Salary: ${formatCAD(salaryMinor)}`}
                         />
-                        <span className="text-[9px] text-muted-foreground font-sans truncate w-9 text-center">Salary</span>
+                        <span className="text-[9px] text-muted-foreground font-sans truncate w-9 text-center block whitespace-nowrap">Salary</span>
                       </div>
 
                       {/* Bar 2: Investments (Orange) */}
-                      <div className="flex flex-col items-center gap-1.5 h-full justify-end">
+                      <div className="flex flex-col items-center gap-1.5 h-full justify-end min-w-0">
                         <div 
                           className="w-5 sm:w-6 rounded-t-lg bg-orange-500 transition-all shadow-xs"
                           style={{ height: `${investBarHeight}%` }}
                           title={`Investments: ${formatCAD(investmentsMinor)}`}
                         />
-                        <span className="text-[9px] text-muted-foreground font-sans truncate w-9 text-center">Invest</span>
+                        <span className="text-[9px] text-muted-foreground font-sans truncate w-9 text-center block whitespace-nowrap">Invest</span>
                       </div>
 
                       {/* Bar 3: Savings (Foreground: Black / White) */}
-                      <div className="flex flex-col items-center gap-1.5 h-full justify-end">
+                      <div className="flex flex-col items-center gap-1.5 h-full justify-end min-w-0">
                         <div 
                           className="w-5 sm:w-6 rounded-t-lg bg-foreground transition-all shadow-xs"
                           style={{ height: `${savingsBarHeight}%` }}
                           title={`Savings: ${formatCAD(savingsMinor)}`}
                         />
-                        <span className="text-[9px] text-muted-foreground font-sans truncate w-9 text-center">Save</span>
+                        <span className="text-[9px] text-muted-foreground font-sans truncate w-9 text-center block whitespace-nowrap">Save</span>
                       </div>
                     </div>
                   </div>
@@ -362,33 +476,36 @@ export default function ClientDashboardPage() {
               </div>
 
               {/* Card 2: Saving Goal */}
-              <div className="lg:col-span-3 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                    <span className="font-semibold text-foreground">Saving goal</span>
+              <div className="lg:col-span-3 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs overflow-hidden">
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium min-w-0">
+                    <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px] shrink-0">:::</span>
+                    <span className="font-semibold text-foreground truncate whitespace-nowrap">Saving goal</span>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">Target {formatCAD(totalSavingsTarget)}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap shrink-0">
+                    Target {formatCAD(totalSavingsTarget)}
+                  </span>
                 </div>
 
-                <div className="space-y-1 mt-3">
-                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono tabular-nums">
+                <div className="space-y-1 mt-3 min-w-0">
+                  {/* Number strictly on 1 row */}
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono tabular-nums whitespace-nowrap truncate block">
                     {formatCAD(totalSavingsCurrent)}
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>{savingPercent}% of goal accumulated</span>
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500 whitespace-nowrap truncate">
+                    <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{savingPercent}% of goal accumulated</span>
                   </div>
                 </div>
 
-                <div className="space-y-2.5 mt-4">
-                  <div className="text-xs text-muted-foreground font-medium flex justify-between">
+                <div className="space-y-2.5 mt-4 min-w-0">
+                  <div className="text-xs text-muted-foreground font-medium flex justify-between items-center whitespace-nowrap">
                     <span>Progress:</span>
-                    <strong className="text-foreground font-bold">{savingPercent}%</strong>
+                    <strong className="text-foreground font-bold font-mono">{savingPercent}%</strong>
                   </div>
 
                   {/* Segmented Green Progress Blocks */}
-                  <div className="flex items-center gap-1.5 w-full">
+                  <div className="flex items-center gap-1 w-full min-w-0 overflow-hidden">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((blockIdx) => {
                       const isFilled = blockIdx <= activeSavingBlocks;
                       return (
@@ -407,13 +524,13 @@ export default function ClientDashboardPage() {
               </div>
 
               {/* Card 3: Upcoming Bills */}
-              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs">
-                <div className="flex items-center justify-between">
+              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                     <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                    <span className="font-semibold text-foreground">Upcoming bills</span>
+                    <span className="font-semibold text-foreground whitespace-nowrap">Upcoming bills</span>
                   </div>
-                  <Link href="/client/subscriptions" className="text-[11px] text-muted-foreground hover:text-foreground">
+                  <Link href="/client/subscriptions" className="text-[11px] text-muted-foreground hover:text-foreground whitespace-nowrap shrink-0">
                     View all &rarr;
                   </Link>
                 </div>
@@ -422,18 +539,18 @@ export default function ClientDashboardPage() {
                   {displayBills.map((bill, bIdx) => {
                     const hasPriceIncrease = (bill.priceDeltaMinor || 0) > 0;
                     return (
-                      <div key={bill.id || bIdx} className="flex items-center justify-between pt-2">
+                      <div key={bill.id || bIdx} className="flex items-center justify-between pt-2 gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className={`w-7 h-7 rounded-lg ${hasPriceIncrease ? 'bg-orange-500' : 'bg-emerald-500'} text-white flex items-center justify-center font-bold text-[9px] uppercase font-mono shrink-0 shadow-xs`}>
                             {bill.frequency === 'monthly' ? 'MO' : 'YR'}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-xs font-semibold text-foreground truncate">{bill.merchant}</div>
-                            <div className="text-[11px] font-mono text-muted-foreground">{formatCAD(bill.amountMinor)}</div>
+                            <div className="text-xs font-semibold text-foreground truncate max-w-[120px] sm:max-w-[150px]">{bill.merchant}</div>
+                            <div className="text-[11px] font-mono text-muted-foreground whitespace-nowrap tabular-nums">{formatCAD(bill.amountMinor)}</div>
                           </div>
                         </div>
 
-                        <span className={`text-[11px] font-semibold flex items-center gap-1.5 border px-2 py-0.5 rounded-full shrink-0 ${
+                        <span className={`text-[10px] sm:text-[11px] font-semibold flex items-center gap-1.5 border px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
                           hasPriceIncrease
                             ? 'text-orange-500 border-orange-500/20 bg-orange-500/10'
                             : 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10'
@@ -451,24 +568,24 @@ export default function ClientDashboardPage() {
             {/* ROW 2: Income Breakdown, Expenses Breakdown, Outcome */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               {/* Card 4: Income Breakdown */}
-              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs">
+              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs overflow-hidden">
                 <div>
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                     <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                    <span className="font-semibold text-foreground">Income breakdown</span>
+                    <span className="font-semibold text-foreground whitespace-nowrap">Income breakdown</span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mt-3">
-                    <span className="flex items-center gap-1.5 font-medium text-foreground">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] text-muted-foreground mt-3">
+                    <span className="flex items-center gap-1.5 font-medium text-foreground whitespace-nowrap">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                       Client Retainer
                     </span>
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <span className="w-2 h-2 rounded-full bg-orange-500" />
+                    <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                      <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
                       Investments
                     </span>
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <span className="w-2 h-2 rounded-full bg-foreground" />
+                    <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                      <span className="w-2 h-2 rounded-full bg-foreground shrink-0" />
                       Other
                     </span>
                   </div>
@@ -477,36 +594,36 @@ export default function ClientDashboardPage() {
                 <div className="space-y-2.5 mt-5">
                   <div className="w-full h-8 rounded-full bg-emerald-500 text-white flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
                     <Briefcase className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-[11px] font-semibold font-sans truncate">Primary ({formatCAD(totalIncomeMinor)})</span>
+                    <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Primary ({formatCAD(totalIncomeMinor)})</span>
                   </div>
 
                   <div className="w-[82%] h-8 rounded-full bg-orange-500 text-white flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
                     <TrendingUp className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-[11px] font-semibold font-sans truncate">Investments ({formatCAD(Math.round(totalIncomeMinor * 0.38))})</span>
+                    <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Investments ({formatCAD(Math.round(totalIncomeMinor * 0.38))})</span>
                   </div>
 
                   <div className="w-[62%] h-8 rounded-full bg-foreground text-background flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
                     <Coins className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-[11px] font-semibold font-sans truncate">Other ({formatCAD(Math.round(totalIncomeMinor * 0.15))})</span>
+                    <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Other ({formatCAD(Math.round(totalIncomeMinor * 0.15))})</span>
                   </div>
                 </div>
               </div>
 
               {/* Card 5: Expenses Breakdown (Semi-Circular Donut Arc in App Colors) */}
-              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs">
+              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs overflow-hidden">
                 <div>
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                     <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                    <span className="font-semibold text-foreground">Expenses breakdown</span>
+                    <span className="font-semibold text-foreground whitespace-nowrap">Expenses breakdown</span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2.5 text-[10.5px] text-muted-foreground mt-2.5">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[10.5px] text-muted-foreground mt-2.5">
                     {categoryEntries.slice(0, 4).map(([cat, amt], cIdx) => {
                       const colors = ['bg-orange-500', 'bg-emerald-500', 'bg-foreground', 'bg-muted-foreground'];
                       return (
-                        <span key={cat} className="flex items-center gap-1 font-medium text-foreground">
-                          <span className={`w-2 h-2 rounded-full ${colors[cIdx % colors.length]}`} />
-                          {cat}
+                        <span key={cat} className="flex items-center gap-1 font-medium text-foreground whitespace-nowrap">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${colors[cIdx % colors.length]}`} />
+                          <span className="truncate max-w-[80px]">{cat}</span>
                         </span>
                       );
                     })}
@@ -514,7 +631,7 @@ export default function ClientDashboardPage() {
                 </div>
 
                 <div className="flex items-center justify-center pt-2">
-                  <svg viewBox="0 0 200 115" className="w-52 h-28 overflow-visible">
+                  <svg viewBox="0 0 200 115" className="w-48 sm:w-52 h-24 sm:h-28 overflow-visible">
                     <path
                       d="M 20 100 A 80 80 0 0 1 180 100"
                       fill="none"
@@ -560,36 +677,37 @@ export default function ClientDashboardPage() {
                   </svg>
                 </div>
 
-                <div className="text-center text-xs font-mono text-muted-foreground pt-1">
+                <div className="text-center text-xs font-mono text-muted-foreground pt-1 whitespace-nowrap truncate">
                   Total Expensed: <strong className="text-foreground">{formatCAD(totalExpenseMinor)}</strong>
                 </div>
               </div>
 
               {/* Card 6: Outcome */}
-              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs">
-                <div className="flex items-center justify-between">
+              <div className="lg:col-span-4 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                     <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                    <span className="font-semibold text-foreground">Outcome</span>
+                    <span className="font-semibold text-foreground whitespace-nowrap">Outcome</span>
                   </div>
 
-                  <span className="text-[11px] text-muted-foreground font-mono px-2 py-0.5 rounded-full bg-secondary border border-border">
+                  <span className="text-[10px] text-muted-foreground font-mono px-2 py-0.5 rounded-full bg-secondary border border-border whitespace-nowrap shrink-0">
                     Net Cash Flow
                   </span>
                 </div>
 
-                <div className="space-y-1 mt-2">
-                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono tabular-nums">
+                <div className="space-y-1 mt-2 min-w-0">
+                  {/* Number strictly on 1 row */}
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono tabular-nums whitespace-nowrap truncate block">
                     {formatCAD(netOutcomeMinor)}
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>Double-entry reconciled surplus</span>
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500 whitespace-nowrap truncate">
+                    <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">Double-entry reconciled surplus</span>
                   </div>
                 </div>
 
-                {/* Spline Area Chart (Orange Gradient + Orange Stroke) */}
-                <div className="h-20 w-full mt-2 relative">
+                {/* Spline Area Chart */}
+                <div className="h-20 w-full mt-2 relative overflow-hidden">
                   <svg viewBox="0 0 240 70" preserveAspectRatio="none" className="w-full h-full">
                     <defs>
                       <linearGradient id="outcomeOrangeGradient" x1="0" y1="0" x2="0" y2="1">
@@ -608,7 +726,7 @@ export default function ClientDashboardPage() {
                       strokeWidth="2.5"
                     />
                   </svg>
-                  <div className="flex justify-between text-[9px] font-mono text-muted-foreground pt-1">
+                  <div className="flex justify-between text-[9px] font-mono text-muted-foreground pt-1 whitespace-nowrap">
                     <span>Week 1</span>
                     <span>Week 2</span>
                     <span>Week 3</span>
@@ -616,9 +734,9 @@ export default function ClientDashboardPage() {
                   </div>
                 </div>
 
-                <div className="pt-2 text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <div className="pt-2 text-[11px] text-muted-foreground flex items-center gap-1.5 truncate">
                   <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  <span>CRA tax reserve completely isolated</span>
+                  <span className="truncate">CRA tax reserve completely isolated</span>
                 </div>
               </div>
             </div>
@@ -626,17 +744,17 @@ export default function ClientDashboardPage() {
             {/* ROW 3: Planned Expenses & Budget Flow */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               {/* Card 7: Planned Expenses / Recent Activity (Wide Left) */}
-              <div className="lg:col-span-7 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs">
-                <div className="flex items-center justify-between mb-3">
+              <div className="lg:col-span-7 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs overflow-hidden">
+                <div className="flex items-center justify-between mb-3 gap-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                     <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                    <span className="font-semibold text-foreground">Planned & Recent Items</span>
+                    <span className="font-semibold text-foreground whitespace-nowrap">Planned & Recent Items</span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => setShowWhatsAppSim(true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-card hover:bg-secondary border border-border text-xs font-medium text-foreground transition-colors shadow-xs cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-card hover:bg-secondary border border-border text-xs font-medium text-foreground transition-colors shadow-xs cursor-pointer whitespace-nowrap shrink-0"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>WhatsApp Capture</span>
@@ -644,78 +762,84 @@ export default function ClientDashboardPage() {
                 </div>
 
                 <div className="divide-y divide-border text-xs">
-                  {combinedPlannedList.map((item, idx) => (
-                    <div key={item.id || idx} className="py-2.5 flex items-center justify-between gap-3 hover:bg-secondary/40 transition-colors px-2 rounded-xl">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`w-6 h-6 rounded-md ${item.status === 'Paid' ? 'bg-emerald-500' : 'bg-orange-500'} text-white flex items-center justify-center font-bold text-[8px] uppercase font-mono shrink-0 shadow-xs`}>
-                          {item.status === 'Paid' ? 'LED' : 'WA'}
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-semibold text-foreground block truncate">{item.title}</span>
-                          <span className="text-[10px] text-muted-foreground block truncate">{item.category}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 sm:gap-6 font-mono shrink-0">
-                        <span className="font-bold text-foreground tabular-nums">{item.amount}</span>
-
-                        <span className="text-[11px] font-sans flex items-center gap-1.5 min-w-[70px]">
-                          <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Paid' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
-                          <span className={item.status === 'Paid' ? 'text-emerald-500 font-semibold' : 'text-orange-500 font-medium'}>
-                            {item.status}
-                          </span>
-                        </span>
-
-                        <span className="text-[11px] text-muted-foreground hidden sm:inline">{item.date}</span>
-                      </div>
+                  {combinedPlannedList.length === 0 ? (
+                    <div className="py-8 text-center text-muted-foreground text-xs font-mono">
+                      No transactions in ledger yet. Send a receipt or text via WhatsApp simulator above.
                     </div>
-                  ))}
+                  ) : (
+                    combinedPlannedList.map((item, idx) => (
+                      <div key={item.id || idx} className="py-2.5 flex items-center justify-between gap-3 hover:bg-secondary/40 transition-colors px-2 rounded-xl">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-6 h-6 rounded-md ${item.status === 'Paid' ? 'bg-emerald-500' : 'bg-orange-500'} text-white flex items-center justify-center font-bold text-[8px] uppercase font-mono shrink-0 shadow-xs`}>
+                            {item.status === 'Paid' ? 'LED' : 'WA'}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-semibold text-foreground block truncate max-w-[140px] sm:max-w-[200px]">{item.title}</span>
+                            <span className="text-[10px] text-muted-foreground block truncate max-w-[140px] sm:max-w-[200px]">{item.category}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 sm:gap-6 font-mono shrink-0">
+                          <span className="font-bold text-foreground tabular-nums whitespace-nowrap">{item.amount}</span>
+
+                          <span className="text-[11px] font-sans flex items-center gap-1.5 min-w-[70px] whitespace-nowrap">
+                            <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Paid' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
+                            <span className={item.status === 'Paid' ? 'text-emerald-500 font-semibold' : 'text-orange-500 font-medium'}>
+                              {item.status}
+                            </span>
+                          </span>
+
+                          <span className="text-[11px] text-muted-foreground hidden sm:inline whitespace-nowrap">{item.date}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
               {/* Card 8: Budget Flow (Dual Green & Orange Columns) */}
-              <div className="lg:col-span-5 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs">
+              <div className="lg:col-span-5 rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between shadow-xs overflow-hidden">
                 <div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                       <span className="font-mono text-muted-foreground/60 tracking-widest text-[11px]">:::</span>
-                      <span className="font-semibold text-foreground">Budget flow</span>
+                      <span className="font-semibold text-foreground whitespace-nowrap">Budget flow</span>
                     </div>
 
-                    <span className="text-[11px] text-muted-foreground font-mono px-2 py-0.5 rounded-full bg-secondary border border-border">
+                    <span className="text-[10px] text-muted-foreground font-mono px-2 py-0.5 rounded-full bg-secondary border border-border whitespace-nowrap shrink-0">
                       12 Months
                     </span>
                   </div>
 
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-2">
-                    <span className="flex items-center gap-1.5 font-medium text-foreground">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="flex items-center gap-1.5 font-medium text-foreground whitespace-nowrap">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                       Income
                     </span>
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <span className="w-2 h-2 rounded-full bg-orange-500" />
+                    <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                      <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
                       Outcome
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-4 space-y-2">
-                  <div className="h-32 flex items-end justify-between gap-1 sm:gap-1.5 px-1 overflow-hidden">
+                <div className="pt-4 space-y-2 overflow-hidden">
+                  <div className="h-32 flex items-end justify-between gap-0.5 sm:gap-1.5 px-1 overflow-hidden">
                     {monthlyFlowData.map((col) => (
-                      <div key={col.m} className="flex-1 flex flex-col items-center gap-1 h-full justify-end min-w-0">
+                      <div key={col.m} className="flex-1 flex flex-col items-center gap-0.5 sm:gap-1 h-full justify-end min-w-0 overflow-hidden">
                         {/* Top: Income (Green) */}
                         <div
-                          className="w-full max-w-[12px] rounded-t-md bg-emerald-500 shadow-xs transition-all"
+                          className="w-full max-w-[10px] sm:max-w-[13px] rounded-t-md bg-emerald-500 shadow-xs transition-all"
                           style={{ height: `${col.inc}%` }}
                           title={`${col.m} Income: ${col.inc}%`}
                         />
                         {/* Bottom: Outcome (Orange) */}
                         <div
-                          className="w-full max-w-[12px] rounded-b-md bg-orange-500 shadow-xs transition-all"
+                          className="w-full max-w-[10px] sm:max-w-[13px] rounded-b-md bg-orange-500 shadow-xs transition-all"
                           style={{ height: `${col.out}%` }}
                           title={`${col.m} Outcome: ${col.out}%`}
                         />
-                        <span className="text-[8px] sm:text-[8.5px] font-mono text-muted-foreground/80 mt-1 truncate">{col.m}</span>
+                        <span className="text-[8px] sm:text-[8.5px] font-mono text-muted-foreground/80 mt-1 truncate text-center block w-full whitespace-nowrap">{col.m}</span>
                       </div>
                     ))}
                   </div>
@@ -746,7 +870,7 @@ export default function ClientDashboardPage() {
         }}
         entityId={activeEntity.id}
         tenantId={state.currentTenant.id}
-        userId={state.currentUser.id}
+        userId={session?.userId || state.currentUser.id}
       />
     </div>
   );

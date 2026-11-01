@@ -1,22 +1,51 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   ShieldCheck, 
   TrendingUp, 
   ArrowUpRight, 
   ArrowDownRight, 
   Landmark, 
-  DollarSign,
-  PieChart
+  DollarSign, 
+  PieChart 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
+import { db } from '@/lib/db';
 
 export default function NetWorthPage() {
-  const [state] = useState<AppState>(getInitialState());
+  const router = useRouter();
+  const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/client/net-worth');
+      return;
+    }
+
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const [accounts, investments, sinkingFunds, debts] = await Promise.all([
+        db.getAccounts(activeId),
+        db.getInvestments(activeId),
+        db.getSinkingFunds(activeId),
+        db.getDebts(activeId),
+      ]);
+      setState((prev) => ({
+        ...prev,
+        accounts,
+        investments,
+        sinkingFunds,
+        debts,
+      }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
   const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
 
   // Assets

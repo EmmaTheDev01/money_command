@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   PieChart, 
   AlertTriangle,
@@ -12,9 +13,29 @@ import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
+import { db } from '@/lib/db';
 
 export default function BudgetsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/client/budgets');
+      return;
+    }
+
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const [budgets, txs] = await Promise.all([
+        db.getBudgets(activeId),
+        db.getTransactions(activeId),
+      ]);
+      setState((prev) => ({ ...prev, budgets, transactions: txs }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
 
   useEffect(() => {
     saveState(state);

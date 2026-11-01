@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   TrendingUp, 
   Plus, 
@@ -8,17 +9,34 @@ import {
   Sparkles, 
   LineChart, 
   Coins, 
-  DollarSign,
-  Download,
-  Filter
+  DollarSign, 
+  Download, 
+  Filter 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
+import { db } from '@/lib/db';
 
 export default function InvestmentsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/client/investments');
+      return;
+    }
+
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const invs = await db.getInvestments(activeId);
+      setState((prev) => ({ ...prev, investments: invs }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
   const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
   const investments = state.investments.filter((i) => i.entityId === activeEntity.id);
 

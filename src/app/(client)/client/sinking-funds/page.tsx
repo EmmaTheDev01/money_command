@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   PiggyBank, 
   Plus, 
@@ -16,9 +17,26 @@ import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
 import { SinkingFund } from '@/lib/types';
+import { db } from '@/lib/db';
 
 export default function SinkingFundsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/client/sinking-funds');
+      return;
+    }
+
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const funds = await db.getSinkingFunds(activeId);
+      setState((prev) => ({ ...prev, sinkingFunds: funds }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newFundName, setNewFundName] = useState('');
   const [newTargetDollars, setNewTargetDollars] = useState('');

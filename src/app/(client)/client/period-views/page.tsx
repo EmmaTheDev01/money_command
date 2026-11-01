@@ -1,24 +1,42 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   CalendarDays, 
   ChevronLeft, 
   ChevronRight, 
   TrendingUp, 
   TrendingDown, 
-  Calendar,
-  Download,
-  Filter
+  Calendar, 
+  Download, 
+  Filter 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
+import { db } from '@/lib/db';
 
 export default function PeriodViewsPage() {
-  const [state] = useState<AppState>(getInitialState());
+  const router = useRouter();
+  const [state, setState] = useState<AppState>(getInitialState());
   const [activeTab, setActiveTab] = useState<'monthly' | 'weekly'>('monthly');
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/client/period-views');
+      return;
+    }
+
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const txs = await db.getTransactions(activeId);
+      setState((prev) => ({ ...prev, transactions: txs }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
 
   const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
   const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id);

@@ -127,11 +127,11 @@ export const SafeToSpendWidget: React.FC<SafeToSpendWidgetProps> = ({
           <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground block font-medium">
             Available Discretionary Capacity
           </span>
-          <div className="flex items-baseline gap-2.5 mt-1.5">
-            <span className="text-3xl sm:text-5xl font-bold tracking-tight font-mono tabular-nums text-foreground">
+          <div className="flex flex-wrap items-baseline gap-2.5 mt-1.5 min-w-0">
+            <span className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-mono tabular-nums text-foreground whitespace-nowrap">
               {formatCAD(breakdown.safeToSpend)}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
               for the next {horizonDays} days
             </span>
           </div>

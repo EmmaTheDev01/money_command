@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import MoneyCommandLogo from './MoneyCommandLogo';
+import { db, AuthSession } from '@/lib/db';
 import {
   LayoutDashboard,
   Receipt,
@@ -19,11 +20,42 @@ import {
   WalletCards,
   Search,
   ChevronDown,
+  LogOut
 } from 'lucide-react';
 
 export const ClientSidebar: React.FC<{ pendingProposalsCount?: number }> = ({ pendingProposalsCount = 0 }) => {
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
+  const [session, setSession] = useState<AuthSession | null>(null);
+
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (s) {
+      setSession(s);
+    } else {
+      // Fallback
+      setSession({
+        id: 'sess-default',
+        userId: '22222222-2222-2222-2222-222222222222',
+        name: 'Alex Tremblay',
+        email: 'alex@mapleridge.dev',
+        phone: '+1 647 555 0192',
+        whatsappPhone: '+1 647 555 0192',
+        role: 'client',
+        roleLabel: 'Founder OS',
+        targetPath: '/client',
+        tenantId: '11111111-1111-1111-1111-111111111111',
+      });
+    }
+  }, []);
+
+  const userName = session?.name || 'Alex Tremblay';
+  const initials = userName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   const menuItems = [
     { label: 'Dashboard', href: '/client', icon: LayoutDashboard },
@@ -111,18 +143,21 @@ export const ClientSidebar: React.FC<{ pendingProposalsCount?: number }> = ({ pe
       <div className="pt-3 border-t border-border">
         <Link
           href="/login"
-          className="flex items-center justify-between p-2 rounded-2xl hover:bg-secondary/60 transition-colors border border-transparent hover:border-border"
+          title="Switch Session / Sign In"
+          className="flex items-center justify-between p-2 rounded-2xl hover:bg-secondary/60 transition-colors border border-transparent hover:border-border group"
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-              SM
+              {initials}
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-foreground truncate">Susan Meyers</div>
-              <div className="text-[10px] text-muted-foreground truncate font-mono">Personal Ledger</div>
+              <div className="text-xs font-semibold text-foreground truncate">{userName}</div>
+              <div className="text-[10px] text-muted-foreground truncate font-mono">
+                {session?.whatsappPhone || session?.email || 'Active Session'}
+              </div>
             </div>
           </div>
-          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
         </Link>
       </div>
     </aside>

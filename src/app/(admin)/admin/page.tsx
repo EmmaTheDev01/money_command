@@ -2,25 +2,35 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   ShieldAlert, 
   Activity, 
   CheckCircle2, 
   AlertTriangle, 
   ScrollText, 
-  Lock,
-  ArrowRight,
-  Database,
-  Building,
-  KeyRound
+  Lock, 
+  ArrowRight, 
+  Database, 
+  Building, 
+  KeyRound 
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { AdminSidebar } from '@/components/AdminSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { auditLedgerIntegrity, formatCAD } from '@/lib/ledger';
+import { db } from '@/lib/db';
 
 export default function AdminOverviewPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const session = db.getCurrentSession();
+    if (!session) {
+      router.push('/login?redirect=/admin');
+    }
+  }, [router]);
 
   useEffect(() => {
     saveState(state);
