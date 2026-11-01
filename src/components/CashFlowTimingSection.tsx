@@ -27,8 +27,19 @@ export default function CashFlowTimingSection() {
   const [actionAuthorized, setActionAuthorized] = useState<boolean>(false);
 
   return (
-    <section id="timing" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
-      <div className="mx-auto w-full max-w-7xl flex flex-col justify-center gap-10 sm:gap-14 section-animate">
+    <section id="timing" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors overflow-hidden">
+      {/* WHOLE SECTION AMBIENT ANIMATED BACKGROUND AURA */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
+        {/* Breathing Radial Light Aura (Top Right) */}
+        <div className="absolute -top-32 -right-32 w-[650px] h-[650px] rounded-full bg-gradient-to-bl from-orange-500/10 via-amber-500/5 to-transparent blur-3xl animate-pulse-slow" />
+        {/* Breathing Radial Light Aura (Bottom Left) */}
+        <div className="absolute -bottom-32 -left-32 w-[650px] h-[650px] rounded-full bg-gradient-to-tr from-emerald-500/10 via-cyan-500/5 to-transparent blur-3xl animate-pulse-slow" />
+        {/* Center Animated Ambient Orbit Rings */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[600px] rounded-full border border-border/25 opacity-40 animate-pulse-slow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1050px] h-[750px] rounded-full border border-border/15 opacity-30 pointer-events-none" />
+      </div>
+
+      <div className="mx-auto w-full max-w-7xl flex flex-col justify-center gap-10 sm:gap-14 section-animate in-view">
         {/* Section Header */}
         <div className="act-head grid gap-x-10 gap-y-5 lg:grid-cols-12 lg:items-end">
           <div className="flex flex-col gap-3 sm:gap-4 text-left lg:col-span-7">
@@ -36,6 +47,10 @@ export default function CashFlowTimingSection() {
               <span className="tabular-nums text-foreground">07</span>
               <span aria-hidden="true" className="text-muted-foreground">·</span>
               <span className="text-muted-foreground lowercase">the next action</span>
+              <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-[9px] font-mono font-bold text-orange-500 uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-ping" />
+                Live Timing
+              </span>
             </p>
             <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
               Settle at the right time.
@@ -225,7 +240,11 @@ export default function CashFlowTimingSection() {
                   >
                     {/* Spike Label for Tuesday */}
                     {isTue ? (
-                      <span className="text-[10px] sm:text-[11px] font-mono text-orange-500 font-bold tracking-tight mb-1 animate-pulse whitespace-nowrap">
+                      <span className="text-[10px] sm:text-[11px] font-mono text-orange-500 font-bold tracking-tight mb-1 animate-pulse whitespace-nowrap flex items-center gap-1">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+                        </span>
                         Tuesday, 2 PM
                       </span>
                     ) : (
@@ -235,7 +254,7 @@ export default function CashFlowTimingSection() {
                     )}
 
                     {/* Cluster of 6 Vertical Bars */}
-                    <div className="flex items-end gap-0.5 sm:gap-1.5 h-[140px] sm:h-[180px] pb-2">
+                    <div className="flex items-end gap-0.5 sm:gap-1.5 h-[140px] sm:h-[180px] pb-2 group-hover:scale-y-105 transition-transform duration-300 origin-bottom">
                       {d.bars.map((height, bIdx) => {
                         const isHighlightedSpike = isTue && bIdx === 3;
                         return (
@@ -244,7 +263,7 @@ export default function CashFlowTimingSection() {
                             style={{ height: `${height}px` }}
                             className={`w-1 sm:w-2.5 rounded-t-full transition-all duration-300 ${
                               isHighlightedSpike
-                                ? 'bg-orange-500 shadow-lg shadow-orange-500/30'
+                                ? 'bg-orange-500 shadow-xl shadow-orange-500/50 animate-pulse'
                                 : isSelected
                                 ? 'bg-foreground/60'
                                 : 'bg-secondary group-hover:bg-foreground/40'
