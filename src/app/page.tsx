@@ -78,19 +78,21 @@ const FOUNDER_AVATARS = [
 ];
 
 const CONNECTION_CARDS_ROW_1 = [
-  { id: 1, title: 'coffee with client $14.50' },
-  { id: 2, title: 'paid AWS servers $340' },
-  { id: 3, title: 'invoice #1042 received $4,200' },
-  { id: 4, title: 'safe to spend this weekend?' },
-  { id: 5, title: 'Uber to YYZ airport $62.30' },
+  { id: 1, title: 'coffee with client $14.50', cx: 50, cy: 50 },
+  { id: 2, title: 'paid AWS servers $340', cx: 80, cy: 30 },
+  { id: 3, title: 'invoice #1042 received $4,200', cx: 30, cy: 80 },
+  { id: 4, title: 'safe to spend this weekend?', cx: 60, cy: 40 },
+  { id: 5, title: 'Uber to YYZ airport $62.30', cx: 20, cy: 30 },
+  { id: 6, title: 'split dinner 3 ways $185', cx: 70, cy: 70 },
 ];
 
 const CONNECTION_CARDS_ROW_2 = [
-  { id: 6, title: 'split dinner 3 ways $185' },
-  { id: 7, title: 'quarterly GST/HST estimate' },
-  { id: 8, title: 'Staples office supplies $89.20' },
-  { id: 9, title: 'how much in my tax vault?' },
-  { id: 10, title: 'annual Figma renewal $180' },
+  { id: 7, title: 'grocery list · No Frills $84', cx: 40, cy: 60 },
+  { id: 8, title: 'quarterly GST/HST estimate', cx: 70, cy: 20 },
+  { id: 9, title: 'Staples office supplies $89.20', cx: 30, cy: 50 },
+  { id: 10, title: 'how much in my tax vault?', cx: 80, cy: 70 },
+  { id: 11, title: 'annual Figma renewal $180', cx: 50, cy: 30 },
+  { id: 12, title: 'client retainer wired $6,500', cx: 20, cy: 80 },
 ];
 
 export default function MoneyCommandLandingPage() {
@@ -465,37 +467,38 @@ export default function MoneyCommandLandingPage() {
 
             {/* Visual Stage Container: Background Grid of Cards with Central Modal Overlay */}
             <div className="relative w-full max-w-5xl mx-auto rounded-3xl border border-border/40 bg-card/20 p-4 sm:p-6 lg:p-8 overflow-hidden">
-              {/* Top User Profile Bar (Money Command & WhatsApp Context) */}
+              {/* Top User Profile Bar (Patensify Style with Money Command & WhatsApp Context) */}
               <div className="flex items-center justify-between pb-4 sm:pb-6 text-xs text-muted-foreground font-mono">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-500" />
+                  <div className="w-6 h-6 rounded-full bg-muted/60 border border-border/60 flex items-center justify-center">
+                    <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/50" />
                   </div>
-                  <span className="font-semibold text-foreground/90 lowercase">+1 (416) · whatsapp linked</span>
+                  <span className="text-muted-foreground/80 font-normal lowercase">@your.profile</span>
                 </div>
-                <div className="flex items-center gap-3 sm:gap-5 text-[11px] sm:text-xs">
-                  <span><strong className="text-foreground">128</strong> transactions</span>
-                  <span><strong className="text-foreground">$80 K</strong> ledger volume</span>
-                  <span><strong className="text-foreground">412</strong> verified entries</span>
+                <div className="flex items-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-muted-foreground">
+                  <span><strong className="text-foreground font-semibold">128</strong> transactions</span>
+                  <span><strong className="text-foreground font-semibold">80 K</strong> ledger volume</span>
+                  <span><strong className="text-foreground font-semibold">412</strong> verified entries</span>
                 </div>
               </div>
 
-              {/* Behind Cards Grid (2 rows of 5 cards) */}
+              {/* Behind Cards Grid (2 rows of 6 cards with concentric ripple texture) */}
               <div className="relative space-y-3 sm:space-y-4">
                 {/* Row 1 */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-3.5">
                   {CONNECTION_CARDS_ROW_1.map((card) => (
                     <div
                       key={card.id}
                       className="relative rounded-2xl bg-secondary/30 border border-border/40 overflow-hidden h-28 sm:h-36 md:h-44 p-3 sm:p-4 flex flex-col justify-end"
                     >
-                      <svg className="absolute inset-0 w-full h-full text-foreground/[0.04] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
-                        <circle cx="50" cy="50" r="18" strokeWidth="1" />
-                        <circle cx="50" cy="50" r="32" strokeWidth="1" />
-                        <circle cx="50" cy="50" r="46" strokeWidth="1" />
-                        <circle cx="50" cy="50" r="60" strokeWidth="1" />
+                      <svg className="absolute inset-0 w-full h-full text-foreground/[0.05] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                        <circle cx={card.cx} cy={card.cy} r="18" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="32" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="48" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="64" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="82" strokeWidth="0.8" />
                       </svg>
-                      <span className="relative z-10 text-[11px] sm:text-xs font-medium text-muted-foreground/60 leading-tight">
+                      <span className="relative z-10 text-[11px] sm:text-xs font-normal text-muted-foreground/70 leading-tight lowercase">
                         {card.title}
                       </span>
                     </div>
@@ -503,19 +506,20 @@ export default function MoneyCommandLandingPage() {
                 </div>
 
                 {/* Row 2 */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-3.5">
                   {CONNECTION_CARDS_ROW_2.map((card) => (
                     <div
                       key={card.id}
                       className="relative rounded-2xl bg-secondary/30 border border-border/40 overflow-hidden h-28 sm:h-36 md:h-44 p-3 sm:p-4 flex flex-col justify-end"
                     >
-                      <svg className="absolute inset-0 w-full h-full text-foreground/[0.04] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
-                        <circle cx="50" cy="50" r="18" strokeWidth="1" />
-                        <circle cx="50" cy="50" r="32" strokeWidth="1" />
-                        <circle cx="50" cy="50" r="46" strokeWidth="1" />
-                        <circle cx="50" cy="50" r="60" strokeWidth="1" />
+                      <svg className="absolute inset-0 w-full h-full text-foreground/[0.05] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                        <circle cx={card.cx} cy={card.cy} r="18" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="32" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="48" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="64" strokeWidth="0.8" />
+                        <circle cx={card.cx} cy={card.cy} r="82" strokeWidth="0.8" />
                       </svg>
-                      <span className="relative z-10 text-[11px] sm:text-xs font-medium text-muted-foreground/60 leading-tight">
+                      <span className="relative z-10 text-[11px] sm:text-xs font-normal text-muted-foreground/70 leading-tight lowercase">
                         {card.title}
                       </span>
                     </div>
@@ -526,59 +530,46 @@ export default function MoneyCommandLandingPage() {
                 <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4">
                   {/* Floating Callout 1 (Top Left) */}
                   <div className="hidden md:block absolute top-4 left-4 lg:left-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float">
-                    <h4 className="font-semibold text-xs text-foreground">You connect WhatsApp</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Never your banking password.</p>
+                    <h4 className="font-semibold text-xs text-foreground">You connect your WhatsApp</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Never your password.</p>
                   </div>
 
                   {/* Floating Callout 2 (Bottom Left) */}
                   <div className="hidden md:block absolute bottom-4 left-6 lg:left-14 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-delayed">
                     <h4 className="font-semibold text-xs text-foreground">You&apos;re in control</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Zero autonomous money transfers.</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Nothing posts without your OK.</p>
                   </div>
 
                   {/* Floating Callout 3 (Right) */}
                   <div className="hidden md:block absolute top-1/2 -translate-y-1/2 right-4 lg:right-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-slow">
-                    <h4 className="font-semibold text-xs text-foreground">Only what you confirm</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Receipts, voice notes &amp; chats.</p>
+                    <h4 className="font-semibold text-xs text-foreground">Only what&apos;s verified</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Receipts and logs.</p>
                   </div>
 
                   {/* Centered Authorization Modal */}
                   <div className="relative z-20 w-full max-w-[340px] sm:max-w-[370px] rounded-[24px] sm:rounded-[28px] bg-card/95 backdrop-blur-xl border border-border p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
-                    {/* Logos with Animated Dotted Flow Line (White in dark mode, Black in light mode) */}
-                    <div className="flex items-center justify-center gap-3 sm:gap-4 pt-1">
+                    {/* Logos with Horizontal Dash Connector */}
+                    <div className="flex items-center justify-center gap-3.5 sm:gap-4 pt-1">
                       {/* WhatsApp Official Badge */}
                       <RealWhatsAppLogo className="w-10 h-10 shadow-md hover:scale-105 transition-transform" />
 
-                      {/* Animated Dotted Line */}
-                      <div className="w-12 sm:w-16 h-3 flex items-center justify-center">
-                        <svg className="w-full h-3 overflow-visible" viewBox="0 0 60 12">
-                          <line
-                            x1="0"
-                            y1="6"
-                            x2="60"
-                            y2="6"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            className="text-foreground animate-dotted-flow"
-                          />
-                        </svg>
-                      </div>
+                      {/* Horizontal Connector Line */}
+                      <div className="w-8 sm:w-10 h-[2px] bg-muted-foreground/30 rounded-full" />
 
                       {/* Money Command Logo Badge (Theme-Compatible: White in dark mode, Black in light mode) */}
                       <RealMoneyCommandIcon className="w-10 h-10 shadow-md hover:scale-105 transition-transform" />
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-center font-bold text-xs sm:text-sm text-foreground tracking-tight">
-                      Money Command wants to link your WhatsApp
+                    <h3 className="text-center font-semibold text-xs sm:text-sm text-foreground tracking-tight">
+                      Money Command wants to access your account
                     </h3>
 
                     {/* 3 Permission Rows with Skeleton Bars & Interactive Toggles */}
                     <div className="space-y-3 pt-1">
-                      {/* Row 1: Conversational Capture */}
+                      {/* Row 1: Chat message stream */}
                       <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
-                        <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0" />
                         <div className="flex-1 space-y-1.5 py-0.5">
                           <div className="w-28 sm:w-32 h-2 rounded-full bg-muted-foreground/30" />
                           <div className="w-16 sm:w-20 h-1.5 rounded-full bg-muted-foreground/20" />
@@ -587,15 +578,15 @@ export default function MoneyCommandLandingPage() {
                           type="button"
                           onClick={() => setToggle1(!toggle1)}
                           className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle1 ? 'bg-foreground' : 'bg-muted border border-border'}`}
-                          aria-label="Toggle Conversational Capture"
+                          aria-label="Toggle Message Access"
                         >
                           <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle1 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
                         </button>
                       </div>
 
-                      {/* Row 2: Receipt & Document OCR */}
+                      {/* Row 2: Tagged accounts & handles */}
                       <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
-                        <Receipt className="w-4 h-4 text-[#fb923c] shrink-0" />
+                        <AtSign className="w-4 h-4 text-muted-foreground shrink-0" />
                         <div className="flex-1 space-y-1.5 py-0.5">
                           <div className="w-24 sm:w-28 h-2 rounded-full bg-muted-foreground/30" />
                           <div className="w-20 sm:w-24 h-1.5 rounded-full bg-muted-foreground/20" />
@@ -604,15 +595,15 @@ export default function MoneyCommandLandingPage() {
                           type="button"
                           onClick={() => setToggle2(!toggle2)}
                           className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle2 ? 'bg-foreground' : 'bg-muted border border-border'}`}
-                          aria-label="Toggle Receipt & Document OCR"
+                          aria-label="Toggle Tagged Accounts"
                         >
                           <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle2 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
                         </button>
                       </div>
 
-                      {/* Row 3: Double-Entry Ledger Posting */}
+                      {/* Row 3: Receipts & tags */}
                       <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
-                        <ShieldCheck className="w-4 h-4 text-cyan-500 shrink-0" />
+                        <Tag className="w-4 h-4 text-muted-foreground shrink-0" />
                         <div className="flex-1 space-y-1.5 py-0.5">
                           <div className="w-32 sm:w-36 h-2 rounded-full bg-muted-foreground/30" />
                           <div className="w-14 sm:w-16 h-1.5 rounded-full bg-muted-foreground/20" />
@@ -621,7 +612,7 @@ export default function MoneyCommandLandingPage() {
                           type="button"
                           onClick={() => setToggle3(!toggle3)}
                           className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle3 ? 'bg-foreground' : 'bg-muted border border-border'}`}
-                          aria-label="Toggle Double-Entry Ledger Posting"
+                          aria-label="Toggle Receipts and Tags"
                         >
                           <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle3 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
                         </button>
