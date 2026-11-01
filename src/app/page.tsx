@@ -806,122 +806,33 @@ export default function MoneyCommandLandingPage() {
               </div>
             </div>
 
-            {/* Split 2-Column Layout: WhatsApp Conversational Surface on Left, Companion Ecosystem on Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start max-w-7xl mx-auto w-full">
-              {/* Left Column (5 cols): Surface 01 Spotlight - Interactive WhatsApp Bot Simulator */}
-              <div className="lg:col-span-5 w-full lg:sticky lg:top-24">
-                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card text-left text-xs shadow-xl pro-card w-full space-y-4">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                        <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-foreground text-sm block leading-tight">Money Command Bot</span>
-                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-semibold">
-                            Surface 01
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground font-mono">Conversational Double-Entry Ingest</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      Active · CAD-Ready
+            {/* Surfaces Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-w-6xl mx-auto w-full">
+              {[
+                { title: 'WhatsApp Interface', role: 'Capture & Approvals', desc: 'Text, voice notes, photo receipts, quick transaction confirmations, and Ask My Money.' },
+                { title: 'User Web Dashboard', role: 'Companion OS', desc: 'Reconciled balances, budgets, safe-to-spend horizons, subscription monitor, and CSV/PDF export.' },
+                { title: 'Founder Dashboard', role: 'Multi-Entity OS', desc: 'Separation of personal vs business entities, cash flow runway, receivables, and tax reserve planning.' },
+                { title: 'Accountant Portal', role: 'Permissioned Review', desc: 'Client-granted revocable access for CPAs to inspect provenance, receipts, and tax-year packages.' },
+                { title: 'Organization Dashboard', role: 'Cohort Analytics', desc: 'Privacy-safe aggregate financial wellness and benchmark engagement across corporate cohorts.' },
+                { title: 'Admin Console', role: 'Governance & Audit', desc: 'Tenant isolation, feature flags, webhook DLQ monitoring, append-only logs, and security oversight.' },
+              ].map((s, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-3xl border border-border bg-card p-6 sm:p-7 flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-all shadow-sm pro-card"
+                >
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+                      SURFACE 0{idx + 1} &middot; {s.role}
                     </span>
+                    <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">{s.title}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
                   </div>
-
-                  <div className="space-y-3 font-sans pt-1">
-                    {/* User Outbound Message */}
-                    <div className="flex justify-end">
-                      <div className="bg-[#005c4b] text-white p-3 sm:p-3.5 rounded-2xl rounded-tr-xs max-w-[85%] leading-relaxed shadow-sm text-xs sm:text-sm">
-                        Spent CAD 46 at Walmart on groceries
-                      </div>
-                    </div>
-
-                    {/* AI Bot Inbound Proposal */}
-                    <div className="flex justify-start">
-                      <div className="bg-secondary/70 border border-border text-foreground p-3.5 rounded-2xl rounded-tl-xs max-w-[90%] leading-relaxed space-y-2 shadow-xs">
-                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>PROPOSAL READY (96% Confidence)</span>
-                        </div>
-                        <p className="text-muted-foreground text-xs leading-relaxed">
-                          Record <strong className="text-foreground">CAD 46.00</strong> expense to <strong className="text-foreground">Groceries</strong> from <strong className="text-foreground">Personal Checking</strong>?
-                        </p>
-                        <div className="flex items-center gap-2 pt-1 font-mono text-[10px]">
-                          <span className="px-2.5 py-1 rounded-md bg-foreground text-background font-bold shadow-xs">1: Confirm</span>
-                          <span className="px-2.5 py-1 rounded-md bg-muted text-foreground border border-border">2: Correct</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <Link
-                      href="/client"
-                      className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
-                    >
-                      <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
-                      <span>Start on WhatsApp Now</span>
-                    </Link>
+                  <div className="pt-3 flex items-center justify-between text-xs text-muted-foreground font-mono border-t border-border">
+                    <span>Deterministic API</span>
+                    <span className="text-foreground font-bold">&rarr;</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Right Column (7 cols): The Other 5 Companion Product Surfaces */}
-              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  {
-                    num: '02',
-                    title: 'User Web Dashboard',
-                    role: 'Companion OS',
-                    desc: 'Reconciled balances, budgets, safe-to-spend horizons, subscription monitor, and CSV/PDF export.',
-                  },
-                  {
-                    num: '03',
-                    title: 'Founder Dashboard',
-                    role: 'Multi-Entity OS',
-                    desc: 'Separation of personal vs business entities, cash flow runway, receivables, and tax reserve planning.',
-                  },
-                  {
-                    num: '04',
-                    title: 'Accountant Portal',
-                    role: 'Permissioned Review',
-                    desc: 'Client-granted revocable access for CPAs to inspect provenance, receipts, and tax-year packages.',
-                  },
-                  {
-                    num: '05',
-                    title: 'Admin Console',
-                    role: 'Governance & Audit',
-                    desc: 'Tenant isolation, feature flags, webhook DLQ monitoring, append-only logs, and security oversight.',
-                  },
-                  {
-                    num: '06',
-                    title: 'Organization Dashboard',
-                    role: 'Cohort Analytics',
-                    desc: 'Privacy-safe aggregate financial wellness and benchmark engagement across corporate cohorts.',
-                    colSpan: 'sm:col-span-2',
-                  },
-                ].map((s) => (
-                  <div
-                    key={s.title}
-                    className={`rounded-3xl border border-border bg-card p-6 flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-all shadow-sm pro-card ${s.colSpan || ''}`}
-                  >
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
-                        SURFACE {s.num} &middot; {s.role}
-                      </span>
-                      <h3 className="text-base font-bold text-foreground tracking-tight">{s.title}</h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
-                    </div>
-                    <div className="pt-2 flex items-center justify-between text-xs text-muted-foreground font-mono border-t border-border">
-                      <span>Deterministic API</span>
-                      <span className="text-foreground font-bold">&rarr;</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -1128,41 +1039,106 @@ export default function MoneyCommandLandingPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 max-w-5xl mx-auto text-xs w-full">
-              {/* Card 1: Subscription Cancellation */}
-              <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card">
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                  <span className="font-bold text-foreground text-sm sm:text-base">Subscription Cancellation</span>
-                  <span className="text-[10px] font-mono text-muted-foreground">P1 WORKFLOW</span>
+            {/* 2-Column Split: WhatsApp Scoped Authorization on Left, Workflow Engines on Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start max-w-6xl mx-auto w-full">
+              {/* Left Column (5 cols): WhatsApp Conversational Authorization Live Simulator */}
+              <div className="lg:col-span-5 w-full lg:sticky lg:top-24">
+                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card text-left text-xs shadow-xl pro-card w-full space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                        <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-foreground text-sm block leading-tight">Money Command Bot</span>
+                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-semibold">
+                            Authorize 1-Tap
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground font-mono">Scoped User Confirmation Ingest</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Active · CAD-Ready
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 font-sans pt-1">
+                    {/* User Outbound Message */}
+                    <div className="flex justify-end">
+                      <div className="bg-[#005c4b] text-white p-3 sm:p-3.5 rounded-2xl rounded-tr-xs max-w-[85%] leading-relaxed shadow-sm text-xs sm:text-sm">
+                        Spent CAD 46 at Walmart on groceries
+                      </div>
+                    </div>
+
+                    {/* AI Bot Inbound Proposal */}
+                    <div className="flex justify-start">
+                      <div className="bg-secondary/70 border border-border text-foreground p-3.5 rounded-2xl rounded-tl-xs max-w-[90%] leading-relaxed space-y-2 shadow-xs">
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>PROPOSAL READY (96% Confidence)</span>
+                        </div>
+                        <p className="text-muted-foreground text-xs leading-relaxed">
+                          Record <strong className="text-foreground">CAD 46.00</strong> expense to <strong className="text-foreground">Groceries</strong> from <strong className="text-foreground">Personal Checking</strong>?
+                        </p>
+                        <div className="flex items-center gap-2 pt-1 font-mono text-[10px]">
+                          <span className="px-2.5 py-1 rounded-md bg-foreground text-background font-bold shadow-xs">1: Confirm</span>
+                          <span className="px-2.5 py-1 rounded-md bg-muted text-foreground border border-border">2: Correct</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <Link
+                      href="/client"
+                      className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
+                    >
+                      <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
+                      <span>Start on WhatsApp Now</span>
+                    </Link>
+                  </div>
                 </div>
-                <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
-                  <div>DETECT RECURRING CHARGE (CAD 84/mo)</div>
-                  <div>&rarr; USER REVIEWS TERMS & FEES</div>
-                  <div>&rarr; RESOLVE ROUTE (EMAIL/API/SCRIPT)</div>
-                  <div className="text-emerald-600 dark:text-emerald-400 font-bold">&rarr; EXPLICIT USER AUTHORIZATION</div>
-                  <div>&rarr; POST-CANCELLATION MONITORING</div>
-                </div>
-                <p className="text-muted-foreground text-xs leading-relaxed pt-2">
-                  Never marked &ldquo;cancelled&rdquo; until proof of confirmation is captured and verified against future billing cycles.
-                </p>
               </div>
 
-              {/* Card 2: Bill Negotiation */}
-              <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card">
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                  <span className="font-bold text-foreground text-sm sm:text-base">Bill Negotiation Engine</span>
-                  <span className="text-[10px] font-mono text-muted-foreground">COACH / DRAFT / INITIATE</span>
+              {/* Right Column (7 cols): The 2 Permissioned Action Workflows */}
+              <div className="lg:col-span-7 flex flex-col gap-5 text-xs w-full">
+                {/* Card 1: Subscription Cancellation */}
+                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <span className="font-bold text-foreground text-sm sm:text-base">Subscription Cancellation</span>
+                    <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-secondary border border-border">P1 WORKFLOW</span>
+                  </div>
+                  <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
+                    <div>DETECT RECURRING CHARGE (CAD 84/mo)</div>
+                    <div>&rarr; USER REVIEWS TERMS & FEES</div>
+                    <div>&rarr; RESOLVE ROUTE (EMAIL/API/SCRIPT)</div>
+                    <div className="text-emerald-600 dark:text-emerald-400 font-bold">&rarr; EXPLICIT USER AUTHORIZATION</div>
+                    <div>&rarr; POST-CANCELLATION MONITORING</div>
+                  </div>
+                  <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                    Never marked &ldquo;cancelled&rdquo; until proof of confirmation is captured and verified against future billing cycles.
+                  </p>
                 </div>
-                <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
-                  <div>ANALYZE HISTORICAL TELECOM BILLS</div>
-                  <div>&rarr; BENCHMARK ACCEPTABLE TARGET RANGE</div>
-                  <div>&rarr; GENERATE COUNTEROFFER SCRIPT</div>
-                  <div className="text-[#fb923c] font-bold">&rarr; USER APPROVAL FOR ANY TERM CHANGE</div>
-                  <div>&rarr; AUDITABLE PROVED SAVINGS STORED</div>
+
+                {/* Card 2: Bill Negotiation */}
+                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <span className="font-bold text-foreground text-sm sm:text-base">Bill Negotiation Engine</span>
+                    <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-secondary border border-border">COACH / DRAFT / INITIATE</span>
+                  </div>
+                  <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
+                    <div>ANALYZE HISTORICAL TELECOM BILLS</div>
+                    <div>&rarr; BENCHMARK ACCEPTABLE TARGET RANGE</div>
+                    <div>&rarr; GENERATE COUNTEROFFER SCRIPT</div>
+                    <div className="text-[#fb923c] font-bold">&rarr; USER APPROVAL FOR ANY TERM CHANGE</div>
+                    <div>&rarr; AUDITABLE PROVED SAVINGS STORED</div>
+                  </div>
+                  <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                    Any contract extension, financing terms, credit check or fee requires fresh, explicit customer signoff.
+                  </p>
                 </div>
-                <p className="text-muted-foreground text-xs leading-relaxed pt-2">
-                  Any contract extension, financing terms, credit check or fee requires fresh, explicit customer signoff.
-                </p>
               </div>
             </div>
           </div>
