@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import MoneyCommandLogo from '@/components/MoneyCommandLogo';
 import { 
-  ShieldCheck, 
   Lock, 
   Mail, 
   ArrowRight, 
@@ -140,27 +139,19 @@ function LoginForm() {
       {/* Main Auth Container */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-xl rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
-          {/* Header & Mode Switcher */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                Database Authentication
-              </span>
-              <span className="text-[10px] font-mono font-medium text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                PostgreSQL Reconciled
-              </span>
-            </div>
-
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {authMode === 'signin' ? 'Sign In to Your Ledger' : 'Create Founder Account'}
-              </h1>
-              <p className="text-xs text-muted-foreground mt-1">
-                {authMode === 'signin'
-                  ? 'Access your live double-entry accounts, budgets, and automated WhatsApp proposals.'
-                  : 'Initialize a clean tenant, chart of accounts, and deterministic ledger.'}
-              </p>
-            </div>
+          {/* Header */}
+          <div className="space-y-2 mb-6">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+              Authentication
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+              {authMode === 'signin' ? 'Sign In to Your Ledger' : 'Create Founder Account'}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              {authMode === 'signin'
+                ? 'Access your live double-entry accounts, budgets, and automated WhatsApp proposals.'
+                : 'Initialize a clean tenant, chart of accounts, and deterministic ledger.'}
+            </p>
           </div>
 
           {/* SIGN IN FORM */}
@@ -464,14 +455,6 @@ function LoginForm() {
               </div>
             </form>
           )}
-
-          {/* Security & Isolation Footnote */}
-          <div className="pt-6 border-t border-border mt-6">
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
-              <ShieldCheck className="w-3.5 h-3.5 text-foreground shrink-0" />
-              <span>Row-Level Tenant Isolation &middot; Double-Entry Integrity Enforced</span>
-            </div>
-          </div>
         </div>
       </main>
 
