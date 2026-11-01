@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { db, AuthSession } from '@/lib/db';
 import {
   ShieldAlert,
   Building,
@@ -21,6 +22,19 @@ interface AdminSidebarProps {
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 0 }) => {
   const pathname = usePathname();
+  const [session, setSession] = useState<AuthSession | null>(null);
+
+  useEffect(() => {
+    setSession(db.getCurrentSession());
+  }, []);
+
+  const adminName = session?.name || 'Administrator';
+  const initials = adminName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   const navItems = [
     {
@@ -147,11 +161,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
         <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-secondary/60 transition-colors border border-transparent">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-              SA
+              {initials}
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-foreground truncate">Alex Tremblay</div>
-              <div className="text-[10px] text-muted-foreground truncate">Super Administrator</div>
+              <div className="text-xs font-semibold text-foreground truncate">{adminName}</div>
+              <div className="text-[10px] text-muted-foreground truncate">{session?.roleLabel || 'Super Administrator'}</div>
             </div>
           </div>
           <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />

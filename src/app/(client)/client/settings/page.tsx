@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Settings, 
   Building2, 
@@ -12,14 +14,25 @@ import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [notification, setNotification] = useState<string | null>(null);
+
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/settings');
+    }
+  }, [router]);
 
   useEffect(() => {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
 
   return (

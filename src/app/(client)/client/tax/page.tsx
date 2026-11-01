@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   FileSpreadsheet, 
   Download, 
@@ -16,15 +18,26 @@ import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
 
 export default function TaxPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [taxYear, setTaxYear] = useState<number>(2026);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/tax');
+    }
+  }, [router]);
+
+  useEffect(() => {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
   const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id);
 

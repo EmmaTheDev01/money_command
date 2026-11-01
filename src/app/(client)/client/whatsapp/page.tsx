@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   MessageSquare, 
   PhoneCall, 
@@ -16,16 +18,27 @@ import { WhatsAppSimulatorModal } from '@/components/WhatsAppSimulatorModal';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 
 export default function WhatsAppSetupPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [linkCode, setLinkCode] = useState<string>('MC-8942-CA');
   const [showSimulator, setShowSimulator] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/whatsapp');
+    }
+  }, [router]);
+
+  useEffect(() => {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
 
   const handleGenerateNewCode = () => {
@@ -89,17 +102,17 @@ export default function WhatsAppSetupPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground text-base">
-                    Linked WhatsApp Number: {state.currentUser.whatsappPhone}
+                    Linked WhatsApp Number: {state.currentUser?.whatsappPhone || 'Not Connected'}
                   </h3>
                   <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-foreground" />
-                    Cryptographically linked to {state.currentUser.fullName} ({state.currentUser.email})
+                    Cryptographically linked to {state.currentUser?.fullName || 'Active User'} ({state.currentUser?.email || 'user@example.com'})
                   </span>
                 </div>
               </div>
 
               <span className="text-xs font-mono px-3 py-1 rounded-full bg-secondary text-muted-foreground border border-border">
-                Tenant: {state.currentTenant.name}
+                Tenant: {state.currentTenant?.name || 'Default Organization'}
               </span>
             </div>
 
@@ -159,8 +172,8 @@ export default function WhatsAppSetupPage() {
           }));
         }}
         entityId={activeEntity.id}
-        tenantId={state.currentTenant.id}
-        userId={state.currentUser.id}
+        tenantId={state.currentTenant?.id || 'ten-default'}
+        userId={state.currentUser?.id || 'usr-default'}
       />
     </div>
   );

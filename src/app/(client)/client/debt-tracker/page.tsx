@@ -46,7 +46,10 @@ export default function DebtTrackerPage() {
   const [minPayment, setMinPayment] = useState('');
   const [dueDate, setDueDate] = useState('2026-11-20');
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const debts = state.debts.filter((d) => d.entityId === activeEntity.id);
 
   const totalDebt = debts.reduce((sum, d) => sum + d.balanceMinor, 0);

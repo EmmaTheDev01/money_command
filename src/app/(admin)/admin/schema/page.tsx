@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Database, 
   Copy, 
@@ -16,7 +18,15 @@ import { getInitialState, saveState, AppState } from '@/lib/store';
 import { auditLedgerIntegrity } from '@/lib/ledger';
 
 export default function AdminSchemaPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/admin/schema');
+    }
+  }, [router]);
 
   useEffect(() => {
     saveState(state);

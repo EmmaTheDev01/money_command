@@ -38,7 +38,10 @@ export default function PeriodViewsPage() {
     load();
   }, [router, state.selectedEntityId]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id);
 
   // Group transactions dynamically by month
@@ -47,33 +50,27 @@ export default function PeriodViewsPage() {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // Base recurrent estimates derived from active accounts & budgets
+  // Group real transactions by month
   const monthlyTotals = monthNames.map((month, idx) => {
     // 0-indexed month check (e.g. idx 9 is October)
     const monthTxs = entityTransactions.filter((t) => {
+      if (!t.txDate) return false;
       const txMonth = new Date(t.txDate).getMonth();
       return txMonth === idx;
     });
 
-    const txIncome = monthTxs
+    const income = monthTxs
       .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + t.totalMinor, 0);
 
-    const txExpenses = monthTxs
+    const expenses = monthTxs
       .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + t.totalMinor, 0);
 
-    // If month has real transactions, display real exact numbers;
-    // else derive from active entity baseline budgets & recurring revenue
-    const baselineIncome = entityTransactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.totalMinor, 0) || 621500;
-    const baselineExpenses = entityTransactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.totalMinor, 0) || 6700;
-
-    const income = txIncome > 0 ? txIncome : Math.round(baselineIncome * (1 + ((idx % 3) * 0.05)));
-    const expenses = txExpenses > 0 ? txExpenses : Math.round(baselineExpenses * (1 + ((idx % 4) * 0.08)));
     const net = income - expenses;
 
     return {
-      month: idx === 11 ? `${month} (Est)` : month,
+      month,
       income,
       expenses,
       net,

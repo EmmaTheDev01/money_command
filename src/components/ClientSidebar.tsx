@@ -32,24 +32,10 @@ export const ClientSidebar: React.FC<{ pendingProposalsCount?: number }> = ({ pe
     const s = db.getCurrentSession();
     if (s) {
       setSession(s);
-    } else {
-      // Fallback
-      setSession({
-        id: 'sess-default',
-        userId: '22222222-2222-2222-2222-222222222222',
-        name: 'Alex Tremblay',
-        email: 'alex@mapleridge.dev',
-        phone: '+1 647 555 0192',
-        whatsappPhone: '+1 647 555 0192',
-        role: 'client',
-        roleLabel: 'Founder OS',
-        targetPath: '/client',
-        tenantId: '11111111-1111-1111-1111-111111111111',
-      });
     }
   }, []);
 
-  const userName = session?.name || 'Alex Tremblay';
+  const userName = session?.name || 'Account User';
   const initials = userName
     .split(' ')
     .map((n) => n[0])
@@ -141,11 +127,7 @@ export const ClientSidebar: React.FC<{ pendingProposalsCount?: number }> = ({ pe
 
       {/* User Profile */}
       <div className="pt-3 border-t border-border">
-        <Link
-          href="/login"
-          title="Switch Session / Sign In"
-          className="flex items-center justify-between p-2 rounded-2xl hover:bg-secondary/60 transition-colors border border-transparent hover:border-border group"
-        >
+        <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-secondary/60 transition-colors border border-transparent">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
               {initials}
@@ -157,8 +139,18 @@ export const ClientSidebar: React.FC<{ pendingProposalsCount?: number }> = ({ pe
               </div>
             </div>
           </div>
-          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-        </Link>
+          <button
+            type="button"
+            onClick={() => {
+              db.logout();
+              window.location.href = '/login';
+            }}
+            title="Sign out of Financial OS"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-orange-500 hover:bg-orange-500/10 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </aside>
   );

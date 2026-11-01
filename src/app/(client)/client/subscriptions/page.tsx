@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Repeat, 
   ShieldAlert, 
@@ -19,15 +21,33 @@ import { formatCAD } from '@/lib/ledger';
 import { Subscription } from '@/lib/types';
 
 export default function SubscriptionsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [selectedSubForCancel, setSelectedSubForCancel] = useState<Subscription | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/subscriptions');
+      return;
+    }
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const subs = await db.getSubscriptions(activeId);
+      setState((prev) => ({ ...prev, subscriptions: subs }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
+
+  useEffect(() => {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
   const entitySubscriptions = state.subscriptions.filter((s) => s.entityId === activeEntity.id);
 
@@ -49,9 +69,9 @@ export default function SubscriptionsPage() {
       auditLogs: [
         {
           id: `audit-${Date.now()}`,
-          tenantId: prev.currentTenant.id,
-          userId: prev.currentUser.id,
-          userName: prev.currentUser.fullName,
+          tenantId: prev.currentTenant?.id || 'ten-default',
+          userId: prev.currentUser?.id || 'usr-default',
+          userName: prev.currentUser?.fullName || 'User',
           entityType: activeEntity.type,
           action: 'AUTHORIZE_CONSEQUENTIAL_CANCELLATION',
           details: `Explicit authorization granted to cancel subscription ${sub.merchant} (${formatCAD(sub.amountMinor)}/${sub.frequency}). Terms hash verified. Route: ${sub.cancellationRoute}.`,

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   WalletCards, 
   CheckCircle2, 
@@ -14,12 +15,25 @@ import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
+import { db } from '@/lib/db';
 
 export default function PaycheckPlannerPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
 
-  const [paycheckTotalDollars, setPaycheckTotalDollars] = useState('4750.00');
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/paycheck-planner');
+    }
+  }, [router]);
+
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
+
+  const [paycheckTotalDollars, setPaycheckTotalDollars] = useState('0.00');
   const paycheckMinor = Math.round(parseFloat(paycheckTotalDollars) * 100) || 0;
 
   const allocatedMinor = state.paycheckPlan.reduce((sum, item) => sum + item.allocatedMinor, 0);
@@ -98,38 +112,46 @@ export default function PaycheckPlannerPage() {
             </div>
 
             <div className="space-y-3 divide-y divide-border">
-              {state.paycheckPlan.map((item) => {
-                const percentSpent = Math.min(100, Math.round((item.spentMinor / item.allocatedMinor) * 100));
+              {state.paycheckPlan.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground text-xs font-mono">
+                  No active paycheck allocations in database. Set up your zero-based envelope categories above.
+                </div>
+              ) : (
+                state.paycheckPlan.map((item) => {
+                  const percentSpent = item.allocatedMinor > 0 
+                    ? Math.min(100, Math.round((item.spentMinor / item.allocatedMinor) * 100)) 
+                    : 0;
 
-                return (
-                  <div key={item.id} className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div className="space-y-1 sm:w-1/3">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground text-sm">{item.category}</span>
-                        <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
-                          {item.type}
+                  return (
+                    <div key={item.id} className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="space-y-1 sm:w-1/3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-foreground text-sm">{item.category}</span>
+                          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
+                            {item.type}
+                          </span>
+                        </div>
+                        <span className="text-muted-foreground text-[11px]">
+                          Spent: {formatCAD(item.spentMinor)} of {formatCAD(item.allocatedMinor)}
                         </span>
                       </div>
-                      <span className="text-muted-foreground text-[11px]">
-                        Spent: {formatCAD(item.spentMinor)} of {formatCAD(item.allocatedMinor)}
-                      </span>
-                    </div>
 
-                    <div className="sm:w-1/3">
-                      <div className="w-full h-2.5 rounded-full bg-secondary overflow-hidden border border-border/40">
-                        <div
-                          className="h-full rounded-full transition-all bg-primary"
-                          style={{ width: `${percentSpent}%` }}
-                        />
+                      <div className="sm:w-1/3">
+                        <div className="w-full h-2.5 rounded-full bg-secondary overflow-hidden border border-border/40">
+                          <div
+                            className="h-full rounded-full transition-all bg-primary"
+                            style={{ width: `${percentSpent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="text-right sm:w-1/4 font-mono font-bold text-sm text-foreground">
+                        {formatCAD(item.allocatedMinor)}
                       </div>
                     </div>
-
-                    <div className="text-right sm:w-1/4 font-mono font-bold text-sm text-foreground">
-                      {formatCAD(item.allocatedMinor)}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </main>

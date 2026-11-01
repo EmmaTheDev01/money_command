@@ -31,14 +31,35 @@ export default function AccountantPortalPage() {
     const session = db.getCurrentSession();
     if (!session) {
       router.push('/login?redirect=/accountant');
+      return;
     }
-  }, [router]);
+
+    async function load() {
+      try {
+        const entities = await db.getEntities();
+        const activeId = state.selectedEntityId || entities[0]?.id;
+        const txs = await db.getTransactions(activeId);
+        setState((prev) => ({
+          ...prev,
+          entities: entities.length > 0 ? entities : prev.entities,
+          selectedEntityId: activeId || prev.selectedEntityId,
+          transactions: txs,
+        }));
+      } catch (err) {
+        console.warn('Accountant load error:', err);
+      }
+    }
+    load();
+  }, [router, state.selectedEntityId]);
 
   useEffect(() => {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const allEntityTx = state.transactions.filter((t) => t.entityId === activeEntity.id);
   const filteredTransactions = allEntityTx.filter((t) => {
     if (filterState === 'all') return true;

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Inbox, 
   Check, 
@@ -17,6 +19,7 @@ import { formatCAD } from '@/lib/ledger';
 import { Proposal, Transaction } from '@/lib/types';
 
 export default function ProposalsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [editMerchant, setEditMerchant] = useState('');
@@ -25,10 +28,27 @@ export default function ProposalsPage() {
   const [statusNotification, setStatusNotification] = useState<string | null>(null);
 
   useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/proposals');
+      return;
+    }
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const props = await db.getProposals(activeId);
+      setState((prev) => ({ ...prev, proposals: props }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
+
+  useEffect(() => {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposals = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending');
   const pastProposals = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status !== 'pending');
 
@@ -37,7 +57,7 @@ export default function ProposalsPage() {
 
     const newTx: Transaction = {
       id: `tx-user-${Date.now()}`,
-      tenantId: state.currentTenant.id,
+      tenantId: state.currentTenant?.id || 'ten-default',
       entityId: proposal.entityId,
       txDate: proposal.txDate,
       type: proposal.type,
@@ -93,9 +113,9 @@ export default function ProposalsPage() {
       auditLogs: [
         {
           id: `audit-${Date.now()}`,
-          tenantId: prev.currentTenant.id,
-          userId: prev.currentUser.id,
-          userName: prev.currentUser.fullName,
+          tenantId: prev.currentTenant?.id || 'ten-default',
+          userId: prev.currentUser?.id || 'usr-default',
+          userName: prev.currentUser?.fullName || 'User',
           entityType: prev.entities.find((e) => e.id === proposal.entityId)?.type || 'personal',
           action: 'CONFIRM_PROPOSAL_POST_JOURNAL',
           details: `Confirmed proposal ${proposal.id} (${proposal.merchant}, CAD ${(totalMinor / 100).toFixed(
@@ -126,9 +146,9 @@ export default function ProposalsPage() {
       auditLogs: [
         {
           id: `audit-${Date.now()}`,
-          tenantId: prev.currentTenant.id,
-          userId: prev.currentUser.id,
-          userName: prev.currentUser.fullName,
+          tenantId: prev.currentTenant?.id || 'ten-default',
+          userId: prev.currentUser?.id || 'usr-default',
+          userName: prev.currentUser?.fullName || 'User',
           entityType: prev.entities.find((e) => e.id === proposal.entityId)?.type || 'personal',
           action: 'REJECT_PROPOSAL',
           details: `Rejected unposted candidate proposal ${proposal.id} (${proposal.merchant}). Zero ledger impact.`,

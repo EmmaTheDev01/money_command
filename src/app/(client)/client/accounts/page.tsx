@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Landmark, 
   Plus, 
@@ -14,10 +15,30 @@ import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
 import { getInitialState, saveState, AppState } from '@/lib/store';
 import { formatCAD } from '@/lib/ledger';
+import { db } from '@/lib/db';
 
 export default function BankAccountsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/accounts');
+      return;
+    }
+    async function load() {
+      const activeId = state.selectedEntityId;
+      const accs = await db.getAccounts(activeId);
+      setState((prev) => ({ ...prev, accounts: accs }));
+    }
+    load();
+  }, [router, state.selectedEntityId]);
+
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const accounts = state.accounts.filter((a) => a.entityId === activeEntity.id);
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -37,7 +58,7 @@ export default function BankAccountsPage() {
 
     const newAcc = {
       id: `acc-${Date.now()}`,
-      tenantId: state.currentTenant.id,
+      tenantId: state.currentTenant?.id || 'ten-default',
       entityId: activeEntity.id,
       code: `1${Math.floor(100 + Math.random() * 900)}`,
       name: accountName.trim(),
@@ -90,39 +111,49 @@ export default function BankAccountsPage() {
           </div>
 
           {/* Accounts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {accounts.map((acc) => (
-              <div
-                key={acc.id}
-                className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between shadow-xs space-y-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
-                      {acc.subtype || acc.type}
+          {accounts.length === 0 ? (
+            <div className="rounded-3xl border border-border bg-card p-12 text-center shadow-xs">
+              <Landmark className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-bold text-foreground text-base">No Bank Accounts Found</h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                No active asset or liability accounts configured for this entity. Click &ldquo;Add Account&rdquo; above to link your chequing, savings, or credit cards.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {accounts.map((acc) => (
+                <div
+                  key={acc.id}
+                  className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between shadow-xs space-y-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
+                        {acc.subtype || acc.type}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-mono">#{acc.code}</span>
+                    </div>
+                    <h3 className="font-bold text-foreground text-base pt-1">{acc.name}</h3>
+                  </div>
+
+                  <div className="space-y-1 pt-2">
+                    <span className="text-xs text-muted-foreground block">Verified Ledger Balance</span>
+                    <div className="text-2xl font-extrabold font-mono text-foreground tabular-nums">
+                      {formatCAD(acc.balanceMinor)}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-primary font-medium">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Double-Entry Synced
                     </span>
-                    <span className="text-xs text-muted-foreground font-mono">#{acc.code}</span>
-                  </div>
-                  <h3 className="font-bold text-foreground text-base pt-1">{acc.name}</h3>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  <span className="text-xs text-muted-foreground block">Verified Ledger Balance</span>
-                  <div className="text-2xl font-extrabold font-mono text-foreground tabular-nums">
-                    {formatCAD(acc.balanceMinor)}
+                    <span className="font-mono">CAD</span>
                   </div>
                 </div>
-
-                <div className="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5 text-primary font-medium">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Double-Entry Synced
-                  </span>
-                  <span className="font-mono">CAD</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </main>
       </div>
 

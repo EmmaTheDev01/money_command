@@ -11,15 +11,9 @@ import {
   InvestmentPosition,
   PaycheckPlanItem,
   User,
+  Tenant,
 } from './types';
-import { getInitialState, saveState, AppState } from './store';
-
-/**
- * MONEY COMMAND AUTHORITATIVE DATABASE SERVICE
- * 
- * Interacts with Supabase PostgreSQL double-entry ledger tables when configured,
- * or transparently interacts with the persistent local store when offline/demo.
- */
+import { getInitialState, saveState, clearState } from './store';
 
 export interface AuthSession {
   id: string;
@@ -112,103 +106,294 @@ function mapProposalFromDB(row: any): Proposal {
 
 export const db = {
   /**
-   * AUTHENTICATION METHODS
+   * AUTHENTICATION METHODS (Real Database Driven - No Mock Fallbacks)
    */
-  async loginWithWhatsApp(phone: string, _password: string): Promise<AuthSession> {
+  async loginWithWhatsApp(phone: string, password?: string): Promise<AuthSession> {
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
-    const state = getInitialState();
-
-    if (isSupabaseConfigured) {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*, tenants(*)')
-          .or(`whatsapp_phone.eq.${cleanPhone},phone.eq.${cleanPhone}`)
-          .single();
-
-        if (!error && data) {
-          const session: AuthSession = {
-            id: `sess-${Date.now()}`,
-            userId: data.id,
-            name: data.full_name,
-            email: data.email,
-            phone: data.phone || cleanPhone,
-            whatsappPhone: data.whatsapp_phone || cleanPhone,
-            role: data.role === 'accountant_viewer' ? 'accountant' : data.role === 'admin' ? 'admin' : 'client',
-            roleLabel: data.role === 'accountant_viewer' ? 'Accountant' : data.role === 'admin' ? 'Admin' : 'Client / Founder OS',
-            targetPath: data.role === 'accountant_viewer' ? '/accountant' : data.role === 'admin' ? '/admin' : '/client',
-            tenantId: data.tenant_id,
-          };
-          this.saveSession(session);
-          return session;
-        }
-      } catch (err) {
-        console.warn('Supabase WhatsApp login fallback:', err);
-      }
+    if (!cleanPhone || cleanPhone.length < 8) {
+      throw new Error('Please enter a valid WhatsApp phone number with country code (e.g. +1 647 555 0192).');
     }
 
-    // Default authenticated session with Alex Tremblay
+    if (!isSupabaseConfigured) {
+      // Local/offline database mode: check if local storage or state has a registered user
+      const state = getInitialState();
+      if (state.currentUser && (state.currentUser.whatsappPhone === cleanPhone || state.currentUser.phone === cleanPhone)) {
+        const session: AuthSession = {
+          id: `sess-${Date.now()}`,
+          userId: state.currentUser.id,
+          name: state.currentUser.fullName,
+          email: state.currentUser.email,
+          phone: state.currentUser.phone || cleanPhone,
+          whatsappPhone: state.currentUser.whatsappPhone || cleanPhone,
+          role: state.currentUser.role === 'accountant_viewer' ? 'accountant' : state.currentUser.role === 'admin' ? 'admin' : 'client',
+          roleLabel: state.currentUser.role === 'accountant_viewer' ? 'Accountant' : state.currentUser.role === 'admin' ? 'Admin' : 'Client / Founder OS',
+          targetPath: state.currentUser.role === 'accountant_viewer' ? '/accountant' : state.currentUser.role === 'admin' ? '/admin' : '/client',
+          tenantId: state.currentUser.tenantId,
+        };
+        this.saveSession(session);
+        return session;
+      }
+      throw new Error(`No registered user found with WhatsApp phone ${cleanPhone}. Please register a new account.`);
+    }
+
+    try {
+      // Query real Supabase users table
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .or(`whatsapp_phone.eq.${cleanPhone},phone.eq.${cleanPhone}`)
+        .maybeSingle();
+
+      if (error || !user) {
+        throw new Error(`Authentication failed: WhatsApp number ${cleanPhone} is not registered in the database.`);
+      }
+
+      // Check password if set in DB
+      if (user.password_hash && password && user.password_hash !== password) {
+        throw new Error('Invalid password for this WhatsApp account.');
+      }
+
+      const role = user.role === 'accountant_viewer' ? 'accountant' : user.role === 'admin' ? 'admin' : 'client';
+      const roleLabel = role === 'accountant' ? 'Accountant Portal' : role === 'admin' ? 'Admin Console' : 'Client / Founder OS';
+      const targetPath = role === 'accountant' ? '/accountant' : role === 'admin' ? '/admin' : '/client';
+
+      const session: AuthSession = {
+        id: `sess-${Date.now()}`,
+        userId: user.id,
+        name: user.full_name,
+        email: user.email,
+        phone: user.phone || cleanPhone,
+        whatsappPhone: user.whatsapp_phone || cleanPhone,
+        role,
+        roleLabel,
+        targetPath,
+        tenantId: user.tenant_id,
+      };
+
+      this.saveSession(session);
+      return session;
+    } catch (err: any) {
+      throw new Error(err.message || 'Database error occurred during WhatsApp login.');
+    }
+  },
+
+  async loginWithEmail(email: string, password?: string): Promise<AuthSession> {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      throw new Error('Please enter a valid email address.');
+    }
+
+    if (!isSupabaseConfigured) {
+      const state = getInitialState();
+      if (state.currentUser && state.currentUser.email.toLowerCase() === cleanEmail) {
+        const session: AuthSession = {
+          id: `sess-${Date.now()}`,
+          userId: state.currentUser.id,
+          name: state.currentUser.fullName,
+          email: state.currentUser.email,
+          phone: state.currentUser.phone || '',
+          whatsappPhone: state.currentUser.whatsappPhone || '',
+          role: state.currentUser.role === 'accountant_viewer' ? 'accountant' : state.currentUser.role === 'admin' ? 'admin' : 'client',
+          roleLabel: state.currentUser.role === 'accountant_viewer' ? 'Accountant' : state.currentUser.role === 'admin' ? 'Admin' : 'Client / Founder OS',
+          targetPath: state.currentUser.role === 'accountant_viewer' ? '/accountant' : state.currentUser.role === 'admin' ? '/admin' : '/client',
+          tenantId: state.currentUser.tenantId,
+        };
+        this.saveSession(session);
+        return session;
+      }
+      throw new Error(`No registered user found with email ${cleanEmail}. Please register a new account.`);
+    }
+
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('email', cleanEmail)
+        .maybeSingle();
+
+      if (error || !user) {
+        throw new Error(`Authentication failed: Email ${cleanEmail} is not registered in the database.`);
+      }
+
+      if (user.password_hash && password && user.password_hash !== password) {
+        throw new Error('Invalid password for this account.');
+      }
+
+      const role = user.role === 'accountant_viewer' ? 'accountant' : user.role === 'admin' ? 'admin' : 'client';
+      const roleLabel = role === 'accountant' ? 'Accountant Portal' : role === 'admin' ? 'Admin Console' : 'Client / Founder OS';
+      const targetPath = role === 'accountant' ? '/accountant' : role === 'admin' ? '/admin' : '/client';
+
+      const session: AuthSession = {
+        id: `sess-${Date.now()}`,
+        userId: user.id,
+        name: user.full_name,
+        email: user.email,
+        phone: user.phone || '',
+        whatsappPhone: user.whatsapp_phone || '',
+        role,
+        roleLabel,
+        targetPath,
+        tenantId: user.tenant_id,
+      };
+
+      this.saveSession(session);
+      return session;
+    } catch (err: any) {
+      throw new Error(err.message || 'Database error occurred during email login.');
+    }
+  },
+
+  /**
+   * Register a new user in the database
+   */
+  async registerUser(params: {
+    fullName: string;
+    email: string;
+    whatsappPhone: string;
+    password?: string;
+    tenantName?: string;
+  }): Promise<AuthSession> {
+    const cleanPhone = params.whatsappPhone.replace(/[^0-9+]/g, '');
+    const cleanEmail = params.email.trim().toLowerCase();
+
+    if (isSupabaseConfigured) {
+      // 1. Create Tenant
+      const { data: tenant, error: tenantErr } = await supabase
+        .from('tenants')
+        .insert({
+          name: params.tenantName || `${params.fullName}'s Financial OS`,
+          plan: 'founder',
+          status: 'active',
+        })
+        .select()
+        .single();
+
+      if (tenantErr || !tenant) throw new Error(tenantErr?.message || 'Failed to create tenant.');
+
+      // 2. Create User
+      const { data: user, error: userErr } = await supabase
+        .from('users')
+        .insert({
+          tenant_id: tenant.id,
+          role: 'owner',
+          full_name: params.fullName,
+          email: cleanEmail,
+          phone: cleanPhone,
+          whatsapp_phone: cleanPhone,
+          whatsapp_verified: true,
+          password_hash: params.password || 'password123',
+        })
+        .select()
+        .single();
+
+      if (userErr || !user) throw new Error(userErr?.message || 'Failed to create user.');
+
+      // 3. Create Default Entity
+      const { data: entity } = await supabase
+        .from('entities')
+        .insert({
+          tenant_id: tenant.id,
+          user_id: user.id,
+          name: `${params.fullName} (Personal)`,
+          type: 'personal',
+          currency: 'CAD',
+          is_default: true,
+        })
+        .select()
+        .single();
+
+      // 4. Create Standard Chart of Accounts
+      if (entity) {
+        await supabase.from('accounts').insert([
+          { tenant_id: tenant.id, entity_id: entity.id, code: '1010', name: 'Primary Chequing Account', type: 'asset', subtype: 'checking', currency: 'CAD', balance_minor: 0 },
+          { tenant_id: tenant.id, entity_id: entity.id, code: '1020', name: 'High-Interest Savings Account', type: 'asset', subtype: 'savings', currency: 'CAD', balance_minor: 0 },
+          { tenant_id: tenant.id, entity_id: entity.id, code: '2010', name: 'Credit Card', type: 'liability', subtype: 'credit_card', currency: 'CAD', balance_minor: 0 },
+          { tenant_id: tenant.id, entity_id: entity.id, code: '5010', name: 'General Living Expenses', type: 'expense', subtype: 'general', currency: 'CAD', balance_minor: 0 },
+          { tenant_id: tenant.id, entity_id: entity.id, code: '4010', name: 'Income / Salary', type: 'revenue', subtype: 'income', currency: 'CAD', balance_minor: 0 },
+        ]);
+      }
+
+      const session: AuthSession = {
+        id: `sess-${Date.now()}`,
+        userId: user.id,
+        name: user.full_name,
+        email: user.email,
+        phone: user.phone || cleanPhone,
+        whatsappPhone: user.whatsapp_phone || cleanPhone,
+        role: 'client',
+        roleLabel: 'Client / Founder OS',
+        targetPath: '/client',
+        tenantId: user.tenant_id,
+      };
+
+      this.saveSession(session);
+      return session;
+    }
+
+    // Local state fallback registration
+    const newTenant: Tenant = {
+      id: `ten-${Date.now()}`,
+      name: params.tenantName || `${params.fullName}'s Financial OS`,
+      plan: 'founder',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+    };
+
+    const newUser: User = {
+      id: `usr-${Date.now()}`,
+      tenantId: newTenant.id,
+      role: 'owner',
+      fullName: params.fullName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      whatsappPhone: cleanPhone,
+      whatsappVerified: true,
+    };
+
+    const newEntity: Entity = {
+      id: `ent-${Date.now()}`,
+      tenantId: newTenant.id,
+      userId: newUser.id,
+      name: `${params.fullName} (Personal)`,
+      type: 'personal',
+      currency: 'CAD',
+      isDefault: true,
+    };
+
+    const initialAccounts: Account[] = [
+      { id: `acc-1`, tenantId: newTenant.id, entityId: newEntity.id, code: '1010', name: 'Primary Chequing Account', type: 'asset', subtype: 'checking', currency: 'CAD', balanceMinor: 0, isActive: true },
+      { id: `acc-2`, tenantId: newTenant.id, entityId: newEntity.id, code: '1020', name: 'High-Interest Savings Account', type: 'asset', subtype: 'savings', currency: 'CAD', balanceMinor: 0, isActive: true },
+      { id: `acc-3`, tenantId: newTenant.id, entityId: newEntity.id, code: '2010', name: 'Credit Card', type: 'liability', subtype: 'credit_card', currency: 'CAD', balanceMinor: 0, isActive: true },
+      { id: `acc-4`, tenantId: newTenant.id, entityId: newEntity.id, code: '5010', name: 'General Living Expenses', type: 'expense', subtype: 'general', currency: 'CAD', balanceMinor: 0, isActive: true },
+      { id: `acc-5`, tenantId: newTenant.id, entityId: newEntity.id, code: '4010', name: 'Income / Salary', type: 'revenue', subtype: 'income', currency: 'CAD', balanceMinor: 0, isActive: true },
+    ];
+
+    const state = getInitialState();
+    state.currentTenant = newTenant;
+    state.currentUser = newUser;
+    state.entities = [newEntity];
+    state.selectedEntityId = newEntity.id;
+    state.accounts = initialAccounts;
+    state.transactions = [];
+    state.budgets = [];
+    state.subscriptions = [];
+    state.proposals = [];
+    state.sinkingFunds = [];
+    state.debts = [];
+    state.investments = [];
+    saveState(state);
+
     const session: AuthSession = {
       id: `sess-${Date.now()}`,
-      userId: state.currentUser.id,
-      name: state.currentUser.fullName || 'Alex Tremblay',
-      email: state.currentUser.email || 'alex@mapleridge.dev',
-      phone: cleanPhone || state.currentUser.phone || '+16475550192',
-      whatsappPhone: cleanPhone || state.currentUser.whatsappPhone || '+16475550192',
+      userId: newUser.id,
+      name: newUser.fullName,
+      email: newUser.email,
+      phone: cleanPhone,
+      whatsappPhone: cleanPhone,
       role: 'client',
       roleLabel: 'Client / Founder OS',
       targetPath: '/client',
-      tenantId: state.currentTenant.id,
-    };
-
-    this.saveSession(session);
-    return session;
-  },
-
-  async loginWithEmail(email: string, _password: string): Promise<AuthSession> {
-    const cleanEmail = email.trim().toLowerCase();
-    const state = getInitialState();
-
-    if (isSupabaseConfigured) {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*, tenants(*)')
-          .ilike('email', cleanEmail)
-          .single();
-
-        if (!error && data) {
-          const session: AuthSession = {
-            id: `sess-${Date.now()}`,
-            userId: data.id,
-            name: data.full_name,
-            email: data.email,
-            phone: data.phone || '',
-            whatsappPhone: data.whatsapp_phone || '',
-            role: data.role === 'accountant_viewer' ? 'accountant' : data.role === 'admin' ? 'admin' : 'client',
-            roleLabel: data.role === 'accountant_viewer' ? 'Accountant' : data.role === 'admin' ? 'Admin' : 'Client / Founder OS',
-            targetPath: data.role === 'accountant_viewer' ? '/accountant' : data.role === 'admin' ? '/admin' : '/client',
-            tenantId: data.tenant_id,
-          };
-          this.saveSession(session);
-          return session;
-        }
-      } catch (err) {
-        console.warn('Supabase Email login fallback:', err);
-      }
-    }
-
-    const session: AuthSession = {
-      id: `sess-${Date.now()}`,
-      userId: state.currentUser.id,
-      name: state.currentUser.fullName || 'Alex Tremblay',
-      email: cleanEmail,
-      phone: state.currentUser.phone || '+16475550192',
-      whatsappPhone: state.currentUser.whatsappPhone || '+16475550192',
-      role: cleanEmail.includes('accountant') ? 'accountant' : cleanEmail.includes('admin') ? 'admin' : 'client',
-      roleLabel: cleanEmail.includes('accountant') ? 'Accountant' : cleanEmail.includes('admin') ? 'Admin' : 'Client / Founder OS',
-      targetPath: cleanEmail.includes('accountant') ? '/accountant' : cleanEmail.includes('admin') ? '/admin' : '/client',
-      tenantId: state.currentTenant.id,
+      tenantId: newTenant.id,
     };
 
     this.saveSession(session);
@@ -237,18 +422,19 @@ export const db = {
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(SESSION_STORAGE_KEY);
+        clearState();
       } catch {}
     }
   },
 
   /**
-   * Fetch entities for active tenant
+   * DATA FETCHING METHODS - Real database queries (return [] when empty)
    */
   async getEntities(): Promise<Entity[]> {
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.from('entities').select('*').order('created_at', { ascending: true });
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           return data.map((d: any) => ({
             id: d.id,
             tenantId: d.tenant_id,
@@ -261,37 +447,27 @@ export const db = {
           }));
         }
       } catch (err) {
-        console.warn('Supabase getEntities fallback:', err);
+        console.warn('Supabase getEntities error:', err);
       }
     }
     return getInitialState().entities;
   },
 
-  /**
-   * Fetch chart of accounts
-   */
   async getAccounts(entityId?: string): Promise<Account[]> {
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from('accounts').select('*').eq('is_active', true);
-        if (entityId) {
-          query = query.eq('entity_id', entityId);
-        }
+        if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          return data.map(mapAccountFromDB);
-        }
+        if (!error && data) return data.map(mapAccountFromDB);
       } catch (err) {
-        console.warn('Supabase getAccounts fallback:', err);
+        console.warn('Supabase getAccounts error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.accounts.filter((a) => a.entityId === entityId) : state.accounts;
   },
 
-  /**
-   * Fetch double-entry posted transactions
-   */
   async getTransactions(entityId?: string): Promise<Transaction[]> {
     if (isSupabaseConfigured) {
       try {
@@ -300,55 +476,41 @@ export const db = {
           .select('*, transaction_lines(*, accounts(name, code))')
           .order('tx_date', { ascending: false });
 
-        if (entityId) {
-          query = query.eq('entity_id', entityId);
-        }
+        if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           return data.map((d: any) => mapTransactionFromDB(d, d.transaction_lines || []));
         }
       } catch (err) {
-        console.warn('Supabase getTransactions fallback:', err);
+        console.warn('Supabase getTransactions error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.transactions.filter((t) => t.entityId === entityId) : state.transactions;
   },
 
-  /**
-   * Fetch pending or reviewed proposals
-   */
   async getProposals(entityId?: string): Promise<Proposal[]> {
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from('proposals').select('*').order('created_at', { ascending: false });
-        if (entityId) {
-          query = query.eq('entity_id', entityId);
-        }
+        if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          return data.map(mapProposalFromDB);
-        }
+        if (!error && data) return data.map(mapProposalFromDB);
       } catch (err) {
-        console.warn('Supabase getProposals fallback:', err);
+        console.warn('Supabase getProposals error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.proposals.filter((p) => p.entityId === entityId) : state.proposals;
   },
 
-  /**
-   * Fetch active budgets with real-time spend aggregation
-   */
   async getBudgets(entityId?: string): Promise<Budget[]> {
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from('budgets').select('*').eq('is_active', true);
-        if (entityId) {
-          query = query.eq('entity_id', entityId);
-        }
+        if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           return data.map((b: any) => ({
             id: b.id,
             entityId: b.entity_id,
@@ -361,25 +523,20 @@ export const db = {
           }));
         }
       } catch (err) {
-        console.warn('Supabase getBudgets fallback:', err);
+        console.warn('Supabase getBudgets error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.budgets.filter((b) => b.entityId === entityId) : state.budgets;
   },
 
-  /**
-   * Fetch subscriptions & recurring obligations
-   */
   async getSubscriptions(entityId?: string): Promise<Subscription[]> {
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from('subscriptions').select('*').order('amount_minor', { ascending: false });
-        if (entityId) {
-          query = query.eq('entity_id', entityId);
-        }
+        if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           return data.map((s: any) => ({
             id: s.id,
             entityId: s.entity_id,
@@ -398,23 +555,20 @@ export const db = {
           }));
         }
       } catch (err) {
-        console.warn('Supabase getSubscriptions fallback:', err);
+        console.warn('Supabase getSubscriptions error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.subscriptions.filter((s) => s.entityId === entityId) : state.subscriptions;
   },
 
-  /**
-   * Fetch sinking funds
-   */
   async getSinkingFunds(entityId?: string): Promise<SinkingFund[]> {
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from('sinking_funds').select('*');
         if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           return data.map((d: any) => ({
             id: d.id,
             entityId: d.entity_id,
@@ -426,23 +580,20 @@ export const db = {
           }));
         }
       } catch (err) {
-        console.warn('Supabase getSinkingFunds fallback:', err);
+        console.warn('Supabase getSinkingFunds error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.sinkingFunds.filter((s) => s.entityId === entityId) : state.sinkingFunds;
   },
 
-  /**
-   * Fetch debts
-   */
   async getDebts(entityId?: string): Promise<DebtItem[]> {
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from('debts').select('*');
         if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           return data.map((d: any) => ({
             id: d.id,
             entityId: d.entity_id,
@@ -455,23 +606,20 @@ export const db = {
           }));
         }
       } catch (err) {
-        console.warn('Supabase getDebts fallback:', err);
+        console.warn('Supabase getDebts error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.debts.filter((d) => d.entityId === entityId) : state.debts;
   },
 
-  /**
-   * Fetch investment positions
-   */
   async getInvestments(entityId?: string): Promise<InvestmentPosition[]> {
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from('investments').select('*');
         if (entityId) query = query.eq('entity_id', entityId);
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           return data.map((d: any) => ({
             id: d.id,
             entityId: d.entity_id,
@@ -485,16 +633,13 @@ export const db = {
           }));
         }
       } catch (err) {
-        console.warn('Supabase getInvestments fallback:', err);
+        console.warn('Supabase getInvestments error:', err);
       }
     }
     const state = getInitialState();
     return entityId ? state.investments.filter((i) => i.entityId === entityId) : state.investments;
   },
 
-  /**
-   * Post a balanced double-entry transaction
-   */
   async postTransaction(tx: Omit<Transaction, 'id' | 'createdAt'>): Promise<Transaction> {
     const newTx: Transaction = {
       ...tx,
@@ -535,11 +680,10 @@ export const db = {
           await supabase.from('transaction_lines').insert(linesToInsert);
         }
       } catch (err) {
-        console.warn('Supabase postTransaction fallback:', err);
+        console.warn('Supabase postTransaction error:', err);
       }
     }
 
-    // Persist to store
     const state = getInitialState();
     state.transactions = [newTx, ...state.transactions];
     saveState(state);
@@ -547,9 +691,6 @@ export const db = {
     return newTx;
   },
 
-  /**
-   * Approve a proposal and turn it into a posted double-entry transaction
-   */
   async approveProposal(
     proposalId: string, 
     debitAccountId: string, 
@@ -607,14 +748,12 @@ export const db = {
 
     transaction.lines.forEach((l) => (l.transactionId = transaction.id));
 
-    // Update proposal status
     const updatedProposal: Proposal = {
       ...proposal,
       status: 'confirmed',
       userVerified: true,
     };
 
-    // If Supabase is configured
     if (isSupabaseConfigured) {
       try {
         await supabase.from('proposals').update({
@@ -625,15 +764,13 @@ export const db = {
 
         await this.postTransaction(transaction);
       } catch (err) {
-        console.warn('Supabase approveProposal fallback:', err);
+        console.warn('Supabase approveProposal error:', err);
       }
     }
 
-    // Update local state
     state.proposals = state.proposals.map((p) => (p.id === proposalId ? updatedProposal : p));
     state.transactions = [transaction, ...state.transactions];
 
-    // Adjust balances
     if (debitAcc) debitAcc.balanceMinor += proposal.amountMinor;
     if (creditAcc) creditAcc.balanceMinor -= proposal.amountMinor;
 

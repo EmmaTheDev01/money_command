@@ -29,7 +29,17 @@ export default function AdminOverviewPage() {
     const session = db.getCurrentSession();
     if (!session) {
       router.push('/login?redirect=/admin');
+      return;
     }
+    async function load() {
+      try {
+        const txs = await db.getTransactions();
+        setState((prev) => ({ ...prev, transactions: txs }));
+      } catch (err) {
+        console.warn('Admin tx load error:', err);
+      }
+    }
+    load();
   }, [router]);
 
   useEffect(() => {
@@ -116,13 +126,13 @@ export default function AdminOverviewPage() {
               </span>
               <div className="mt-1 flex items-baseline justify-between">
                 <span className="text-2xl font-extrabold font-mono tracking-tight text-foreground uppercase">
-                  {state.currentTenant.plan}
+                  {state.currentTenant?.plan || 'Founder'}
                 </span>
                 <span className="text-xs text-muted-foreground font-mono">
                   CAD $10/mo
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground pt-1">Tenant: {state.currentTenant.name}</p>
+              <p className="text-[11px] text-muted-foreground pt-1">Tenant: {state.currentTenant?.name || 'Default Organization'}</p>
             </div>
 
             <div className="rounded-3xl border border-border bg-card p-5 shadow-xs space-y-1">

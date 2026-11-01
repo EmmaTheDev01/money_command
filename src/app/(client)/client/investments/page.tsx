@@ -37,7 +37,10 @@ export default function InvestmentsPage() {
     }
     load();
   }, [router, state.selectedEntityId]);
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const investments = state.investments.filter((i) => i.entityId === activeEntity.id);
 
   const totalValue = investments.reduce((sum, i) => sum + i.currentValueMinor, 0);

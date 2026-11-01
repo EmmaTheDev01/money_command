@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Building, 
   CheckCircle2 
@@ -11,7 +13,15 @@ import { getInitialState, saveState, AppState } from '@/lib/store';
 import { auditLedgerIntegrity } from '@/lib/ledger';
 
 export default function AdminTenantsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
+
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/admin/tenants');
+    }
+  }, [router]);
 
   useEffect(() => {
     saveState(state);
@@ -50,23 +60,23 @@ export default function AdminTenantsPage() {
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs space-y-5">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
-                <h3 className="font-semibold text-foreground text-base">{state.currentTenant.name}</h3>
+                <h3 className="font-semibold text-foreground text-base">{state.currentTenant?.name || 'Default Tenant'}</h3>
                 <span className="text-xs text-muted-foreground font-mono">
-                  Tenant ID: {state.currentTenant.id}
+                  Tenant ID: {state.currentTenant?.id || 'ten-default'}
                 </span>
               </div>
               <span className="text-xs font-mono uppercase px-3 py-1 rounded-full bg-secondary text-foreground font-semibold border border-border">
-                Plan: {state.currentTenant.plan}
+                Plan: {state.currentTenant?.plan || 'Founder'}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="p-4 rounded-2xl bg-secondary/40 border border-border space-y-2">
                 <span className="text-muted-foreground font-bold block text-[11px] uppercase tracking-wider">Primary Tenant User</span>
-                <div className="font-semibold text-foreground text-sm">{state.currentUser.fullName}</div>
-                <div className="text-muted-foreground">{state.currentUser.email}</div>
+                <div className="font-semibold text-foreground text-sm">{state.currentUser?.fullName || 'Active User'}</div>
+                <div className="text-muted-foreground">{state.currentUser?.email || 'user@example.com'}</div>
                 <div className="text-[11px] font-mono text-foreground font-medium">
-                  WhatsApp: {state.currentUser.whatsappPhone} (Verified)
+                  WhatsApp: {state.currentUser?.whatsappPhone || 'N/A'} (Verified)
                 </div>
               </div>
 

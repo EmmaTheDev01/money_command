@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import MoneyCommandLogo from '@/components/MoneyCommandLogo';
@@ -10,88 +10,49 @@ import {
   Mail, 
   ArrowRight, 
   User, 
-  FileText, 
-  ShieldAlert, 
   Check, 
-  Key,
-  Building2,
-  Sparkles,
+  Building2, 
   Phone,
-  Loader2
+  Loader2,
+  AlertCircle,
+  UserPlus,
+  LogIn
 } from 'lucide-react';
 import { db, AuthSession } from '@/lib/db';
-
-interface SessionProfile {
-  id: string;
-  name: string;
-  email: string;
-  whatsappPhone: string;
-  role: 'client' | 'accountant' | 'admin';
-  roleLabel: string;
-  description: string;
-  targetPath: string;
-  avatarInitials: string;
-}
-
-const AVAILABLE_SESSIONS: SessionProfile[] = [
-  {
-    id: 'session-client',
-    name: 'Alex Tremblay (Founder)',
-    email: 'alex@mapleridge.dev',
-    whatsappPhone: '+1 647 555 0192',
-    role: 'client',
-    roleLabel: 'Client / Founder OS',
-    description: 'Multi-entity cash flow, double-entry ledger, Safe-to-Spend & budgets',
-    targetPath: '/client',
-    avatarInitials: 'AT',
-  },
-  {
-    id: 'session-accountant',
-    name: 'Marcus Vance, CPA',
-    email: 'mvance@vanceaccounting.ca',
-    whatsappPhone: '+1 416 555 0843',
-    role: 'accountant',
-    roleLabel: 'Accountant Portal',
-    description: 'Permissioned review, CPA verification & CRA T2125 workpaper exports',
-    targetPath: '/accountant',
-    avatarInitials: 'MV',
-  },
-  {
-    id: 'session-admin',
-    name: 'DevOps & Security Admin',
-    email: 'security@moneycommand.ca',
-    whatsappPhone: '+1 613 555 0199',
-    role: 'admin',
-    roleLabel: 'Admin Console',
-    description: 'Tenant isolation, circuit breakers, PostgreSQL triggers & audit trail',
-    targetPath: '/admin',
-    avatarInitials: 'DA',
-  },
-];
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams?.get('redirect') || null;
 
+  // 'signin' or 'register'
+  const [authMode, setAuthMode] = useState<'signin' | 'register'>('signin');
+  // In signin: 'whatsapp' or 'email'
   const [loginMethod, setLoginMethod] = useState<'whatsapp' | 'email'>('whatsapp');
-  const [selectedSession, setSelectedSession] = useState<SessionProfile>(AVAILABLE_SESSIONS[0]);
-  const [whatsappPhone, setWhatsappPhone] = useState(AVAILABLE_SESSIONS[0].whatsappPhone);
-  const [email, setEmail] = useState(AVAILABLE_SESSIONS[0].email);
-  const [password, setPassword] = useState('••••••••••••');
+
+  // Signin fields
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberSession, setRememberSession] = useState(true);
+
+  // Register fields
+  const [regFullName, setRegFullName] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regTenantName, setRegTenantName] = useState('');
+
+  // States
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  useEffect(() => {
-    setEmail(selectedSession.email);
-    setWhatsappPhone(selectedSession.whatsappPhone);
-  }, [selectedSession]);
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
 
     try {
       let session: AuthSession;
@@ -101,27 +62,56 @@ function LoginForm() {
         session = await db.loginWithEmail(email, password);
       }
 
-      const destination = redirectTarget || session.targetPath || selectedSession.targetPath;
+      setSuccessMsg(`Authenticated as ${session.name}. Loading ledger...`);
+      const destination = redirectTarget || session.targetPath || '/client';
       setTimeout(() => {
         router.push(destination);
-      }, 350);
+      }, 400);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Authentication failed. Please verify credentials.');
+      setErrorMsg(err?.message || 'Authentication failed. Please verify credentials in the database.');
       setIsLoading(false);
     }
   };
 
-  const handleQuickLaunch = async (session: SessionProfile) => {
-    setSelectedSession(session);
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (!regFullName.trim()) {
+      setErrorMsg('Please enter your full name.');
+      setIsLoading(false);
+      return;
+    }
+    if (!regPhone.trim()) {
+      setErrorMsg('Please enter your WhatsApp phone number.');
+      setIsLoading(false);
+      return;
+    }
+    if (!regEmail.trim()) {
+      setErrorMsg('Please enter your email address.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await db.loginWithWhatsApp(session.whatsappPhone, 'demo-pass');
-      const destination = redirectTarget || session.targetPath;
+      const session = await db.registerUser({
+        fullName: regFullName.trim(),
+        whatsappPhone: regPhone.trim(),
+        email: regEmail.trim(),
+        password: regPassword || 'password123',
+        tenantName: regTenantName.trim() || undefined,
+      });
+
+      setSuccessMsg(`Account created for ${session.name}! Redirecting to dashboard...`);
+      const destination = redirectTarget || session.targetPath || '/client';
       setTimeout(() => {
         router.push(destination);
-      }, 300);
-    } catch {
-      router.push(session.targetPath);
+      }, 500);
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Failed to create user account. Please try again.');
+      setIsLoading(false);
     }
   };
 
@@ -142,104 +132,84 @@ function LoginForm() {
         </Link>
 
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-muted-foreground hidden sm:inline">Canada-first Double Entry</span>
-          <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-secondary border border-border">
-            CA_ON 2026
+          <span className="text-muted-foreground hidden sm:inline">Canada Double-Entry Core</span>
+          <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-secondary border border-border">
+            LIVE DATABASE
           </span>
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Auth Container */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left Column: Session Selector */}
-          <div className="lg:col-span-5 rounded-3xl border border-border bg-card p-6 flex flex-col justify-between shadow-xs">
-            <div className="space-y-4">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                  Unified Gateway
-                </span>
-                <h2 className="text-lg font-bold text-foreground mt-0.5">
-                  Select Active Session
-                </h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  All portals share this single authentication point. Choose the role session you wish to launch:
-                </p>
-              </div>
-
-              <div className="space-y-2.5 pt-2">
-                {AVAILABLE_SESSIONS.map((sess) => {
-                  const isSelected = selectedSession.id === sess.id;
-                  return (
-                    <button
-                      key={sess.id}
-                      type="button"
-                      onClick={() => setSelectedSession(sess)}
-                      className={`w-full text-left p-3.5 rounded-2xl border transition-all flex items-start gap-3 cursor-pointer ${
-                        isSelected
-                          ? 'border-foreground bg-secondary/80 text-foreground shadow-xs'
-                          : 'border-border bg-background/50 hover:bg-secondary/40 text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-secondary border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0 mt-0.5">
-                        {sess.avatarInitials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-foreground truncate">
-                            {sess.name}
-                          </span>
-                          <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-secondary border border-border shrink-0">
-                            {sess.roleLabel}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground truncate mt-0.5 font-mono">
-                          {sess.whatsappPhone}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground/80 mt-1 line-clamp-1">
-                          {sess.description}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+        <div className="w-full max-w-xl rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
+          {/* Header & Mode Switcher */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                Database Authentication
+              </span>
+              <span className="text-[10px] font-mono font-medium text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                PostgreSQL Reconciled
+              </span>
             </div>
 
-            <div className="pt-6 border-t border-border mt-6">
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
-                <ShieldCheck className="w-3.5 h-3.5 text-foreground" />
-                <span>Deterministic Tenant Isolation &middot; MC-010</span>
-              </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                {authMode === 'signin' ? 'Sign In to Your Ledger' : 'Create Founder Account'}
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                {authMode === 'signin'
+                  ? 'Access your live double-entry accounts, budgets, and automated WhatsApp proposals.'
+                  : 'Initialize a clean tenant, chart of accounts, and deterministic ledger.'}
+              </p>
+            </div>
+
+            {/* Mode Tabs: Sign In / Create Account */}
+            <div className="grid grid-cols-2 p-1 rounded-2xl bg-secondary border border-border text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('signin');
+                  setErrorMsg(null);
+                  setSuccessMsg(null);
+                }}
+                className={`py-2 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  authMode === 'signin'
+                    ? 'bg-foreground text-background shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('register');
+                  setErrorMsg(null);
+                  setSuccessMsg(null);
+                }}
+                className={`py-2 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  authMode === 'register'
+                    ? 'bg-foreground text-background shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Register</span>
+              </button>
             </div>
           </div>
 
-          {/* Right Column: Credentials & Launch Form */}
-          <div className="lg:col-span-7 rounded-3xl border border-border bg-card p-6 sm:p-8 flex flex-col justify-between shadow-xs">
-            <div className="space-y-6">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                    Secure Entry
-                  </span>
-                  <span className="text-xs font-mono font-medium text-foreground bg-secondary px-2.5 py-0.5 rounded-full border border-border">
-                    {selectedSession.roleLabel}
-                  </span>
-                </div>
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-1">
-                  Authenticate Session
-                </h1>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Sign in with your verified WhatsApp number or email to access your live financial database.
-                </p>
-              </div>
-
-              {/* Login Method Toggle Pills */}
-              <div className="flex items-center gap-1.5 p-1 rounded-full bg-secondary border border-border w-fit text-xs font-medium">
+          {/* SIGN IN FORM */}
+          {authMode === 'signin' ? (
+            <form onSubmit={handleSignIn} className="space-y-4">
+              {/* Login Method Toggle: WhatsApp vs Email */}
+              <div className="flex items-center gap-2 p-1 rounded-xl bg-secondary/60 border border-border w-fit text-xs font-medium">
                 <button
                   type="button"
                   onClick={() => setLoginMethod('whatsapp')}
-                  className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                     loginMethod === 'whatsapp'
                       ? 'bg-foreground text-background font-semibold shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -251,141 +221,257 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setLoginMethod('email')}
-                  className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                     loginMethod === 'email'
                       ? 'bg-foreground text-background font-semibold shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Mail className="w-3.5 h-3.5" />
-                  <span>Email Address</span>
+                  <span>Email</span>
                 </button>
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-4">
-                {loginMethod === 'whatsapp' ? (
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-foreground flex items-center justify-between">
-                      <span>WhatsApp Phone Number</span>
-                      <span className="text-[10px] text-emerald-500 font-mono font-semibold">Meta Verified</span>
-                    </label>
-                    <div className="relative">
-                      <Phone className="w-4 h-4 text-emerald-500 absolute left-3.5 top-3" />
-                      <input
-                        type="tel"
-                        value={whatsappPhone}
-                        onChange={(e) => setWhatsappPhone(e.target.value)}
-                        placeholder="+1 647 555 0192"
-                        required
-                        className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
-                      />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground block font-mono">
-                      Seed user default: +1 647 555 0192 (Alex Tremblay)
-                    </span>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-foreground flex items-center justify-between">
-                      <span>Identity / Email</span>
-                      <span className="text-[10px] text-muted-foreground font-mono">Verified Tenant</span>
-                    </label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="alex@mapleridge.dev"
-                        required
-                        className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
-                      />
-                    </div>
-                  </div>
-                )}
-
+              {loginMethod === 'whatsapp' ? (
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <label className="font-medium text-foreground">Password / PIN</label>
-                    <button type="button" className="text-muted-foreground hover:text-foreground text-[11px]">
-                      Forgot key?
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      placeholder="Enter password"
-                      className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono tracking-widest"
-                    />
-                  </div>
-                </div>
-
-                {errorMsg && (
-                  <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-500 font-medium">
-                    {errorMsg}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={rememberSession}
-                      onChange={(e) => setRememberSession(e.target.checked)}
-                      className="rounded border-border text-foreground focus:ring-0"
-                    />
-                    <span>Persist session for 30 days</span>
+                  <label className="text-xs font-medium text-foreground flex items-center justify-between">
+                    <span>WhatsApp Phone Number</span>
+                    <span className="text-[10px] text-emerald-500 font-mono font-medium">Canada / Global (+1...)</span>
                   </label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-emerald-500 absolute left-3.5 top-3" />
+                    <input
+                      type="tel"
+                      value={whatsappPhone}
+                      onChange={(e) => setWhatsappPhone(e.target.value)}
+                      placeholder="+1 647 555 0192"
+                      required
+                      autoComplete="tel"
+                      className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                    />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground block font-mono">
+                    Enter the phone number registered to your WhatsApp account.
+                  </span>
                 </div>
-
-                <div className="pt-2 space-y-2.5">
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full py-3 px-4 rounded-full bg-foreground text-background font-semibold text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
-                  >
-                    {isLoading ? (
-                      <span>Connecting to database...</span>
-                    ) : (
-                      <>
-                        <span>Enter {selectedSession.roleLabel}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLaunch(selectedSession)}
-                    className="w-full py-2.5 px-4 rounded-full bg-secondary text-foreground hover:bg-muted font-medium text-xs border border-border transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <Key className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span>Instant Demo Sign-in (Alex Tremblay)</span>
-                  </button>
+              ) : (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-foreground flex items-center justify-between">
+                    <span>Email Address</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">Registered Account</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="founder@example.com"
+                      required
+                      autoComplete="email"
+                      className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                    />
+                  </div>
                 </div>
-              </form>
-            </div>
+              )}
 
-            {/* Direct Switcher Links */}
-            <div className="pt-6 border-t border-border mt-6">
-              <span className="text-[10px] font-mono uppercase text-muted-foreground block mb-2">
-                Quick Jump To Portals
-              </span>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                {AVAILABLE_SESSIONS.map((sess) => (
-                  <button
-                    key={sess.id}
-                    onClick={() => handleQuickLaunch(sess)}
-                    className="p-2 rounded-xl bg-secondary/50 hover:bg-secondary border border-border text-[11px] font-medium text-foreground transition-colors cursor-pointer"
-                  >
-                    {sess.role === 'client' ? 'Client' : sess.role === 'accountant' ? 'Accountant' : 'Admin'}
-                  </button>
-                ))}
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground block">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Enter your account password"
+                    autoComplete="current-password"
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                  />
+                </div>
               </div>
+
+              {/* Error / Success Notifications */}
+              {errorMsg && (
+                <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-500 font-medium flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-medium flex items-center gap-2">
+                  <Check className="w-4 h-4 shrink-0" />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-xs pt-1">
+                <label className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={rememberSession}
+                    onChange={(e) => setRememberSession(e.target.checked)}
+                    className="rounded border-border text-foreground focus:ring-0"
+                  />
+                  <span>Stay signed in on this device</span>
+                </label>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 rounded-full bg-foreground text-background font-semibold text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Verifying against database...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Enter Financial OS</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* REGISTER FORM */
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground block">
+                  Full Name / Legal Name
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={regFullName}
+                    onChange={(e) => setRegFullName(e.target.value)}
+                    placeholder="e.g. Maya Lin"
+                    required
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-sans"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center justify-between">
+                  <span>WhatsApp Phone Number</span>
+                  <span className="text-[10px] text-emerald-500 font-mono font-medium">Used for Bot Commands</span>
+                </label>
+                <div className="relative">
+                  <Phone className="w-4 h-4 text-emerald-500 absolute left-3.5 top-3" />
+                  <input
+                    type="tel"
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    placeholder="+1 647 123 4567"
+                    required
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground block">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                  <input
+                    type="email"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="maya@example.com"
+                    required
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground block">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                  <input
+                    type="password"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    required
+                    placeholder="Create a secure password"
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center justify-between">
+                  <span>Organization / Business Name (Optional)</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">Tenant</span>
+                </label>
+                <div className="relative">
+                  <Building2 className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={regTenantName}
+                    onChange={(e) => setRegTenantName(e.target.value)}
+                    placeholder="e.g. Lin Ventures Inc."
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-sans"
+                  />
+                </div>
+              </div>
+
+              {/* Error / Success Notifications */}
+              {errorMsg && (
+                <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-500 font-medium flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-medium flex items-center gap-2">
+                  <Check className="w-4 h-4 shrink-0" />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 rounded-full bg-foreground text-background font-semibold text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Creating database records...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Register & Create Ledger</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Security & Isolation Footnote */}
+          <div className="pt-6 border-t border-border mt-6">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+              <ShieldCheck className="w-3.5 h-3.5 text-foreground shrink-0" />
+              <span>Row-Level Tenant Isolation &middot; Double-Entry Integrity Enforced</span>
             </div>
           </div>
         </div>
@@ -415,4 +501,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-

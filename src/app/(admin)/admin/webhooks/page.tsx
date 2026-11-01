@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Webhook, 
   CheckCircle2, 
@@ -13,8 +15,16 @@ import { getInitialState, saveState, AppState } from '@/lib/store';
 import { auditLedgerIntegrity } from '@/lib/ledger';
 
 export default function AdminWebhooksPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [testResult, setTestResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/admin/webhooks');
+    }
+  }, [router]);
 
   useEffect(() => {
     saveState(state);
@@ -115,7 +125,7 @@ export default function AdminWebhooksPage() {
               "display_phone_number": "16475550192",
               "phone_number_id": "928103948102"
             },
-            "contacts": [{ "profile": { "name": "Alex Tremblay" }, "wa_id": "16475550192" }],
+            "contacts": [{ "profile": { "name": "WhatsApp User" }, "wa_id": "16475550192" }],
             "messages": [
               {
                 "from": "16475550192",

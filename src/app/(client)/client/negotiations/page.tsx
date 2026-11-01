@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Scale, 
   Sparkles, 
@@ -18,15 +20,26 @@ import { formatCAD } from '@/lib/ledger';
 import { BillNegotiation } from '@/lib/types';
 
 export default function NegotiationsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [selectedNegForAuth, setSelectedNegForAuth] = useState<BillNegotiation | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/client/negotiations');
+    }
+  }, [router]);
+
+  useEffect(() => {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
   const entityNegotiations = state.negotiations.filter((n) => n.entityId === activeEntity.id);
 
@@ -46,9 +59,9 @@ export default function NegotiationsPage() {
       auditLogs: [
         {
           id: `audit-${Date.now()}`,
-          tenantId: prev.currentTenant.id,
-          userId: prev.currentUser.id,
-          userName: prev.currentUser.fullName,
+          tenantId: prev.currentTenant?.id || 'ten-default',
+          userId: prev.currentUser?.id || 'usr-default',
+          userName: prev.currentUser?.fullName || 'User',
           entityType: activeEntity.type,
           action: 'AUTHORIZE_CONSEQUENTIAL_COUNTEROFFER',
           details: `Explicit human step-up authorization confirmed. Accepted counteroffer with ${neg.providerName} for rate ${formatCAD(

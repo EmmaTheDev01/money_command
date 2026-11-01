@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS users (
     whatsapp_phone TEXT UNIQUE,
     whatsapp_verified BOOLEAN NOT NULL DEFAULT false,
     whatsapp_link_code TEXT,
+    password_hash TEXT NOT NULL DEFAULT 'password123',
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );

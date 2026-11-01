@@ -41,7 +41,10 @@ export default function BudgetsPage() {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
   const entityBudgets = state.budgets.filter((b) => b.entityId === activeEntity.id);
   const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id && t.type === 'expense');

@@ -153,49 +153,47 @@ export default function ClientDashboardPage() {
   const entityInvestments = state.investments.filter((i) => i.entityId === activeEntity.id);
 
   // Dynamic user name
-  const userName = session?.name || state.currentUser?.fullName || 'Alex Tremblay';
+  const userName = session?.name || state.currentUser?.fullName || 'Account User';
   const firstName = userName.split(' ')[0];
 
   // 1. Budget Card Dynamic Values
-  const totalBudgetLimitMinor = entityBudgets.reduce((sum, b) => sum + b.amountMinor, 0) || 180000;
-  const totalBudgetSpentMinor = entityBudgets.reduce((sum, b) => sum + b.spentMinor, 0) || 87300;
+  const totalBudgetLimitMinor = entityBudgets.reduce((sum, b) => sum + b.amountMinor, 0);
+  const totalBudgetSpentMinor = entityBudgets.reduce((sum, b) => sum + b.spentMinor, 0);
 
   // 3-Bar Chart dynamic amounts (Salary / Income, Investments, Savings)
   const salaryMinor = entityTransactions
     .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.totalMinor, 0) || 621500;
+    .reduce((sum, t) => sum + t.totalMinor, 0);
 
-  const investmentsMinor = entityInvestments.reduce((sum, i) => sum + i.currentValueMinor, 0) || 4997000;
+  const investmentsMinor = entityInvestments.reduce((sum, i) => sum + i.currentValueMinor, 0);
   
   const savingsMinor = entityAccounts
     .filter((a) => a.type === 'asset' && a.subtype === 'savings')
     .reduce((sum, a) => sum + a.balanceMinor, 0) || 
-    entitySinkingFunds.reduce((sum, s) => sum + s.currentMinor, 0) || 1200000;
+    entitySinkingFunds.reduce((sum, s) => sum + s.currentMinor, 0);
 
   const maxBarValue = Math.max(salaryMinor, investmentsMinor, savingsMinor, 1);
-  const salaryBarHeight = Math.max(20, Math.min(100, Math.round((salaryMinor / maxBarValue) * 100)));
-  const investBarHeight = Math.max(20, Math.min(100, Math.round((investmentsMinor / maxBarValue) * 100)));
-  const savingsBarHeight = Math.max(20, Math.min(100, Math.round((savingsMinor / maxBarValue) * 100)));
+  const salaryBarHeight = salaryMinor > 0 ? Math.max(12, Math.min(100, Math.round((salaryMinor / maxBarValue) * 100))) : 4;
+  const investBarHeight = investmentsMinor > 0 ? Math.max(12, Math.min(100, Math.round((investmentsMinor / maxBarValue) * 100))) : 4;
+  const savingsBarHeight = savingsMinor > 0 ? Math.max(12, Math.min(100, Math.round((savingsMinor / maxBarValue) * 100))) : 4;
 
   // 2. Saving Goal Dynamic Values
-  const totalSavingsTarget = entitySinkingFunds.reduce((sum, f) => sum + f.targetMinor, 0) || 2270000;
-  const totalSavingsCurrent = entitySinkingFunds.reduce((sum, f) => sum + f.currentMinor, 0) || 1515000;
-  const savingPercent = Math.min(100, Math.max(1, Math.round((totalSavingsCurrent / totalSavingsTarget) * 100)));
-  const activeSavingBlocks = Math.max(1, Math.min(10, Math.round(savingPercent / 10)));
+  const totalSavingsTarget = entitySinkingFunds.reduce((sum, f) => sum + f.targetMinor, 0);
+  const totalSavingsCurrent = entitySinkingFunds.reduce((sum, f) => sum + f.currentMinor, 0);
+  const savingPercent = totalSavingsTarget > 0 ? Math.min(100, Math.round((totalSavingsCurrent / totalSavingsTarget) * 100)) : 0;
+  const activeSavingBlocks = Math.round(savingPercent / 10);
 
   // 3. Upcoming Bills (Dynamic from subscriptions)
-  const displayBills = entitySubscriptions.length > 0 
-    ? entitySubscriptions.slice(0, 3) 
-    : state.subscriptions.slice(0, 3);
+  const displayBills = entitySubscriptions.slice(0, 3);
 
   // 4. Income Breakdown
   const totalIncomeMinor = entityTransactions
     .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.totalMinor, 0) || 621500;
+    .reduce((sum, t) => sum + t.totalMinor, 0);
 
   // 5. Expenses Breakdown by Category
   const expenseTransactions = entityTransactions.filter((t) => t.type === 'expense');
-  const totalExpenseMinor = expenseTransactions.reduce((sum, t) => sum + t.totalMinor, 0) || 6700;
+  const totalExpenseMinor = expenseTransactions.reduce((sum, t) => sum + t.totalMinor, 0);
 
   const expensesByCategory: Record<string, number> = {};
   expenseTransactions.forEach((t) => {
@@ -203,9 +201,6 @@ export default function ClientDashboardPage() {
   });
 
   const categoryEntries = Object.entries(expensesByCategory);
-  if (categoryEntries.length === 0) {
-    categoryEntries.push(['Groceries', 4600], ['Software', 2100]);
-  }
 
   // 6. Outcome (Net Cash Flow)
   const netOutcomeMinor = totalIncomeMinor - totalExpenseMinor;
@@ -230,16 +225,25 @@ export default function ClientDashboardPage() {
     })),
   ].slice(0, 5);
 
-  // 8. Dynamic Budget Flow (12 Months)
+  // 8. Dynamic Budget Flow (12 Months grouped by transaction date)
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const monthlyFlowData = monthNames.map((m, idx) => {
-    const incBase = Math.round((totalIncomeMinor / 10000) * 0.15) || 60;
-    const expBase = Math.round((totalExpenseMinor / 1000) * 2) || 28;
-    const variation = ((idx * 7) % 25) - 10;
-    const inc = Math.max(25, Math.min(95, incBase + variation));
-    const out = Math.max(15, Math.min(70, expBase + Math.floor(variation * 0.6)));
-    return { m, inc, out };
+    const monthNum = (idx + 1).toString().padStart(2, '0');
+    const monthTxs = entityTransactions.filter((t) => {
+      if (!t.txDate) return false;
+      return t.txDate.includes(`-${monthNum}-`);
+    });
+    const incMinor = monthTxs.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.totalMinor, 0);
+    const expMinor = monthTxs.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.totalMinor, 0);
+    return { m, incMinor, expMinor };
   });
+
+  const maxMonthMinor = Math.max(...monthlyFlowData.map((d) => Math.max(d.incMinor, d.expMinor)), 1);
+  const monthlyBars = monthlyFlowData.map((d) => ({
+    m: d.m,
+    inc: d.incMinor > 0 ? Math.max(8, Math.min(100, Math.round((d.incMinor / maxMonthMinor) * 100))) : 0,
+    out: d.expMinor > 0 ? Math.max(8, Math.min(100, Math.round((d.expMinor / maxMonthMinor) * 100))) : 0,
+  }));
 
   const handleExportCSV = () => {
     const csvRows = [
@@ -404,7 +408,7 @@ export default function ClientDashboardPage() {
                     <span className="font-semibold text-foreground whitespace-nowrap">Monthly Budget</span>
                   </div>
                   <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
-                    {Math.round((totalBudgetSpentMinor / totalBudgetLimitMinor) * 100)}% utilized
+                    {totalBudgetLimitMinor > 0 ? `${Math.round((totalBudgetSpentMinor / totalBudgetLimitMinor) * 100)}% utilized` : 'No limits set'}
                   </span>
                 </div>
 
@@ -536,31 +540,37 @@ export default function ClientDashboardPage() {
                 </div>
 
                 <div className="space-y-3 mt-3 divide-y divide-border">
-                  {displayBills.map((bill, bIdx) => {
-                    const hasPriceIncrease = (bill.priceDeltaMinor || 0) > 0;
-                    return (
-                      <div key={bill.id || bIdx} className="flex items-center justify-between pt-2 gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className={`w-7 h-7 rounded-lg ${hasPriceIncrease ? 'bg-orange-500' : 'bg-emerald-500'} text-white flex items-center justify-center font-bold text-[9px] uppercase font-mono shrink-0 shadow-xs`}>
-                            {bill.frequency === 'monthly' ? 'MO' : 'YR'}
+                  {displayBills.length === 0 ? (
+                    <div className="py-8 text-center text-muted-foreground text-xs font-mono">
+                      No active recurring subscriptions found in database.
+                    </div>
+                  ) : (
+                    displayBills.map((bill, bIdx) => {
+                      const hasPriceIncrease = (bill.priceDeltaMinor || 0) > 0;
+                      return (
+                        <div key={bill.id || bIdx} className="flex items-center justify-between pt-2 gap-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-7 h-7 rounded-lg ${hasPriceIncrease ? 'bg-orange-500' : 'bg-emerald-500'} text-white flex items-center justify-center font-bold text-[9px] uppercase font-mono shrink-0 shadow-xs`}>
+                              {bill.frequency === 'monthly' ? 'MO' : 'YR'}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-xs font-semibold text-foreground truncate max-w-[120px] sm:max-w-[150px]">{bill.merchant}</div>
+                              <div className="text-[11px] font-mono text-muted-foreground whitespace-nowrap tabular-nums">{formatCAD(bill.amountMinor)}</div>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-semibold text-foreground truncate max-w-[120px] sm:max-w-[150px]">{bill.merchant}</div>
-                            <div className="text-[11px] font-mono text-muted-foreground whitespace-nowrap tabular-nums">{formatCAD(bill.amountMinor)}</div>
-                          </div>
-                        </div>
 
-                        <span className={`text-[10px] sm:text-[11px] font-semibold flex items-center gap-1.5 border px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
-                          hasPriceIncrease
-                            ? 'text-orange-500 border-orange-500/20 bg-orange-500/10'
-                            : 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10'
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${hasPriceIncrease ? 'bg-orange-500' : 'bg-emerald-500'}`} />
-                          {hasPriceIncrease ? 'Price Bump' : 'Active'}
-                        </span>
-                      </div>
-                    );
-                  })}
+                          <span className={`text-[10px] sm:text-[11px] font-semibold flex items-center gap-1.5 border px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
+                            hasPriceIncrease
+                              ? 'text-orange-500 border-orange-500/20 bg-orange-500/10'
+                              : 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${hasPriceIncrease ? 'bg-orange-500' : 'bg-emerald-500'}`} />
+                            {hasPriceIncrease ? 'Price Bump' : 'Active'}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -578,34 +588,31 @@ export default function ClientDashboardPage() {
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] text-muted-foreground mt-3">
                     <span className="flex items-center gap-1.5 font-medium text-foreground whitespace-nowrap">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                      Client Retainer
-                    </span>
-                    <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
-                      <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
-                      Investments
-                    </span>
-                    <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
-                      <span className="w-2 h-2 rounded-full bg-foreground shrink-0" />
-                      Other
+                      Total Income
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-2.5 mt-5">
-                  <div className="w-full h-8 rounded-full bg-emerald-500 text-white flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
-                    <Briefcase className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Primary ({formatCAD(totalIncomeMinor)})</span>
-                  </div>
+                  {totalIncomeMinor === 0 ? (
+                    <div className="py-8 text-center text-muted-foreground text-xs font-mono">
+                      No income records in current period.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-full h-8 rounded-full bg-emerald-500 text-white flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
+                        <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Primary Inflow ({formatCAD(totalIncomeMinor)})</span>
+                      </div>
 
-                  <div className="w-[82%] h-8 rounded-full bg-orange-500 text-white flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
-                    <TrendingUp className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Investments ({formatCAD(Math.round(totalIncomeMinor * 0.38))})</span>
-                  </div>
-
-                  <div className="w-[62%] h-8 rounded-full bg-foreground text-background flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
-                    <Coins className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Other ({formatCAD(Math.round(totalIncomeMinor * 0.15))})</span>
-                  </div>
+                      {salaryMinor > 0 && (
+                        <div className="w-[85%] h-8 rounded-full bg-orange-500 text-white flex items-center px-3 gap-2 shadow-xs transition-all overflow-hidden">
+                          <TrendingUp className="w-3.5 h-3.5 shrink-0" />
+                          <span className="text-[11px] font-semibold font-sans truncate whitespace-nowrap">Salary / Operations ({formatCAD(salaryMinor)})</span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -618,64 +625,65 @@ export default function ClientDashboardPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[10.5px] text-muted-foreground mt-2.5">
-                    {categoryEntries.slice(0, 4).map(([cat, amt], cIdx) => {
-                      const colors = ['bg-orange-500', 'bg-emerald-500', 'bg-foreground', 'bg-muted-foreground'];
-                      return (
-                        <span key={cat} className="flex items-center gap-1 font-medium text-foreground whitespace-nowrap">
-                          <span className={`w-2 h-2 rounded-full shrink-0 ${colors[cIdx % colors.length]}`} />
-                          <span className="truncate max-w-[80px]">{cat}</span>
-                        </span>
-                      );
-                    })}
+                    {categoryEntries.length === 0 ? (
+                      <span className="text-muted-foreground font-mono text-[10px]">No categories recorded</span>
+                    ) : (
+                      categoryEntries.slice(0, 4).map(([cat, amt], cIdx) => {
+                        const colors = ['bg-orange-500', 'bg-emerald-500', 'bg-foreground', 'bg-muted-foreground'];
+                        return (
+                          <span key={cat} className="flex items-center gap-1 font-medium text-foreground whitespace-nowrap">
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${colors[cIdx % colors.length]}`} />
+                            <span className="truncate max-w-[80px]">{cat}</span>
+                          </span>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center pt-2">
-                  <svg viewBox="0 0 200 115" className="w-48 sm:w-52 h-24 sm:h-28 overflow-visible">
-                    <path
-                      d="M 20 100 A 80 80 0 0 1 180 100"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      className="text-secondary"
-                      strokeLinecap="round"
-                    />
-                    {/* Segment 1: Orange */}
-                    <path
-                      d="M 20 100 A 80 80 0 0 1 35 68"
-                      fill="none"
-                      stroke="#fb923c"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                    />
-                    {/* Segment 2: Foreground (Black/White) */}
-                    <path
-                      d="M 38 64 A 80 80 0 0 1 75 32"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      className="text-foreground"
-                      strokeLinecap="round"
-                    />
-                    {/* Segment 3: Green */}
-                    <path
-                      d="M 80 30 A 80 80 0 0 1 140 36"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                    />
-                    {/* Segment 4: Subtle Muted Gray */}
-                    <path
-                      d="M 145 40 A 80 80 0 0 1 180 100"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      className="text-muted-foreground/50"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
+                {categoryEntries.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground text-xs font-mono">
+                    No expense transactions found in ledger.
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center pt-2">
+                    <svg viewBox="0 0 200 115" className="w-48 sm:w-52 h-24 sm:h-28 overflow-visible">
+                      <path
+                        d="M 20 100 A 80 80 0 0 1 180 100"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="18"
+                        className="text-secondary"
+                        strokeLinecap="round"
+                      />
+                      {/* Segment 1: Orange */}
+                      <path
+                        d="M 20 100 A 80 80 0 0 1 35 68"
+                        fill="none"
+                        stroke="#fb923c"
+                        strokeWidth="18"
+                        strokeLinecap="round"
+                      />
+                      {/* Segment 2: Foreground (Black/White) */}
+                      <path
+                        d="M 38 64 A 80 80 0 0 1 75 32"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="18"
+                        className="text-foreground"
+                        strokeLinecap="round"
+                      />
+                      {/* Segment 3: Green */}
+                      <path
+                        d="M 80 30 A 80 80 0 0 1 140 36"
+                        fill="none"
+                        stroke="#10b981"
+                        strokeWidth="18"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                )}
 
                 <div className="text-center text-xs font-mono text-muted-foreground pt-1 whitespace-nowrap truncate">
                   Total Expensed: <strong className="text-foreground">{formatCAD(totalExpenseMinor)}</strong>
@@ -825,7 +833,7 @@ export default function ClientDashboardPage() {
 
                 <div className="pt-4 space-y-2 overflow-hidden">
                   <div className="h-32 flex items-end justify-between gap-0.5 sm:gap-1.5 px-1 overflow-hidden">
-                    {monthlyFlowData.map((col) => (
+                    {monthlyBars.map((col) => (
                       <div key={col.m} className="flex-1 flex flex-col items-center gap-0.5 sm:gap-1 h-full justify-end min-w-0 overflow-hidden">
                         {/* Top: Income (Green) */}
                         <div
@@ -869,8 +877,8 @@ export default function ClientDashboardPage() {
           }));
         }}
         entityId={activeEntity.id}
-        tenantId={state.currentTenant.id}
-        userId={session?.userId || state.currentUser.id}
+        tenantId={session?.tenantId || state.currentTenant?.id || 'ten-default'}
+        userId={session?.userId || state.currentUser?.id || 'usr-default'}
       />
     </div>
   );

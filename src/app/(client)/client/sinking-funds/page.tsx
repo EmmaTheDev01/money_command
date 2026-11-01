@@ -43,7 +43,10 @@ export default function SinkingFundsPage() {
   const [newTargetDate, setNewTargetDate] = useState('2026-12-31');
   const [newCategory, setNewCategory] = useState('Savings');
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const funds = state.sinkingFunds.filter((f) => f.entityId === activeEntity.id);
 
   const totalTarget = funds.reduce((sum, f) => sum + f.targetMinor, 0);

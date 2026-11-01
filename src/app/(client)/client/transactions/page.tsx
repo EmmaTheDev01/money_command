@@ -47,7 +47,10 @@ export default function TransactionsPage() {
     saveState(state);
   }, [state]);
 
-  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
+  const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0] || {
+    id: 'ent-default',
+    name: 'Primary Ledger',
+  };
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
 
   const entityTransactions = state.transactions
@@ -78,9 +81,9 @@ export default function TransactionsPage() {
         auditLogs: [
           {
             id: `audit-${Date.now()}`,
-            tenantId: prev.currentTenant.id,
-            userId: prev.currentUser.id,
-            userName: prev.currentUser.fullName,
+            tenantId: prev.currentTenant?.id || 'ten-default',
+            userId: prev.currentUser?.id || 'usr-default',
+            userName: prev.currentUser?.fullName || 'User',
             entityType: activeEntity.type,
             action: 'EXECUTE_MC010_REVERSAL',
             details: `Committed reversal transaction ${reversalTx.id} for posted transaction ${reversalModalTx.id} (${reversalModalTx.merchant}). Reason: ${reversalReason}. Double-entry invariant preserved.`,

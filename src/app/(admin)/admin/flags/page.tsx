@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
 import { 
   Sliders, 
   CheckCircle2, 
@@ -13,8 +15,16 @@ import { getInitialState, saveState, AppState } from '@/lib/store';
 import { auditLedgerIntegrity } from '@/lib/ledger';
 
 export default function AdminFlagsPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>(getInitialState());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const s = db.getCurrentSession();
+    if (!s) {
+      router.push('/login?redirect=/admin/flags');
+    }
+  }, [router]);
 
   useEffect(() => {
     saveState(state);
