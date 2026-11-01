@@ -1040,39 +1040,44 @@ export default function MoneyCommandLandingPage() {
             </div>
 
             {/* 2-Column Split: WhatsApp Scoped Authorization on Left, Workflow Engines on Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start max-w-6xl mx-auto w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto w-full">
               {/* Left Column (5 cols): WhatsApp Conversational Authorization Live Simulator */}
-              <div className="lg:col-span-5 w-full lg:sticky lg:top-24">
-                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card text-left text-xs shadow-xl pro-card w-full space-y-4">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                    <div className="flex items-center gap-2.5">
+              <div className="lg:col-span-5 w-full flex flex-col">
+                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card text-left text-xs shadow-xl pro-card w-full h-full flex flex-col justify-between space-y-4">
+                  {/* WhatsApp Chat Header */}
+                  <div className="flex items-center justify-between border-b border-border/60 pb-3 shrink-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
                         <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-foreground text-sm block leading-tight">Money Command Bot</span>
-                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground font-semibold">
-                            Authorize 1-Tap
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground font-mono">Scoped User Confirmation Ingest</span>
+                      <div className="min-w-0">
+                        <span className="font-bold text-foreground text-sm block leading-tight truncate">
+                          Money Command Bot
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono truncate block">
+                          Scoped User Confirmation Ingest
+                        </span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      Active · CAD-Ready
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                      Active · CAD
                     </span>
                   </div>
 
-                  <div className="space-y-3 font-sans pt-1">
-                    {/* User Outbound Message */}
+                  {/* Chat Conversation Stream */}
+                  <div className="space-y-3 font-sans py-1 flex-1 flex flex-col justify-center">
+                    <div className="text-center font-mono text-[9px] uppercase tracking-wider text-muted-foreground/70">
+                      Today &middot; 2:14 PM
+                    </div>
+
+                    {/* Step 1: User Outbound Message */}
                     <div className="flex justify-end">
-                      <div className="bg-[#005c4b] text-white p-3 sm:p-3.5 rounded-2xl rounded-tr-xs max-w-[85%] leading-relaxed shadow-sm text-xs sm:text-sm">
+                      <div className="bg-[#005c4b] text-white p-3 rounded-2xl rounded-tr-xs max-w-[85%] leading-relaxed shadow-sm text-xs sm:text-sm">
                         Spent CAD 46 at Walmart on groceries
                       </div>
                     </div>
 
-                    {/* AI Bot Inbound Proposal */}
+                    {/* Step 2: AI Bot Inbound Proposal */}
                     <div className="flex justify-start">
                       <div className="bg-secondary/70 border border-border text-foreground p-3.5 rounded-2xl rounded-tl-xs max-w-[90%] leading-relaxed space-y-2 shadow-xs">
                         <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
@@ -1083,14 +1088,36 @@ export default function MoneyCommandLandingPage() {
                           Record <strong className="text-foreground">CAD 46.00</strong> expense to <strong className="text-foreground">Groceries</strong> from <strong className="text-foreground">Personal Checking</strong>?
                         </p>
                         <div className="flex items-center gap-2 pt-1 font-mono text-[10px]">
-                          <span className="px-2.5 py-1 rounded-md bg-foreground text-background font-bold shadow-xs">1: Confirm</span>
-                          <span className="px-2.5 py-1 rounded-md bg-muted text-foreground border border-border">2: Correct</span>
+                          <span className="px-2.5 py-0.5 rounded-md bg-foreground text-background font-bold shadow-xs">1: Confirm</span>
+                          <span className="px-2.5 py-0.5 rounded-md bg-muted text-foreground border border-border">2: Correct</span>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Step 3: User Authorizes Explicitly */}
+                    <div className="flex justify-end">
+                      <div className="bg-[#005c4b] text-white px-3.5 py-1.5 rounded-2xl rounded-tr-xs font-mono font-bold text-xs shadow-sm flex items-center gap-1.5">
+                        <span>1</span>
+                        <span className="text-[10px] font-normal opacity-80">(Confirm)</span>
+                      </div>
+                    </div>
+
+                    {/* Step 4: Bot Execution Confirmation */}
+                    <div className="flex justify-start">
+                      <div className="bg-secondary/70 border border-emerald-500/30 text-foreground p-3 rounded-2xl rounded-tl-xs max-w-[90%] leading-relaxed space-y-1 shadow-xs">
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-500 font-bold">
+                          <Check className="w-3 h-3" />
+                          <span>POSTED TO LEDGER &middot; tx_8842</span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          DR Groceries $46.00 / CR Checking $46.00. Safe-to-Spend updated: <strong className="text-foreground font-mono">CAD 2,840</strong>.
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2">
+                  {/* CTA Footer */}
+                  <div className="pt-2 shrink-0">
                     <Link
                       href="/client"
                       className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
@@ -1103,39 +1130,43 @@ export default function MoneyCommandLandingPage() {
               </div>
 
               {/* Right Column (7 cols): The 2 Permissioned Action Workflows */}
-              <div className="lg:col-span-7 flex flex-col gap-5 text-xs w-full">
+              <div className="lg:col-span-7 flex flex-col justify-between gap-5 text-xs w-full h-full">
                 {/* Card 1: Subscription Cancellation */}
-                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card">
-                  <div className="flex items-center justify-between border-b border-border pb-3">
-                    <span className="font-bold text-foreground text-sm sm:text-base">Subscription Cancellation</span>
-                    <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-secondary border border-border">P1 WORKFLOW</span>
+                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card flex-1 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-border pb-3">
+                      <span className="font-bold text-foreground text-sm sm:text-base">Subscription Cancellation</span>
+                      <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-secondary border border-border">P1 WORKFLOW</span>
+                    </div>
+                    <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
+                      <div>DETECT RECURRING CHARGE (CAD 84/mo)</div>
+                      <div>&rarr; USER REVIEWS TERMS & FEES</div>
+                      <div>&rarr; RESOLVE ROUTE (EMAIL/API/SCRIPT)</div>
+                      <div className="text-emerald-600 dark:text-emerald-400 font-bold">&rarr; EXPLICIT USER AUTHORIZATION</div>
+                      <div>&rarr; POST-CANCELLATION MONITORING</div>
+                    </div>
                   </div>
-                  <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
-                    <div>DETECT RECURRING CHARGE (CAD 84/mo)</div>
-                    <div>&rarr; USER REVIEWS TERMS & FEES</div>
-                    <div>&rarr; RESOLVE ROUTE (EMAIL/API/SCRIPT)</div>
-                    <div className="text-emerald-600 dark:text-emerald-400 font-bold">&rarr; EXPLICIT USER AUTHORIZATION</div>
-                    <div>&rarr; POST-CANCELLATION MONITORING</div>
-                  </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                  <p className="text-muted-foreground text-xs leading-relaxed pt-2 border-t border-border/40">
                     Never marked &ldquo;cancelled&rdquo; until proof of confirmation is captured and verified against future billing cycles.
                   </p>
                 </div>
 
                 {/* Card 2: Bill Negotiation */}
-                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card">
-                  <div className="flex items-center justify-between border-b border-border pb-3">
-                    <span className="font-bold text-foreground text-sm sm:text-base">Bill Negotiation Engine</span>
-                    <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-secondary border border-border">COACH / DRAFT / INITIATE</span>
+                <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card space-y-4 shadow-sm pro-card flex-1 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-border pb-3">
+                      <span className="font-bold text-foreground text-sm sm:text-base">Bill Negotiation Engine</span>
+                      <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-secondary border border-border">COACH / DRAFT / INITIATE</span>
+                    </div>
+                    <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
+                      <div>ANALYZE HISTORICAL TELECOM BILLS</div>
+                      <div>&rarr; BENCHMARK ACCEPTABLE TARGET RANGE</div>
+                      <div>&rarr; GENERATE COUNTEROFFER SCRIPT</div>
+                      <div className="text-[#fb923c] font-bold">&rarr; USER APPROVAL FOR ANY TERM CHANGE</div>
+                      <div>&rarr; AUDITABLE PROVED SAVINGS STORED</div>
+                    </div>
                   </div>
-                  <div className="font-mono text-[11px] text-muted-foreground space-y-1.5">
-                    <div>ANALYZE HISTORICAL TELECOM BILLS</div>
-                    <div>&rarr; BENCHMARK ACCEPTABLE TARGET RANGE</div>
-                    <div>&rarr; GENERATE COUNTEROFFER SCRIPT</div>
-                    <div className="text-[#fb923c] font-bold">&rarr; USER APPROVAL FOR ANY TERM CHANGE</div>
-                    <div>&rarr; AUDITABLE PROVED SAVINGS STORED</div>
-                  </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                  <p className="text-muted-foreground text-xs leading-relaxed pt-2 border-t border-border/40">
                     Any contract extension, financing terms, credit check or fee requires fresh, explicit customer signoff.
                   </p>
                 </div>
