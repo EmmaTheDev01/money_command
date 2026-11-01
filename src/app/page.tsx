@@ -834,6 +834,62 @@ export default function MoneyCommandLandingPage() {
                 </div>
               ))}
             </div>
+
+            {/* Live WhatsApp Conversational Simulation (Surface 01 Spotlight) */}
+            <div className="pt-6 sm:pt-8 max-w-xl mx-auto w-full">
+              <div className="p-6 sm:p-7 rounded-[32px] border border-border bg-card text-left text-xs shadow-xl pro-card w-full space-y-4">
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                      <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-foreground text-sm block leading-tight">Money Command WhatsApp Bot</span>
+                      <span className="text-[10px] text-muted-foreground font-mono">Conversational Double-Entry Capture</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Active · CAD-Ready
+                  </span>
+                </div>
+
+                <div className="space-y-3 font-sans pt-1">
+                  {/* User Outbound Message */}
+                  <div className="flex justify-end">
+                    <div className="bg-[#005c4b] text-white p-3 sm:p-3.5 rounded-2xl rounded-tr-xs max-w-[85%] leading-relaxed shadow-sm text-xs sm:text-sm">
+                      Spent CAD 46 at Walmart on groceries
+                    </div>
+                  </div>
+
+                  {/* AI Bot Inbound Proposal */}
+                  <div className="flex justify-start">
+                    <div className="bg-secondary/70 border border-border text-foreground p-3.5 rounded-2xl rounded-tl-xs max-w-[90%] leading-relaxed space-y-2 shadow-xs">
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>PROPOSAL READY (96% Confidence)</span>
+                      </div>
+                      <p className="text-muted-foreground text-xs leading-relaxed">
+                        Record <strong className="text-foreground">CAD 46.00</strong> expense to <strong className="text-foreground">Groceries</strong> from <strong className="text-foreground">Personal Checking</strong>?
+                      </p>
+                      <div className="flex items-center gap-2 pt-1 font-mono text-[10px]">
+                        <span className="px-2.5 py-1 rounded-md bg-foreground text-background font-bold shadow-xs">1: Confirm</span>
+                        <span className="px-2.5 py-1 rounded-md bg-muted text-foreground border border-border">2: Correct</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/client"
+                    className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
+                  >
+                    <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
+                    <span>Start on WhatsApp Now</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1268,48 +1324,6 @@ export default function MoneyCommandLandingPage() {
                 >
                   Inquire for Pilot
                 </a>
-              </div>
-            </div>
-
-            {/* WhatsApp Simulator Box */}
-            <div id="invite" className="p-6 sm:p-8 rounded-[32px] border border-border bg-card max-w-lg mx-auto space-y-5 text-left text-xs shadow-md pro-card w-full">
-              <div className="flex items-center justify-between border-b border-border pb-3">
-                <div className="flex items-center gap-2.5">
-                  <WhatsAppIcon className="w-5 h-5 text-emerald-500" />
-                  <span className="font-bold text-foreground text-sm">Money Command WhatsApp Bot</span>
-                </div>
-                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">Active · CAD-Ready</span>
-              </div>
-
-              <div className="space-y-3 font-sans">
-                <div className="flex justify-end">
-                  <div className="bg-emerald-600 text-white p-3 rounded-2xl rounded-tr-xs max-w-[85%] leading-relaxed shadow-sm">
-                    Spent CAD 46 at Walmart on groceries
-                  </div>
-                </div>
-
-                <div className="flex justify-start">
-                  <div className="bg-secondary border border-border text-foreground p-3.5 rounded-2xl rounded-tl-xs max-w-[88%] leading-relaxed space-y-2">
-                    <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 block font-bold">PROPOSAL READY (96% Confidence)</span>
-                    <p className="text-muted-foreground text-xs leading-relaxed">
-                      Record <strong className="text-foreground">CAD 46.00</strong> expense to <strong className="text-foreground">Groceries</strong> from <strong className="text-foreground">Personal Checking</strong>?
-                    </p>
-                    <div className="flex items-center gap-2 pt-1 font-mono text-[10px]">
-                      <span className="px-2.5 py-1 rounded bg-foreground text-background font-bold">1: Confirm</span>
-                      <span className="px-2.5 py-1 rounded bg-muted text-foreground border border-border">2: Correct</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <Link
-                  href="/client"
-                  className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
-                >
-                  <WhatsAppIcon className="w-4 h-4 text-emerald-500" />
-                  <span>Start on WhatsApp Now</span>
-                </Link>
               </div>
             </div>
           </div>
