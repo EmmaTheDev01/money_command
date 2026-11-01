@@ -25,9 +25,9 @@ export default function MoneyCommandLogo({
   theme = "auto"
 }: MoneyCommandLogoProps) {
   // Theme color resolve
-  let textColorClass = "text-foreground";
+  let textColorClass = "text-current";
   if (theme === 'light') {
-    textColorClass = "text-[#09090B]";
+    textColorClass = "text-black";
   } else if (theme === 'dark') {
     textColorClass = "text-white";
   }

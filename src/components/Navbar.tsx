@@ -56,9 +56,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
             className="size-9 grid place-items-center rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors border border-border"
           >
             {isDark ? (
-              <Sun className="size-4" />
+              <Sun className="size-4 text-white" />
             ) : (
-              <Moon className="size-4 text-neutral-800" />
+              <Moon className="size-4 text-black" />
             )}
           </button>
         </div>

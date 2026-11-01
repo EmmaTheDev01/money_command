@@ -32,7 +32,9 @@ import {
   Receipt,
   Users,
   Building,
-  Key
+  Key,
+  AtSign,
+  Tag
 } from 'lucide-react';
 import MoneyCommandLogo from '@/components/MoneyCommandLogo';
 import InteractiveNumberMatrix from '@/components/InteractiveNumberMatrix';
@@ -41,25 +43,19 @@ import MultiEntitySeparationSection from '@/components/MultiEntitySeparationSect
 import InteractiveMerchantField from '@/components/InteractiveMerchantField';
 
 // Official Real WhatsApp Logo Badge
-function RealWhatsAppLogo({ className = "w-12 h-12" }: { className?: string }) {
+function RealWhatsAppLogo({ className = "w-11 h-11" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="48" rx="14" fill="#25D366" />
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M24 10C16.27 10 10 16.27 10 24C10 26.75 10.79 29.31 12.16 31.46L10.5 37.5L16.73 35.89C18.82 37.2 21.32 37.97 24 37.97C31.73 37.97 38 31.7 38 23.97C38 16.24 31.73 10 24 10ZM24 12.35C30.43 12.35 35.65 17.56 35.65 24C35.65 30.43 30.43 35.65 24 35.65C21.65 35.65 19.46 34.96 17.63 33.77L17.21 33.49L13.11 34.55L14.2 30.56L13.9 30.08C12.64 28.23 11.96 26.17 11.96 24C11.96 17.56 17.18 12.35 24 12.35ZM20.25 16.85C19.95 16.85 19.45 16.96 19.03 17.42C18.61 17.88 17.43 18.98 17.43 21.23C17.43 23.48 19.07 25.65 19.3 25.95C19.53 26.25 22.47 30.75 26.96 32.69C30.69 34.3 31.45 33.98 32.25 33.9C33.05 33.82 34.83 32.84 35.2 31.8C35.57 30.76 35.57 29.87 35.46 29.68C35.35 29.49 35.05 29.38 34.6 29.15C34.15 28.92 31.94 27.83 31.52 27.68C31.1 27.53 30.8 27.45 30.5 27.91C30.2 28.37 29.34 29.38 29.08 29.68C28.82 29.98 28.56 30.02 28.11 29.79C27.66 29.56 26.21 29.08 24.48 27.54C23.13 26.34 22.22 24.85 21.95 24.4C21.68 23.95 21.92 23.71 22.15 23.48C22.35 22.28 22.58 22.01 22.81 21.74C23.04 21.47 23.15 21.28 23.3 20.98C23.45 20.68 23.38 20.41 23.26 20.18C23.14 19.95 22.22 17.7 21.84 16.78C21.47 15.89 21.09 16.01 20.8 16C20.53 15.99 20.21 15.99 19.9 15.99"
-        fill="#FFFFFF"
-      />
-    </svg>
+    <div className={`relative flex items-center justify-center rounded-2xl bg-[#25D366] text-white shadow-md p-2.5 ${className}`}>
+      <WhatsAppIcon className="w-full h-full text-white" />
+    </div>
   );
 }
 
-// Official Real Money Command Icon Badge
-function RealMoneyCommandIcon({ className = "w-12 h-12" }: { className?: string }) {
+// Official Real Money Command Icon Badge (Theme-Compatible)
+function RealMoneyCommandIcon({ className = "w-11 h-11" }: { className?: string }) {
   return (
-    <div className={`relative flex items-center justify-center rounded-[14px] bg-[#09090b] text-white dark:bg-white dark:text-black shadow-md border border-white/10 dark:border-black/10 p-2.5 ${className}`}>
-      <MoneyCommandLogo variant="mark" className="w-full h-full" />
+    <div className={`relative flex items-center justify-center rounded-full bg-foreground text-background shadow-md border border-border p-2.5 ${className}`}>
+      <MoneyCommandLogo variant="mark" className="w-full h-full text-current" />
     </div>
   );
 }
@@ -79,6 +75,22 @@ const FOUNDER_AVATARS = [
   { id: 'marcus', name: 'marcus.dev', role: 'Freelance Engineer', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80' },
   { id: 'elena', name: 'elena.cpa', role: 'Chartered Accountant', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80' },
   { id: 'david', name: 'david.agency', role: 'Studio Founder', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80' },
+];
+
+const CONNECTION_CARDS_ROW_1 = [
+  { id: 1, title: '5 steps to an easy Sunday' },
+  { id: 2, title: "what's in my bag" },
+  { id: 3, title: 'my 6am routine' },
+  { id: 4, title: '5-min dinner' },
+  { id: 5, title: 'before and after' },
+];
+
+const CONNECTION_CARDS_ROW_2 = [
+  { id: 6, title: 'a day with me' },
+  { id: 7, title: 'grocery list' },
+  { id: 8, title: 'focus playlist' },
+  { id: 9, title: 'answering you' },
+  { id: 10, title: '3 mistakes I made' },
 ];
 
 export default function MoneyCommandLandingPage() {
@@ -239,9 +251,9 @@ export default function MoneyCommandLandingPage() {
           <div className="mx-auto w-full max-w-7xl flex items-center justify-between gap-4 py-3.5">
             {/* Logo & Navigation */}
             <div className="flex items-center gap-6 sm:gap-8">
-              <Link href="/" className="inline-flex items-center gap-2.5 sm:gap-3 group">
-                <MoneyCommandLogo variant="mark" className="h-7 sm:h-8 w-auto transition-transform group-hover:scale-105" />
-                <span className="font-extrabold tracking-tight text-base sm:text-xl text-foreground font-sans uppercase">
+              <Link href="/" className="inline-flex items-center gap-2 sm:gap-2.5 group">
+                <MoneyCommandLogo variant="mark" className="h-5 sm:h-5.5 w-auto transition-transform group-hover:scale-105" />
+                <span className="font-extrabold tracking-tight text-sm sm:text-base text-foreground font-sans uppercase">
                   MONEY COMMAND
                 </span>
               </Link>
@@ -267,9 +279,9 @@ export default function MoneyCommandLandingPage() {
                 type="button"
                 onClick={toggleTheme}
                 aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors border border-border"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary transition-colors border border-border"
               >
-                {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                {isDark ? <Moon className="w-4 h-4 text-white" /> : <Sun className="w-4 h-4 text-black" />}
               </button>
 
               <Link
@@ -428,9 +440,9 @@ export default function MoneyCommandLandingPage() {
 
 
         {/* =========================================================================
-            SECTION 02 · THE CONNECTION (ANIMATED & INTENTIONAL)
+            SECTION 02 · THE CONNECTION (PATENSIFY STYLE)
             ========================================================================= */}
-        <section id="connection" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
+        <section id="connection" className="relative min-h-[90svh] flex flex-col justify-center px-4 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
           <div className="mx-auto w-full max-w-7xl flex flex-col justify-center gap-10 sm:gap-14 section-animate">
             <div className="act-head grid gap-x-10 gap-y-5 lg:grid-cols-12 lg:items-end">
               <div className="flex flex-col gap-3 sm:gap-4 text-left lg:col-span-7">
@@ -446,152 +458,189 @@ export default function MoneyCommandLandingPage() {
               </div>
               <div className="lg:col-span-5">
                 <p className="text-pretty text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  You authorize in one tap and disconnect whenever you want. Money Command operates through authenticated channel linking &mdash; never accessing your banking passwords or credentials.
+                  You authorize in one tap and disconnect whenever you want. Money Command only understands what’s already authorized on your profile.
                 </p>
               </div>
             </div>
 
-            {/* Visual Stage with Ambient Synapses and Floating Callouts */}
-            <div className="relative w-full max-w-4xl mx-auto py-8 sm:py-12 px-2 sm:px-8 flex items-center justify-center">
-              {/* Floating Callout 1 (Top Left) with Animated Floating */}
-              <div className="hidden lg:block absolute -top-4 left-4 z-20 p-4 rounded-2xl bg-card border border-border shadow-md max-w-[230px] pro-card animate-float">
-                <div className="flex items-center gap-1.5 pb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase">CHANNEL ONLY</span>
+            {/* Visual Stage Container: Background Grid of Cards with Central Modal Overlay */}
+            <div className="relative w-full max-w-5xl mx-auto rounded-3xl border border-border/40 bg-card/20 p-4 sm:p-6 lg:p-8 overflow-hidden">
+              {/* Top User Profile Bar */}
+              <div className="flex items-center justify-between pb-4 sm:pb-6 text-xs text-muted-foreground font-mono">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-full bg-secondary border border-border/80" />
+                  <span className="font-semibold text-foreground/80 lowercase">@your.profile</span>
                 </div>
-                <h4 className="font-semibold text-xs text-foreground">You connect WhatsApp</h4>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Never your banking password.</p>
+                <div className="flex items-center gap-3 sm:gap-5 text-[11px] sm:text-xs">
+                  <span><strong className="text-foreground">128</strong> posts</span>
+                  <span><strong className="text-foreground">80 K</strong> followers</span>
+                  <span><strong className="text-foreground">412</strong> following</span>
+                </div>
               </div>
 
-              {/* Floating Callout 2 (Bottom Left) with Delayed Animated Floating */}
-              <div className="hidden lg:block absolute -bottom-4 left-6 z-20 p-4 rounded-2xl bg-card border border-border shadow-md max-w-[230px] pro-card animate-float-delayed">
-                <div className="flex items-center gap-1.5 pb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fb923c] animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold text-[#fb923c] uppercase">DETERMINISTIC</span>
-                </div>
-                <h4 className="font-semibold text-xs text-foreground">You&apos;re in control</h4>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Zero autonomous money transfers.</p>
-              </div>
-
-              {/* Floating Callout 3 (Center Right) with Slow Animated Floating */}
-              <div className="hidden lg:block absolute top-1/2 -translate-y-1/2 -right-2 z-20 p-4 rounded-2xl bg-card border border-border shadow-md max-w-[230px] pro-card animate-float-slow">
-                <div className="flex items-center gap-1.5 pb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold text-cyan-500 uppercase">AUDIT TRAIL</span>
-                </div>
-                <h4 className="font-semibold text-xs text-foreground">Only what&apos;s confirmed</h4>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Double-entry ledger accuracy.</p>
-              </div>
-
-              {/* Centered Authorization Modal with Real Logos & Animated Data Beam Bridge */}
-              <div className="relative z-10 w-full max-w-sm rounded-[32px] bg-card/95 backdrop-blur-xl border border-border p-6 sm:p-7 shadow-xl space-y-5 sm:space-y-6 pro-card">
-                {/* Real Logos with Animated Connecting Energy Synapse Beam */}
-                <div className="flex items-center justify-center gap-4 sm:gap-5 pt-1">
-                  {/* Real WhatsApp Official Badge */}
-                  <div className="relative group cursor-pointer">
-                    <div className="absolute -inset-2 rounded-2xl bg-emerald-500/15 blur-md animate-radar pointer-events-none" />
-                    <RealWhatsAppLogo className="w-12 h-12 relative z-10 shadow-md group-hover:scale-105 transition-transform" />
-                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-card z-20" />
-                  </div>
-
-                  {/* Animated Flowing Data Synapse Bridge */}
-                  <div className="relative w-16 sm:w-20 h-6 flex items-center justify-center">
-                    <svg className="w-full h-4 overflow-visible" viewBox="0 0 80 16">
-                      <line x1="0" y1="8" x2="80" y2="8" stroke="currentColor" strokeWidth="2" className="text-border" />
-                      <line x1="0" y1="8" x2="80" y2="8" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" className="animate-beam-flow" />
-                    </svg>
-                    <div className="absolute -top-2 px-1.5 py-0.5 rounded-full bg-secondary border border-border shadow-xs text-[8px] font-mono text-muted-foreground flex items-center gap-1">
-                      <Lock className="w-2.5 h-2.5 text-emerald-500" />
-                      <span className="font-bold">E2EE</span>
-                    </div>
-                  </div>
-
-                  {/* Real Money Command Official Mark Badge */}
-                  <div className="relative group cursor-pointer">
-                    <div className="absolute -inset-2 rounded-2xl bg-foreground/10 blur-md animate-radar pointer-events-none" />
-                    <RealMoneyCommandIcon className="w-12 h-12 relative z-10 shadow-md group-hover:scale-105 transition-transform" />
-                    <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-[#fb923c] border-2 border-card z-20" />
-                  </div>
-                </div>
-
-                {/* Header Information */}
-                <div className="text-center space-y-1.5">
-                  <h3 className="font-extrabold text-sm sm:text-base text-foreground tracking-tight">
-                    Link WhatsApp to Money Command
-                  </h3>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border text-[10px] font-mono text-muted-foreground">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Meta Verified Cloud API &middot; Tenant Isolated</span>
-                  </div>
-                </div>
-
-                {/* Permissions Toggles List with Animated Micro-States */}
-                <div className="space-y-3.5 sm:space-y-4 pt-1 text-left">
-                  <div className="flex items-center justify-between gap-3 p-2 rounded-2xl hover:bg-secondary/40 transition-colors">
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-semibold text-foreground block">Conversational Capture</span>
-                      <span className="text-[10px] text-muted-foreground block">Parse text, voice notes & receipts</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setToggle1(!toggle1)}
-                      className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 ${toggle1 ? 'bg-foreground' : 'bg-secondary border border-border'}`}
-                      aria-label="Toggle Conversational Capture"
+              {/* Behind Cards Grid (2 rows of 5 cards) */}
+              <div className="relative space-y-3 sm:space-y-4">
+                {/* Row 1 */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                  {CONNECTION_CARDS_ROW_1.map((card) => (
+                    <div
+                      key={card.id}
+                      className="relative rounded-2xl bg-secondary/30 border border-border/40 overflow-hidden h-28 sm:h-36 md:h-44 p-3 sm:p-4 flex flex-col justify-end"
                     >
-                      <div className={`w-5 h-5 rounded-full transition-all duration-300 flex items-center justify-center ${toggle1 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`}>
-                        {toggle1 && <Check className="w-3 h-3 text-foreground" />}
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-3 p-2 rounded-2xl hover:bg-secondary/40 transition-colors">
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-semibold text-foreground block">Safe-to-Spend Alerts</span>
-                      <span className="text-[10px] text-muted-foreground block">Proactive threshold reminders</span>
+                      <svg className="absolute inset-0 w-full h-full text-foreground/[0.04] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                        <circle cx="50" cy="50" r="18" strokeWidth="1" />
+                        <circle cx="50" cy="50" r="32" strokeWidth="1" />
+                        <circle cx="50" cy="50" r="46" strokeWidth="1" />
+                        <circle cx="50" cy="50" r="60" strokeWidth="1" />
+                      </svg>
+                      <span className="relative z-10 text-[11px] sm:text-xs font-medium text-muted-foreground/60 leading-tight">
+                        {card.title}
+                      </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setToggle2(!toggle2)}
-                      className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 ${toggle2 ? 'bg-foreground' : 'bg-secondary border border-border'}`}
-                      aria-label="Toggle Safe-to-Spend Alerts"
-                    >
-                      <div className={`w-5 h-5 rounded-full transition-all duration-300 flex items-center justify-center ${toggle2 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`}>
-                        {toggle2 && <Check className="w-3 h-3 text-foreground" />}
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-3 p-2 rounded-2xl hover:bg-secondary/40 transition-colors">
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-semibold text-foreground block">Action Scoping</span>
-                      <span className="text-[10px] text-muted-foreground block">Require approval for every action</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setToggle3(!toggle3)}
-                      className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 ${toggle3 ? 'bg-foreground' : 'bg-secondary border border-border'}`}
-                      aria-label="Toggle Action Scoping"
-                    >
-                      <div className={`w-5 h-5 rounded-full transition-all duration-300 flex items-center justify-center ${toggle3 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`}>
-                        {toggle3 && <Check className="w-3 h-3 text-foreground" />}
-                      </div>
-                    </button>
-                  </div>
+                  ))}
                 </div>
 
-                {/* Authorize & Link Button with Interactive State */}
-                <div className="pt-2 space-y-2.5">
-                  <button 
-                    type="button"
-                    className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
-                  >
-                    <WhatsAppIcon className="w-4 h-4 text-white" />
-                    <span>Authorize &amp; Link WhatsApp</span>
-                  </button>
-                  <div className="text-center">
-                    <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      Cancel
-                    </button>
+                {/* Row 2 */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                  {CONNECTION_CARDS_ROW_2.map((card) => (
+                    <div
+                      key={card.id}
+                      className="relative rounded-2xl bg-secondary/30 border border-border/40 overflow-hidden h-28 sm:h-36 md:h-44 p-3 sm:p-4 flex flex-col justify-end"
+                    >
+                      <svg className="absolute inset-0 w-full h-full text-foreground/[0.04] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                        <circle cx="50" cy="50" r="18" strokeWidth="1" />
+                        <circle cx="50" cy="50" r="32" strokeWidth="1" />
+                        <circle cx="50" cy="50" r="46" strokeWidth="1" />
+                        <circle cx="50" cy="50" r="60" strokeWidth="1" />
+                      </svg>
+                      <span className="relative z-10 text-[11px] sm:text-xs font-medium text-muted-foreground/60 leading-tight">
+                        {card.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Centered Modal & Floating Callouts Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4">
+                  {/* Floating Callout 1 (Top Left) */}
+                  <div className="hidden md:block absolute top-4 left-4 lg:left-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float">
+                    <h4 className="font-semibold text-xs text-foreground">You connect your WhatsApp</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Never your password.</p>
+                  </div>
+
+                  {/* Floating Callout 2 (Bottom Left) */}
+                  <div className="hidden md:block absolute bottom-4 left-6 lg:left-14 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-delayed">
+                    <h4 className="font-semibold text-xs text-foreground">You&apos;re in control</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Nothing posts without your OK.</p>
+                  </div>
+
+                  {/* Floating Callout 3 (Right) */}
+                  <div className="hidden md:block absolute top-1/2 -translate-y-1/2 right-4 lg:right-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-slow">
+                    <h4 className="font-semibold text-xs text-foreground">Only what&apos;s public</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Comments and tags.</p>
+                  </div>
+
+                  {/* Centered Authorization Modal */}
+                  <div className="relative z-20 w-full max-w-[340px] sm:max-w-[370px] rounded-[24px] sm:rounded-[28px] bg-card/95 backdrop-blur-xl border border-border p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
+                    {/* Logos with Animated Dotted Flow Line (White in dark mode, Black in light mode) */}
+                    <div className="flex items-center justify-center gap-3 sm:gap-4 pt-1">
+                      {/* WhatsApp Official Badge */}
+                      <RealWhatsAppLogo className="w-10 h-10 shadow-md hover:scale-105 transition-transform" />
+
+                      {/* Animated Dotted Line */}
+                      <div className="w-12 sm:w-16 h-3 flex items-center justify-center">
+                        <svg className="w-full h-3 overflow-visible" viewBox="0 0 60 12">
+                          <line
+                            x1="0"
+                            y1="6"
+                            x2="60"
+                            y2="6"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            className="text-foreground animate-dotted-flow"
+                          />
+                        </svg>
+                      </div>
+
+                      {/* Money Command Logo Badge (Theme-Compatible: White in dark mode, Black in light mode) */}
+                      <RealMoneyCommandIcon className="w-10 h-10 shadow-md hover:scale-105 transition-transform" />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-center font-bold text-xs sm:text-sm text-foreground tracking-tight">
+                      Money Command wants to access your account
+                    </h3>
+
+                    {/* 3 Permission Rows with Skeleton Bars & Interactive Toggles */}
+                    <div className="space-y-3 pt-1">
+                      {/* Row 1 */}
+                      <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
+                        <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <div className="flex-1 space-y-1.5 py-0.5">
+                          <div className="w-28 sm:w-32 h-2 rounded-full bg-muted-foreground/30" />
+                          <div className="w-16 sm:w-20 h-1.5 rounded-full bg-muted-foreground/20" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setToggle1(!toggle1)}
+                          className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle1 ? 'bg-foreground' : 'bg-muted border border-border'}`}
+                          aria-label="Toggle Conversational Capture"
+                        >
+                          <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle1 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
+                        </button>
+                      </div>
+
+                      {/* Row 2 */}
+                      <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
+                        <AtSign className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <div className="flex-1 space-y-1.5 py-0.5">
+                          <div className="w-24 sm:w-28 h-2 rounded-full bg-muted-foreground/30" />
+                          <div className="w-20 sm:w-24 h-1.5 rounded-full bg-muted-foreground/20" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setToggle2(!toggle2)}
+                          className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle2 ? 'bg-foreground' : 'bg-muted border border-border'}`}
+                          aria-label="Toggle Safe-to-Spend Alerts"
+                        >
+                          <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle2 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
+                        </button>
+                      </div>
+
+                      {/* Row 3 */}
+                      <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
+                        <Tag className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <div className="flex-1 space-y-1.5 py-0.5">
+                          <div className="w-32 sm:w-36 h-2 rounded-full bg-muted-foreground/30" />
+                          <div className="w-14 sm:w-16 h-1.5 rounded-full bg-muted-foreground/20" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setToggle3(!toggle3)}
+                          className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle3 ? 'bg-foreground' : 'bg-muted border border-border'}`}
+                          aria-label="Toggle Action Scoping"
+                        >
+                          <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle3 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons: Solid Blue "Allow" & Link "Cancel" */}
+                    <div className="pt-2 space-y-2 text-center">
+                      <button
+                        type="button"
+                        className="w-full py-2.5 sm:py-3 rounded-xl bg-[#0095f6] hover:bg-[#1877f2] text-white font-medium text-xs sm:text-sm transition-all shadow-md active:scale-98"
+                      >
+                        Allow
+                      </button>
+                      <button
+                        type="button"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

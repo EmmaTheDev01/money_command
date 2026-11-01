@@ -229,6 +229,20 @@ body {
   animation: pulse-subtle 2.5s ease-in-out infinite;
 }
 
+@keyframes dotted-flow {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-dotted-flow {
+  stroke-dasharray: 4 4;
+  animation: dotted-flow 1.2s linear infinite;
+}
+
 @keyframes beam-flow {
   0% {
     stroke-dashoffset: 48;
