@@ -2,7 +2,20 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, ArrowRight, Clock, ShieldCheck, Check } from 'lucide-react';
+import {
+  ChevronRight,
+  ArrowRight,
+  Clock,
+  ShieldCheck,
+  Check,
+  ArrowLeft,
+  Key,
+  Receipt,
+  Building,
+  FileText,
+  Lock,
+  Sparkles
+} from 'lucide-react';
 import MoneyCommandLogo from './MoneyCommandLogo';
 
 interface DayData {
@@ -71,55 +84,142 @@ export default function CashFlowTimingSection() {
             </div>
           </div>
 
-          {/* Center Mobile Modal: Action Execution (Exact Replica of Image 2 New Post modal) */}
-          <div className="relative z-30 max-w-sm mx-auto shadow-2xl rounded-[32px] sm:rounded-[36px] border border-border bg-card/95 backdrop-blur-xl p-5 sm:p-6 space-y-4 pro-card overflow-hidden">
+          {/* Background Card (Top-Right of modal): Liquidity & Reserve Safety */}
+          <div className="hidden xl:block absolute top-[85px] right-[4%] z-20 p-4 rounded-2xl bg-card/80 backdrop-blur-md border border-border/80 shadow-xl rotate-4 animate-float-delayed pointer-events-none select-none max-w-[220px]">
+            <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground uppercase pb-1">
+              <span>ZERO RESERVE RISK</span>
+              <span className="text-emerald-500 font-bold">100% SAFE</span>
+            </div>
+            <div className="text-xs font-semibold text-foreground">Continuous CRA Vault</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">Untouched during settlement</div>
+            <div className="mt-2 flex items-center gap-1.5 text-[9px] font-mono text-emerald-500">
+              <ShieldCheck className="w-2.5 h-2.5" />
+              <span>Full tax buffer maintained</span>
+            </div>
+          </div>
+
+          {/* Center Mobile Modal: Action Execution (Creatively Restyled) */}
+          <div className="relative z-30 max-w-sm sm:max-w-md mx-auto shadow-2xl rounded-[32px] sm:rounded-[36px] border border-border bg-card/95 backdrop-blur-2xl p-5 sm:p-6 space-y-4 pro-card overflow-hidden">
+            {/* Top ambient illumination line */}
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#fb923c]/40 to-transparent" />
+
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2 text-foreground font-bold text-xs">
-                <span className="text-muted-foreground">&larr;</span>
-                <span>Authorize Action</span>
-              </div>
-              <span className="text-[10px] font-mono text-muted-foreground">tx_8842</span>
-            </div>
-
-            {/* Action Item Card */}
-            <div className="flex items-start gap-3 p-3 rounded-2xl bg-secondary/70 border border-border text-left overflow-hidden">
-              <div className="w-12 h-12 rounded-xl bg-card border border-border flex items-center justify-center shrink-0 shadow-xs p-2">
-                <MoneyCommandLogo variant="mark" className="w-full h-full text-foreground" />
-              </div>
-              <div className="space-y-1 text-xs min-w-0">
-                <div className="font-bold text-foreground leading-tight truncate">
-                  AWS Cloud Infrastructure
+            <div className="flex items-center justify-between border-b border-border/80 pb-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Back"
+                  className="w-7 h-7 rounded-full bg-secondary hover:bg-secondary/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-foreground" />
+                  <span className="text-foreground font-extrabold text-xs sm:text-sm tracking-tight">Authorize Action</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-snug">
-                  CAD 312.40 &middot; Due Friday. Auto-negotiation applied -15% monthly write-off.
-                </p>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary border border-border text-[10px] font-mono font-semibold text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>tx_8842</span>
               </div>
             </div>
 
-            {/* Interactive Action Rows */}
+            {/* Action Item Card (AWS Cloud Infrastructure) */}
+            <div className="p-4 rounded-2xl bg-secondary/60 border border-border/80 text-left space-y-2.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-2xl bg-foreground text-background flex items-center justify-center shrink-0 shadow-md p-2">
+                    <MoneyCommandLogo variant="mark" className="w-full h-full text-current" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-foreground text-xs sm:text-sm truncate">
+                        AWS Cloud Infrastructure
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded-sm bg-emerald-500/10 text-emerald-500 text-[9px] font-mono font-bold">
+                        Verified
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground block truncate">
+                      Amazon Web Services Canada Inc.
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-base sm:text-lg font-black font-mono text-foreground tracking-tight block">
+                    CAD 312.40
+                  </span>
+                </div>
+              </div>
+
+              {/* Sub-banner: Due Friday & Negotiation Discount */}
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/80 border border-border/60 text-[11px]">
+                <span className="text-muted-foreground text-[10px] sm:text-[11px]">
+                  Due Friday &middot; Auto-negotiation applied
+                </span>
+                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px]">
+                  -15% monthly write-off
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive Decision Rows */}
             <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary cursor-pointer transition-colors border border-transparent hover:border-border">
-                <span className="text-muted-foreground font-medium">Verify CRA tax write-off</span>
-                <div className="flex items-center gap-1.5 text-foreground font-mono text-[11px]">
-                  <span className="text-emerald-500 font-bold">100% Eligible</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+              {/* Row 1: Verify CRA tax write-off */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/80 border border-border/60 hover:border-border cursor-pointer transition-all">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                    <Receipt className="w-3.5 h-3.5 text-emerald-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-foreground font-semibold block text-xs truncate">Verify CRA tax write-off</span>
+                    <span className="text-[10px] text-muted-foreground/75 block truncate">Section 18(1)(a) IT-Act deductible</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-bold flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    100% Eligible
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60" />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary cursor-pointer transition-colors border border-transparent hover:border-border">
-                <span className="text-muted-foreground font-medium">Assign entity</span>
-                <div className="flex items-center gap-1.5 text-foreground font-mono text-[11px]">
-                  <span>Founder Corp</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+              {/* Row 2: Assign entity */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/80 border border-border/60 hover:border-border cursor-pointer transition-all">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                    <Building className="w-3.5 h-3.5 text-indigo-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-foreground font-semibold block text-xs truncate">Assign entity</span>
+                    <span className="text-[10px] text-muted-foreground/75 block truncate">Tenant corporate separation</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-full bg-secondary border border-border font-mono text-[10px] font-semibold text-foreground">
+                    Founder Corp
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60" />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary cursor-pointer transition-colors border border-transparent hover:border-border">
-                <span className="text-muted-foreground font-medium">Ledger account</span>
-                <div className="flex items-center gap-1.5 text-foreground font-mono text-[11px]">
-                  <span>5100 Software Hosting</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+              {/* Row 3: Ledger account */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/80 border border-border/60 hover:border-border cursor-pointer transition-all">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-xl bg-[#fb923c]/10 border border-[#fb923c]/20 flex items-center justify-center shrink-0">
+                    <FileText className="w-3.5 h-3.5 text-[#fb923c]" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-foreground font-semibold block text-xs truncate">Ledger account</span>
+                    <span className="text-[10px] text-muted-foreground/75 block truncate">Operating expense category</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-full bg-secondary border border-border font-mono text-[10px] font-semibold text-foreground">
+                    5100 Software Hosting
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60" />
                 </div>
               </div>
             </div>
@@ -128,12 +228,15 @@ export default function CashFlowTimingSection() {
             <div className="pt-2 space-y-3">
               <div className="flex items-center justify-between px-1 text-[11px]">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-secondary border border-border flex items-center justify-center font-bold text-[9px] text-foreground font-mono">
+                  <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-[9px] font-mono shadow-xs">
                     SF
                   </div>
-                  <span className="font-mono text-muted-foreground">sarah.founder</span>
+                  <div className="text-left">
+                    <span className="font-mono text-xs font-semibold text-foreground block leading-tight">sarah.founder</span>
+                    <span className="text-[9px] font-mono text-muted-foreground block">Authorized Keyholder</span>
+                  </div>
                 </div>
-                <span className="font-mono text-emerald-500 font-bold flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 font-mono text-emerald-500 font-bold text-[10px] flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> Replay-safe
                 </span>
               </div>
@@ -141,21 +244,21 @@ export default function CashFlowTimingSection() {
               <button
                 type="button"
                 onClick={() => setActionAuthorized(!actionAuthorized)}
-                className={`w-full py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
+                className={`group w-full py-3.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer active:scale-98 ${
                   actionAuthorized
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-foreground text-background hover:opacity-90'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/25'
+                    : 'bg-foreground text-background hover:opacity-95'
                 }`}
               >
                 {actionAuthorized ? (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>Authorized & Posted to PostgreSQL Ledger</span>
+                    <span>Authorized &amp; Posted to PostgreSQL Ledger</span>
                   </>
                 ) : (
                   <>
-                    <span>Authorize & Execute Action</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <span>Authorize &amp; Execute Action</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
               </button>
