@@ -78,19 +78,19 @@ const FOUNDER_AVATARS = [
 ];
 
 const CONNECTION_CARDS_ROW_1 = [
-  { id: 1, title: '5 steps to an easy Sunday' },
-  { id: 2, title: "what's in my bag" },
-  { id: 3, title: 'my 6am routine' },
-  { id: 4, title: '5-min dinner' },
-  { id: 5, title: 'before and after' },
+  { id: 1, title: 'coffee with client $14.50' },
+  { id: 2, title: 'paid AWS servers $340' },
+  { id: 3, title: 'invoice #1042 received $4,200' },
+  { id: 4, title: 'safe to spend this weekend?' },
+  { id: 5, title: 'Uber to YYZ airport $62.30' },
 ];
 
 const CONNECTION_CARDS_ROW_2 = [
-  { id: 6, title: 'a day with me' },
-  { id: 7, title: 'grocery list' },
-  { id: 8, title: 'focus playlist' },
-  { id: 9, title: 'answering you' },
-  { id: 10, title: '3 mistakes I made' },
+  { id: 6, title: 'split dinner 3 ways $185' },
+  { id: 7, title: 'quarterly GST/HST estimate' },
+  { id: 8, title: 'Staples office supplies $89.20' },
+  { id: 9, title: 'how much in my tax vault?' },
+  { id: 10, title: 'annual Figma renewal $180' },
 ];
 
 export default function MoneyCommandLandingPage() {
@@ -458,23 +458,25 @@ export default function MoneyCommandLandingPage() {
               </div>
               <div className="lg:col-span-5">
                 <p className="text-pretty text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  You authorize in one tap and disconnect whenever you want. Money Command only understands what’s already authorized on your profile.
+                  You authorize in one tap and disconnect whenever you want. Money Command only processes financial logs and receipts you explicitly send.
                 </p>
               </div>
             </div>
 
             {/* Visual Stage Container: Background Grid of Cards with Central Modal Overlay */}
             <div className="relative w-full max-w-5xl mx-auto rounded-3xl border border-border/40 bg-card/20 p-4 sm:p-6 lg:p-8 overflow-hidden">
-              {/* Top User Profile Bar */}
+              {/* Top User Profile Bar (Money Command & WhatsApp Context) */}
               <div className="flex items-center justify-between pb-4 sm:pb-6 text-xs text-muted-foreground font-mono">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-secondary border border-border/80" />
-                  <span className="font-semibold text-foreground/80 lowercase">@your.profile</span>
+                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-500" />
+                  </div>
+                  <span className="font-semibold text-foreground/90 lowercase">+1 (416) · whatsapp linked</span>
                 </div>
                 <div className="flex items-center gap-3 sm:gap-5 text-[11px] sm:text-xs">
-                  <span><strong className="text-foreground">128</strong> posts</span>
-                  <span><strong className="text-foreground">80 K</strong> followers</span>
-                  <span><strong className="text-foreground">412</strong> following</span>
+                  <span><strong className="text-foreground">128</strong> transactions</span>
+                  <span><strong className="text-foreground">$80 K</strong> ledger volume</span>
+                  <span><strong className="text-foreground">412</strong> verified entries</span>
                 </div>
               </div>
 
@@ -524,20 +526,20 @@ export default function MoneyCommandLandingPage() {
                 <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4">
                   {/* Floating Callout 1 (Top Left) */}
                   <div className="hidden md:block absolute top-4 left-4 lg:left-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float">
-                    <h4 className="font-semibold text-xs text-foreground">You connect your WhatsApp</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Never your password.</p>
+                    <h4 className="font-semibold text-xs text-foreground">You connect WhatsApp</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Never your banking password.</p>
                   </div>
 
                   {/* Floating Callout 2 (Bottom Left) */}
                   <div className="hidden md:block absolute bottom-4 left-6 lg:left-14 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-delayed">
                     <h4 className="font-semibold text-xs text-foreground">You&apos;re in control</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Nothing posts without your OK.</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Zero autonomous money transfers.</p>
                   </div>
 
                   {/* Floating Callout 3 (Right) */}
                   <div className="hidden md:block absolute top-1/2 -translate-y-1/2 right-4 lg:right-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-slow">
-                    <h4 className="font-semibold text-xs text-foreground">Only what&apos;s public</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Comments and tags.</p>
+                    <h4 className="font-semibold text-xs text-foreground">Only what you confirm</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Receipts, voice notes &amp; chats.</p>
                   </div>
 
                   {/* Centered Authorization Modal */}
@@ -569,14 +571,14 @@ export default function MoneyCommandLandingPage() {
 
                     {/* Title */}
                     <h3 className="text-center font-bold text-xs sm:text-sm text-foreground tracking-tight">
-                      Money Command wants to access your account
+                      Money Command wants to link your WhatsApp
                     </h3>
 
                     {/* 3 Permission Rows with Skeleton Bars & Interactive Toggles */}
                     <div className="space-y-3 pt-1">
-                      {/* Row 1 */}
+                      {/* Row 1: Conversational Capture */}
                       <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
-                        <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                         <div className="flex-1 space-y-1.5 py-0.5">
                           <div className="w-28 sm:w-32 h-2 rounded-full bg-muted-foreground/30" />
                           <div className="w-16 sm:w-20 h-1.5 rounded-full bg-muted-foreground/20" />
@@ -591,9 +593,9 @@ export default function MoneyCommandLandingPage() {
                         </button>
                       </div>
 
-                      {/* Row 2 */}
+                      {/* Row 2: Receipt & Document OCR */}
                       <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
-                        <AtSign className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <Receipt className="w-4 h-4 text-[#fb923c] shrink-0" />
                         <div className="flex-1 space-y-1.5 py-0.5">
                           <div className="w-24 sm:w-28 h-2 rounded-full bg-muted-foreground/30" />
                           <div className="w-20 sm:w-24 h-1.5 rounded-full bg-muted-foreground/20" />
@@ -602,15 +604,15 @@ export default function MoneyCommandLandingPage() {
                           type="button"
                           onClick={() => setToggle2(!toggle2)}
                           className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle2 ? 'bg-foreground' : 'bg-muted border border-border'}`}
-                          aria-label="Toggle Safe-to-Spend Alerts"
+                          aria-label="Toggle Receipt & Document OCR"
                         >
                           <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle2 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
                         </button>
                       </div>
 
-                      {/* Row 3 */}
+                      {/* Row 3: Double-Entry Ledger Posting */}
                       <div className="flex items-center justify-between gap-3 p-1.5 rounded-xl">
-                        <Tag className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <ShieldCheck className="w-4 h-4 text-cyan-500 shrink-0" />
                         <div className="flex-1 space-y-1.5 py-0.5">
                           <div className="w-32 sm:w-36 h-2 rounded-full bg-muted-foreground/30" />
                           <div className="w-14 sm:w-16 h-1.5 rounded-full bg-muted-foreground/20" />
@@ -619,7 +621,7 @@ export default function MoneyCommandLandingPage() {
                           type="button"
                           onClick={() => setToggle3(!toggle3)}
                           className={`w-11 h-6 rounded-full transition-all duration-300 relative p-0.5 shrink-0 ${toggle3 ? 'bg-foreground' : 'bg-muted border border-border'}`}
-                          aria-label="Toggle Action Scoping"
+                          aria-label="Toggle Double-Entry Ledger Posting"
                         >
                           <div className={`w-5 h-5 rounded-full transition-all duration-300 ${toggle3 ? 'translate-x-5 bg-background shadow-xs' : 'translate-x-0 bg-muted-foreground'}`} />
                         </button>
