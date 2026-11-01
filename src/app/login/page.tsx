@@ -13,7 +13,9 @@ import {
   Building2, 
   Phone,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { db, AuthSession } from '@/lib/db';
 
@@ -31,6 +33,7 @@ function LoginForm() {
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberSession, setRememberSession] = useState(true);
 
   // Register fields
@@ -38,6 +41,9 @@ function LoginForm() {
   const [regPhone, setRegPhone] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
   const [regTenantName, setRegTenantName] = useState('');
 
   // States
@@ -88,6 +94,16 @@ function LoginForm() {
     }
     if (!regEmail.trim()) {
       setErrorMsg('Please enter your email address.');
+      setIsLoading(false);
+      return;
+    }
+    if (!regPassword) {
+      setErrorMsg('Please create a password for your account.');
+      setIsLoading(false);
+      return;
+    }
+    if (regPassword !== regConfirmPassword) {
+      setErrorMsg('Passwords do not match. Please verify your password confirmation.');
       setIsLoading(false);
       return;
     }
@@ -236,14 +252,26 @@ function LoginForm() {
                 <div className="relative">
                   <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
                   <input
-                    type="password"
+                    type={showLoginPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="Enter your account password"
                     autoComplete="current-password"
-                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-10 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword((prev) => !prev)}
+                    className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showLoginPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -374,13 +402,57 @@ function LoginForm() {
                 <div className="relative">
                   <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
                   <input
-                    type="password"
+                    type={showRegPassword ? 'text' : 'password'}
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     required
                     placeholder="Create a secure password"
-                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                    autoComplete="new-password"
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-10 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword((prev) => !prev)}
+                    className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    aria-label={showRegPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showRegPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Confirmation */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground block">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                  <input
+                    type={showRegConfirmPassword ? 'text' : 'password'}
+                    value={regConfirmPassword}
+                    onChange={(e) => setRegConfirmPassword(e.target.value)}
+                    required
+                    placeholder="Re-enter your password"
+                    autoComplete="new-password"
+                    className="w-full bg-secondary border border-border rounded-xl pl-10 pr-10 py-2.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegConfirmPassword((prev) => !prev)}
+                    className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    aria-label={showRegConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                  >
+                    {showRegConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
 
