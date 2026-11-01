@@ -202,3 +202,4 @@ export const AccountantSidebar: React.FC<AccountantSidebarProps> = ({ unreviewed
     </aside>
   );
 };
+
