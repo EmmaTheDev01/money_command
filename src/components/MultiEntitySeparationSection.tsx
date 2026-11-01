@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import ScrambleText from './ScrambleText';
 
 interface ColumnMetric {
   id: string;
@@ -68,7 +69,7 @@ export default function MultiEntitySeparationSection() {
               <span className="text-muted-foreground lowercase">your real audience</span>
             </p>
             <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-              Who you invoice isn&apos;t what you keep.
+              <ScrambleText text="Who you invoice isn't what you keep." delay={100} duration={750} />
             </h2>
           </div>
           <div className="lg:col-span-5">

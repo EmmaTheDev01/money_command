@@ -41,6 +41,7 @@ import InteractiveNumberMatrix from '@/components/InteractiveNumberMatrix';
 import CashFlowTimingSection from '@/components/CashFlowTimingSection';
 import MultiEntitySeparationSection from '@/components/MultiEntitySeparationSection';
 import InteractiveMerchantField from '@/components/InteractiveMerchantField';
+import ScrambleText from '@/components/ScrambleText';
 
 // Official Real WhatsApp Logo Badge
 function RealWhatsAppLogo({ className = "w-11 h-11" }: { className?: string }) {
@@ -94,70 +95,6 @@ const CONNECTION_CARDS_ROW_2 = [
   { id: 11, title: 'annual Figma renewal $180', cx: 50, cy: 30 },
   { id: 12, title: 'client retainer wired $6,500', cx: 20, cy: 80 },
 ];
-
-// Interactive Unscramble Text Decoder Component
-function ScrambleText({
-  text,
-  trigger = true,
-  delay = 0,
-  duration = 750,
-  className = '',
-}: {
-  text: string;
-  trigger?: boolean;
-  delay?: number;
-  duration?: number;
-  className?: string;
-}) {
-  const [displayText, setDisplayText] = useState(text);
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*!?@$';
-
-  useEffect(() => {
-    if (!trigger) {
-      setDisplayText(text);
-      return;
-    }
-
-    let intervalId: NodeJS.Timeout;
-    const timeoutId = setTimeout(() => {
-      const startTime = Date.now();
-      const length = text.length;
-
-      intervalId = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(1, elapsed / duration);
-        const revealedCount = Math.floor(progress * length);
-
-        const scrambled = text
-          .split('')
-          .map((char, index) => {
-            if (char === ' ' || char === '.' || char === '’' || char === "'" || char === '-' || char === '+' || char === '·' || char === '$' || char === '(' || char === ')') {
-              return char;
-            }
-            if (index < revealedCount) {
-              return text[index];
-            }
-            return chars[Math.floor(Math.random() * chars.length)];
-          })
-          .join('');
-
-        setDisplayText(scrambled);
-
-        if (progress >= 1) {
-          clearInterval(intervalId);
-          setDisplayText(text);
-        }
-      }, 30);
-    }, delay);
-
-    return () => {
-      clearTimeout(timeoutId);
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [trigger, text, delay, duration]);
-
-  return <span className={className}>{displayText}</span>;
-}
 
 export default function MoneyCommandLandingPage() {
   const [isDark, setIsDark] = useState(true);
@@ -414,10 +351,10 @@ export default function MoneyCommandLandingPage() {
             {/* Main Headline with Generous Vertical Padding */}
             <h1 className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.08] text-balance py-1 sm:py-2">
               <span className="text-muted-foreground block">
-                Unstructured text is just noise.
+                <ScrambleText text="Unstructured text is just noise." delay={100} duration={650} />
               </span>
               <span className="text-foreground mt-1 sm:mt-2 block">
-                Money has a Command.
+                <ScrambleText text="Money has a Command." delay={300} duration={750} />
               </span>
             </h1>
 
@@ -854,7 +791,12 @@ export default function MoneyCommandLandingPage() {
                   <span className="text-muted-foreground lowercase">features & surfaces</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-                  6 product surfaces.<br />One deterministic core.
+                  <span className="block">
+                    <ScrambleText text="6 product surfaces." delay={100} duration={650} />
+                  </span>
+                  <span className="block">
+                    <ScrambleText text="One deterministic core." delay={250} duration={750} />
+                  </span>
                 </h2>
               </div>
               <div className="lg:col-span-5">
@@ -910,7 +852,12 @@ export default function MoneyCommandLandingPage() {
                   <span className="text-muted-foreground lowercase">how it works & safe-to-spend</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-                  One formula<br />always protects you.
+                  <span className="block">
+                    <ScrambleText text="One formula" delay={100} duration={600} />
+                  </span>
+                  <span className="block">
+                    <ScrambleText text="always protects you." delay={250} duration={700} />
+                  </span>
                 </h2>
               </div>
               <div className="lg:col-span-5">
@@ -1077,7 +1024,12 @@ export default function MoneyCommandLandingPage() {
                   <span className="text-muted-foreground lowercase">permissioned actions</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-                  AI coaches and drafts.<br />You authorize every dollar.
+                  <span className="block">
+                    <ScrambleText text="AI coaches and drafts." delay={100} duration={650} />
+                  </span>
+                  <span className="block">
+                    <ScrambleText text="You authorize every dollar." delay={250} duration={750} />
+                  </span>
                 </h2>
               </div>
               <div className="lg:col-span-5">
@@ -1142,7 +1094,12 @@ export default function MoneyCommandLandingPage() {
                   <span className="text-muted-foreground lowercase">security & ledger truth</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-                  Double-entry source of truth.<br />Non-negotiable ledger.
+                  <span className="block">
+                    <ScrambleText text="Double-entry source of truth." delay={100} duration={650} />
+                  </span>
+                  <span className="block">
+                    <ScrambleText text="Non-negotiable ledger." delay={250} duration={750} />
+                  </span>
                 </h2>
               </div>
               <div className="lg:col-span-5">
@@ -1197,7 +1154,7 @@ export default function MoneyCommandLandingPage() {
                 <span className="text-muted-foreground lowercase">the invite</span>
               </p>
               <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-                There is cash hiding in your business that you can&apos;t see.
+                <ScrambleText text="There is cash hiding in your business that you can't see." delay={100} duration={800} />
               </h2>
               <p className="text-pretty text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
                 They&apos;re buried in zombie subscriptions, untracked GST/HST input tax credits, and forgotten auto-renewals. Money Command puts it together and surfaces every dollar, by name.
@@ -1222,7 +1179,7 @@ export default function MoneyCommandLandingPage() {
                   <span className="text-muted-foreground lowercase">pricing & roadmap</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-                  Transparent Canadian pricing.
+                  <ScrambleText text="Transparent Canadian pricing." delay={100} duration={700} />
                 </h2>
               </div>
               <div className="lg:col-span-5">
@@ -1366,7 +1323,7 @@ export default function MoneyCommandLandingPage() {
           <div className="mx-auto w-full max-w-7xl flex flex-col gap-10 sm:gap-14 section-animate">
             <header className="grid gap-x-10 gap-y-4 lg:grid-cols-12 lg:items-end">
               <h2 className="text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl lg:text-5xl lg:col-span-7">
-                Frequently asked questions
+                <ScrambleText text="Frequently asked questions" delay={100} duration={700} />
               </h2>
               <p className="text-pretty text-base sm:text-lg text-muted-foreground lg:col-span-5">
                 The questions we get asked the most.

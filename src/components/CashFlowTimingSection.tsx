@@ -13,6 +13,7 @@ import {
   Zap
 } from 'lucide-react';
 import MoneyCommandLogo from './MoneyCommandLogo';
+import ScrambleText from './ScrambleText';
 
 interface DayData {
   day: string;
@@ -59,7 +60,7 @@ export default function CashFlowTimingSection() {
               </span>
             </p>
             <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-              Settle at the right time.
+              <ScrambleText text="Settle at the right time." delay={100} duration={700} />
             </h2>
           </div>
           <div className="lg:col-span-5">
