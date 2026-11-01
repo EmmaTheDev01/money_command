@@ -175,3 +175,4 @@ CREATE POLICY "feature_flags_all_policy" ON feature_flags
 DROP POLICY IF EXISTS "ai_interactions_all_policy" ON ai_interactions;
 CREATE POLICY "ai_interactions_all_policy" ON ai_interactions
     FOR ALL USING (true) WITH CHECK (true);
+

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Sun,
@@ -95,6 +95,70 @@ const CONNECTION_CARDS_ROW_2 = [
   { id: 12, title: 'client retainer wired $6,500', cx: 20, cy: 80 },
 ];
 
+// Interactive Unscramble Text Decoder Component
+function ScrambleText({
+  text,
+  trigger = true,
+  delay = 0,
+  duration = 750,
+  className = '',
+}: {
+  text: string;
+  trigger?: boolean;
+  delay?: number;
+  duration?: number;
+  className?: string;
+}) {
+  const [displayText, setDisplayText] = useState(text);
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*!?@$';
+
+  useEffect(() => {
+    if (!trigger) {
+      setDisplayText(text);
+      return;
+    }
+
+    let intervalId: NodeJS.Timeout;
+    const timeoutId = setTimeout(() => {
+      const startTime = Date.now();
+      const length = text.length;
+
+      intervalId = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        const revealedCount = Math.floor(progress * length);
+
+        const scrambled = text
+          .split('')
+          .map((char, index) => {
+            if (char === ' ' || char === '.' || char === '’' || char === "'" || char === '-' || char === '+' || char === '·' || char === '$' || char === '(' || char === ')') {
+              return char;
+            }
+            if (index < revealedCount) {
+              return text[index];
+            }
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join('');
+
+        setDisplayText(scrambled);
+
+        if (progress >= 1) {
+          clearInterval(intervalId);
+          setDisplayText(text);
+        }
+      }, 30);
+    }, delay);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [trigger, text, delay, duration]);
+
+  return <span className={className}>{displayText}</span>;
+}
+
 export default function MoneyCommandLandingPage() {
   const [isDark, setIsDark] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -103,6 +167,29 @@ export default function MoneyCommandLandingPage() {
   const [toggle1, setToggle1] = useState(true);
   const [toggle2, setToggle2] = useState(true);
   const [toggle3, setToggle3] = useState(true);
+
+  // Connection Section In-View State & Observer
+  const connectionRef = useRef<HTMLDivElement>(null);
+  const [connectionInView, setConnectionInView] = useState(false);
+
+  useEffect(() => {
+    const el = connectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setConnectionInView(true);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Live session timer in footer
   const [secondsSpent, setSecondsSpent] = useState(25);
@@ -448,14 +535,32 @@ export default function MoneyCommandLandingPage() {
           <div className="mx-auto w-full max-w-7xl flex flex-col justify-center gap-10 sm:gap-14 section-animate">
             <div className="act-head grid gap-x-10 gap-y-5 lg:grid-cols-12 lg:items-end">
               <div className="flex flex-col gap-3 sm:gap-4 text-left lg:col-span-7">
-                <p className="flex items-center gap-2 font-mono text-xs font-medium">
-                  <span className="tabular-nums text-foreground">02</span>
-                  <span aria-hidden="true" className="text-muted-foreground">·</span>
-                  <span className="text-muted-foreground lowercase">the connection</span>
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className="flex items-center gap-2 font-mono text-xs font-medium">
+                    <span className="tabular-nums text-foreground">02</span>
+                    <span aria-hidden="true" className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground lowercase">the connection</span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConnectionInView(false);
+                      setTimeout(() => setConnectionInView(true), 120);
+                    }}
+                    className="px-2.5 py-0.5 rounded-full bg-secondary/80 hover:bg-secondary border border-border/80 text-[10px] font-mono text-muted-foreground flex items-center gap-1.5 transition-all hover:text-foreground cursor-pointer"
+                    title="Replay card burst and unscramble animation"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Replay Flow</span>
+                  </button>
+                </div>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
-                  <span className="block">A secure connection.</span>
-                  <span className="block">Through Meta’s official login.</span>
+                  <span className="block">
+                    <ScrambleText text="A secure connection." trigger={connectionInView} delay={100} duration={650} />
+                  </span>
+                  <span className="block">
+                    <ScrambleText text="Through Meta’s official login." trigger={connectionInView} delay={300} duration={750} />
+                  </span>
                 </h2>
               </div>
               <div className="lg:col-span-5">
@@ -466,7 +571,10 @@ export default function MoneyCommandLandingPage() {
             </div>
 
             {/* Visual Stage Container: Background Grid of Cards with Central Modal Overlay */}
-            <div className="relative w-full max-w-5xl mx-auto rounded-3xl border border-border/40 bg-card/20 p-4 sm:p-6 lg:p-8 overflow-hidden">
+            <div
+              ref={connectionRef}
+              className="relative w-full max-w-5xl mx-auto rounded-3xl border border-border/40 bg-card/20 p-4 sm:p-6 lg:p-8 overflow-hidden"
+            >
               {/* Top User Profile Bar (Patensify Style with Money Command & WhatsApp Context) */}
               <div className="flex items-center justify-between pb-4 sm:pb-6 text-xs text-muted-foreground font-mono">
                 <div className="flex items-center gap-2.5">
@@ -476,9 +584,21 @@ export default function MoneyCommandLandingPage() {
                   <span className="text-muted-foreground/80 font-normal lowercase">@your.profile</span>
                 </div>
                 <div className="flex items-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-muted-foreground">
-                  <span><strong className="text-foreground font-semibold">128</strong> transactions</span>
-                  <span><strong className="text-foreground font-semibold">80 K</strong> ledger volume</span>
-                  <span><strong className="text-foreground font-semibold">412</strong> verified entries</span>
+                  <span>
+                    <strong className="text-foreground font-semibold">
+                      <ScrambleText text="128" trigger={connectionInView} delay={200} duration={500} />
+                    </strong> transactions
+                  </span>
+                  <span>
+                    <strong className="text-foreground font-semibold">
+                      <ScrambleText text="80 K" trigger={connectionInView} delay={350} duration={500} />
+                    </strong> ledger volume
+                  </span>
+                  <span>
+                    <strong className="text-foreground font-semibold">
+                      <ScrambleText text="412" trigger={connectionInView} delay={500} duration={500} />
+                    </strong> verified entries
+                  </span>
                 </div>
               </div>
 
@@ -526,27 +646,105 @@ export default function MoneyCommandLandingPage() {
                   ))}
                 </div>
 
-                {/* Centered Modal & Floating Callouts Overlay */}
+                {/* Centered Modal & Cards Bursting Outward Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4">
-                  {/* Floating Callout 1 (Top Left) */}
-                  <div className="hidden md:block absolute top-4 left-4 lg:left-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float">
-                    <h4 className="font-semibold text-xs text-foreground">You connect your WhatsApp</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Never your password.</p>
+                  {/* Bursting Card 1 (Top-Left: Emerges outward from the main card) */}
+                  <div
+                    className={`hidden md:block absolute z-30 p-3 sm:p-3.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-2xl max-w-[215px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      connectionInView
+                        ? 'top-4 sm:top-6 left-3 sm:left-5 lg:left-8 translate-x-0 translate-y-0 scale-100 opacity-100'
+                        : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.25] opacity-0 pointer-events-none'
+                    }`}
+                    style={{ transitionDelay: connectionInView ? '180ms' : '0ms' }}
+                  >
+                    <div className={connectionInView ? 'animate-float' : ''}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                          <WhatsAppIcon className="w-3 h-3 text-emerald-500" />
+                        </div>
+                        <h4 className="font-semibold text-xs text-foreground tracking-tight">
+                          <ScrambleText text="You connect your WhatsApp" trigger={connectionInView} delay={380} duration={600} />
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 pl-7 leading-snug">
+                        <ScrambleText text="Never your banking password." trigger={connectionInView} delay={550} duration={600} />
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Floating Callout 2 (Bottom Left) */}
-                  <div className="hidden md:block absolute bottom-4 left-6 lg:left-14 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-delayed">
-                    <h4 className="font-semibold text-xs text-foreground">You&apos;re in control</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Nothing posts without your OK.</p>
+                  {/* Bursting Card 2 (Bottom-Left: Emerges outward from the main card) */}
+                  <div
+                    className={`hidden md:block absolute z-30 p-3 sm:p-3.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-2xl max-w-[215px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      connectionInView
+                        ? 'bottom-4 sm:bottom-6 left-4 sm:left-6 lg:left-10 translate-x-0 translate-y-0 scale-100 opacity-100'
+                        : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.25] opacity-0 pointer-events-none'
+                    }`}
+                    style={{ transitionDelay: connectionInView ? '380ms' : '0ms' }}
+                  >
+                    <div className={connectionInView ? 'animate-float-delayed' : ''}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-orange-500/15 border border-orange-500/30 flex items-center justify-center shrink-0">
+                          <Sliders className="w-3 h-3 text-orange-500" />
+                        </div>
+                        <h4 className="font-semibold text-xs text-foreground tracking-tight">
+                          <ScrambleText text="You're in control" trigger={connectionInView} delay={580} duration={600} />
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 pl-7 leading-snug">
+                        <ScrambleText text="Nothing posts without your OK." trigger={connectionInView} delay={720} duration={600} />
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Floating Callout 3 (Right) */}
-                  <div className="hidden md:block absolute top-1/2 -translate-y-1/2 right-4 lg:right-12 z-30 p-3 sm:p-3.5 rounded-2xl bg-card border border-border shadow-xl max-w-[210px] animate-float-slow">
-                    <h4 className="font-semibold text-xs text-foreground">Only what&apos;s verified</h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Receipts and logs.</p>
+                  {/* Bursting Card 3 (Top-Right: Emerges outward from the main card) */}
+                  <div
+                    className={`hidden md:block absolute z-30 p-3 sm:p-3.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-2xl max-w-[215px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      connectionInView
+                        ? 'top-4 sm:top-6 right-3 sm:right-5 lg:right-8 translate-x-0 translate-y-0 scale-100 opacity-100'
+                        : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.25] opacity-0 pointer-events-none'
+                    }`}
+                    style={{ transitionDelay: connectionInView ? '260ms' : '0ms' }}
+                  >
+                    <div className={connectionInView ? 'animate-float-slow' : ''}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                          <Lock className="w-3 h-3 text-cyan-500" />
+                        </div>
+                        <h4 className="font-semibold text-xs text-foreground tracking-tight">
+                          <ScrambleText text="Bank-grade isolation" trigger={connectionInView} delay={460} duration={600} />
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 pl-7 leading-snug">
+                        <ScrambleText text="SHA-256 HMAC webhook verified." trigger={connectionInView} delay={620} duration={600} />
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Centered Authorization Modal */}
+                  {/* Bursting Card 4 (Bottom-Right: Emerges outward from the main card) */}
+                  <div
+                    className={`hidden md:block absolute z-30 p-3 sm:p-3.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-2xl max-w-[215px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      connectionInView
+                        ? 'bottom-4 sm:bottom-6 right-4 sm:right-6 lg:right-10 translate-x-0 translate-y-0 scale-100 opacity-100'
+                        : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.25] opacity-0 pointer-events-none'
+                    }`}
+                    style={{ transitionDelay: connectionInView ? '480ms' : '0ms' }}
+                  >
+                    <div className={connectionInView ? 'animate-float' : ''}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                          <Receipt className="w-3 h-3 text-emerald-500" />
+                        </div>
+                        <h4 className="font-semibold text-xs text-foreground tracking-tight">
+                          <ScrambleText text="Only what's verified" trigger={connectionInView} delay={680} duration={600} />
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 pl-7 leading-snug">
+                        <ScrambleText text="Receipts, voice notes & chats." trigger={connectionInView} delay={820} duration={600} />
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Centered Authorization Modal (The Main Card) */}
                   <div className="relative z-20 w-full max-w-[340px] sm:max-w-[370px] rounded-[24px] sm:rounded-[28px] bg-card/95 backdrop-blur-xl border border-border p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
                     {/* Logos with Horizontal Dash Connector */}
                     <div className="flex items-center justify-center gap-3.5 sm:gap-4 pt-1">
@@ -560,9 +758,9 @@ export default function MoneyCommandLandingPage() {
                       <RealMoneyCommandIcon className="w-10 h-10 shadow-md hover:scale-105 transition-transform" />
                     </div>
 
-                    {/* Title */}
+                    {/* Title with Unscramble Animation */}
                     <h3 className="text-center font-semibold text-xs sm:text-sm text-foreground tracking-tight">
-                      Money Command wants to access your account
+                      <ScrambleText text="Money Command wants to access your account" trigger={connectionInView} delay={250} duration={750} />
                     </h3>
 
                     {/* 3 Permission Rows with Skeleton Bars & Interactive Toggles */}
