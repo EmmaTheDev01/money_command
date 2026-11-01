@@ -322,6 +322,25 @@ function LoginForm() {
                 </button>
               </div>
 
+              {/* Admin & Owner Database Credentials Quick-Fill */}
+              <div className="p-3 rounded-2xl bg-secondary/60 border border-border flex items-center justify-between text-xs">
+                <div className="min-w-0">
+                  <div className="font-semibold text-foreground text-[11px]">Database Super Admin</div>
+                  <div className="text-[10px] text-muted-foreground font-mono truncate">emmanhabumugisha@gmail.com</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginMethod('email');
+                    setEmail('emmanhabumugisha@gmail.com');
+                    setPassword('HgbJmDkm2UaW3jc');
+                  }}
+                  className="px-2.5 py-1 rounded-xl bg-card border border-border text-[10px] font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0 shadow-xs"
+                >
+                  Fill Admin
+                </button>
+              </div>
+
               {/* Text link to Register at bottom of login form */}
               <div className="text-center pt-2">
                 <p className="text-xs text-muted-foreground">

@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import MoneyCommandLogo from './MoneyCommandLogo';
 import { db, AuthSession } from '@/lib/db';
 import {
-  ShieldAlert,
   Building,
   ScrollText,
   Activity,
@@ -13,7 +13,8 @@ import {
   Webhook,
   Database,
   Search,
-  ChevronDown
+  LogOut,
+  ShieldAlert
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -22,6 +23,7 @@ interface AdminSidebarProps {
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 0 }) => {
   const pathname = usePathname();
+  const [searchQuery, setSearchQuery] = useState('');
   const [session, setSession] = useState<AuthSession | null>(null);
 
   useEffect(() => {
@@ -44,10 +46,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
       badge: unreconciledCount === 0 ? '0 Errors' : `${unreconciledCount} Errors`,
     },
     {
-      label: 'Tenants & Entities',
+      label: 'Tenants & Multi-Entity',
       href: '/admin/tenants',
       icon: Building,
-      badge: 'Isolated',
+      badge: 'RLS',
     },
     {
       label: 'Append-Only Audit Stream',
@@ -59,7 +61,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
       label: 'Meta Webhooks & Replay',
       href: '/admin/webhooks',
       icon: Webhook,
-      badge: 'Meta Cloud',
+      badge: 'Live',
     },
     {
       label: 'Feature Flags & Risk',
@@ -71,9 +73,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
       label: 'Supabase SQL & Schema',
       href: '/admin/schema',
       icon: Database,
-      badge: '16 Tables',
+      badge: '28 Tables',
     },
   ];
+
+  const filteredItems = navItems.filter((item) =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <aside className="w-64 shrink-0 border-r border-border bg-card/70 backdrop-blur-md p-4 hidden md:flex flex-col justify-between transition-colors min-h-[calc(100vh-4rem)]">
@@ -81,15 +87,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
         {/* Brand Logo */}
         <div className="flex items-center justify-between px-1">
           <Link href="/admin" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs tracking-tight transition-transform group-hover:scale-105 shadow-xs">
-              <ShieldAlert className="w-4 h-4" />
+            <div className="p-1.5 rounded-xl bg-secondary border border-border flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs text-foreground">
+              <MoneyCommandLogo variant="mark" className="w-5 h-5" />
             </div>
             <div>
               <span className="font-bold text-sm tracking-tight text-foreground block">
-                Admin Console
+                MONEY COMMAND
               </span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5 block">
-                Governance & Security
+              <span className="text-[10px] text-muted-foreground -mt-0.5 block font-mono">
+                Admin Console
               </span>
             </div>
           </Link>
@@ -100,17 +106,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
           <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Search audit / flags..."
-            className="w-full bg-secondary/80 border border-border rounded-xl pl-9 pr-10 py-1.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary font-sans transition-colors"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search console..."
+            className="w-full bg-secondary/80 border border-border rounded-xl pl-9 pr-10 py-1.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-foreground font-sans transition-colors"
           />
           <div className="absolute right-2 top-2 flex items-center px-1.5 py-0.5 rounded-md bg-card border border-border text-[9px] font-mono text-muted-foreground">
-            <span>⌘K</span>
+            <span>⌘F</span>
           </div>
         </div>
 
-        {/* Navigation Menu */}
+        {/* Navigation List */}
         <nav className="space-y-0.5 text-xs">
-          {navItems.map((item) => {
+          {filteredItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
@@ -119,18 +127,22 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
                 href={item.href}
                 className={`flex items-center justify-between px-3 py-2 rounded-xl font-medium transition-all ${
                   isActive
-                    ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                    ? 'bg-foreground text-background font-semibold shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary/70'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <Icon className="w-4 h-4 shrink-0" />
                   <span className="truncate">{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                    isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-secondary text-muted-foreground border border-border'
-                  }`}>
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold font-mono shrink-0 ${
+                      isActive
+                        ? 'bg-background text-foreground'
+                        : 'bg-secondary text-foreground border border-border'
+                    }`}
+                  >
                     {item.badge}
                   </span>
                 )}
@@ -140,35 +152,46 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
         </nav>
       </div>
 
-      {/* Database Status Card & Admin User */}
+      {/* Database Status & Admin Profile */}
       <div className="space-y-3 pt-3 border-t border-border">
-        <div className="rounded-2xl border border-border bg-secondary/40 p-3.5 space-y-1.5">
+        <div className="rounded-2xl border border-border bg-secondary/40 p-3 space-y-1">
           <div className="flex items-center justify-between text-xs font-semibold text-foreground">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               PostgreSQL 16
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-card border border-border text-foreground">
-              Healthy
+            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-card border border-border text-foreground font-bold">
+              RLS Active
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            Deterministic double-entry enforcement, row-level tenant isolation, append-only journals.
+            Append-only journals, tenant isolation, sha-256 audit log.
           </p>
         </div>
 
-        {/* User Card */}
         <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-secondary/60 transition-colors border border-transparent">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
               {initials}
             </div>
             <div className="min-w-0">
               <div className="text-xs font-semibold text-foreground truncate">{adminName}</div>
-              <div className="text-[10px] text-muted-foreground truncate">{session?.roleLabel || 'Super Administrator'}</div>
+              <div className="text-[10px] text-muted-foreground truncate font-mono">
+                {session?.roleLabel || 'Super Admin'}
+              </div>
             </div>
           </div>
-          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+          <button
+            type="button"
+            onClick={() => {
+              db.logout();
+              window.location.href = '/login';
+            }}
+            title="Sign out of Admin Console"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-orange-500 hover:bg-orange-500/10 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>

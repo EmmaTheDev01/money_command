@@ -22,7 +22,7 @@ export interface AuthSession {
   email: string;
   phone: string;
   whatsappPhone: string;
-  role: 'client' | 'accountant' | 'admin';
+  role: 'client' | 'accountant' | 'admin' | 'owner';
   roleLabel: string;
   targetPath: string;
   tenantId: string;
@@ -153,9 +153,13 @@ export const db = {
         throw new Error('Invalid password for this WhatsApp account.');
       }
 
-      const role = user.role === 'accountant_viewer' ? 'accountant' : user.role === 'admin' ? 'admin' : 'client';
-      const roleLabel = role === 'accountant' ? 'Accountant Portal' : role === 'admin' ? 'Admin Console' : 'Client / Founder OS';
-      const targetPath = role === 'accountant' ? '/accountant' : role === 'admin' ? '/admin' : '/client';
+      const isOwner = user.role === 'owner';
+      const isAdmin = user.role === 'admin' || isOwner;
+      const isAccountant = user.role === 'accountant_viewer';
+
+      const role: AuthSession['role'] = isAdmin ? (isOwner ? 'owner' : 'admin') : isAccountant ? 'accountant' : 'client';
+      const roleLabel = isOwner ? 'Super Admin / Owner' : isAdmin ? 'Admin Console' : isAccountant ? 'Accountant Portal' : 'Client / Founder OS';
+      const targetPath = isAdmin ? '/admin' : isAccountant ? '/accountant' : '/client';
 
       const session: AuthSession = {
         id: `sess-${Date.now()}`,
@@ -219,9 +223,13 @@ export const db = {
         throw new Error('Invalid password for this account.');
       }
 
-      const role = user.role === 'accountant_viewer' ? 'accountant' : user.role === 'admin' ? 'admin' : 'client';
-      const roleLabel = role === 'accountant' ? 'Accountant Portal' : role === 'admin' ? 'Admin Console' : 'Client / Founder OS';
-      const targetPath = role === 'accountant' ? '/accountant' : role === 'admin' ? '/admin' : '/client';
+      const isOwner = user.role === 'owner';
+      const isAdmin = user.role === 'admin' || isOwner;
+      const isAccountant = user.role === 'accountant_viewer';
+
+      const role: AuthSession['role'] = isAdmin ? (isOwner ? 'owner' : 'admin') : isAccountant ? 'accountant' : 'client';
+      const roleLabel = isOwner ? 'Super Admin / Owner' : isAdmin ? 'Admin Console' : isAccountant ? 'Accountant Portal' : 'Client / Founder OS';
+      const targetPath = isAdmin ? '/admin' : isAccountant ? '/accountant' : '/client';
 
       const session: AuthSession = {
         id: `sess-${Date.now()}`,
@@ -425,6 +433,18 @@ export const db = {
         clearState();
       } catch {}
     }
+  },
+
+  isAdmin(session?: AuthSession | null): boolean {
+    const s = session !== undefined ? session : this.getCurrentSession();
+    if (!s) return false;
+    return s.role === 'admin' || s.role === 'owner';
+  },
+
+  isAccountantOrAdmin(session?: AuthSession | null): boolean {
+    const s = session !== undefined ? session : this.getCurrentSession();
+    if (!s) return false;
+    return s.role === 'admin' || s.role === 'owner' || s.role === 'accountant';
   },
 
   /**
@@ -777,5 +797,218 @@ export const db = {
     saveState(state);
 
     return { transaction, proposal: updatedProposal };
+  },
+
+  async getTenants(): Promise<any[]> {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('tenants')
+          .select('*, users(*), entities(*)')
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          return data.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            plan: t.plan,
+            status: t.status,
+            createdAt: t.created_at,
+            users: t.users || [],
+            entities: t.entities || [],
+          }));
+        }
+      } catch (err) {
+        console.warn('Supabase getTenants error:', err);
+      }
+    }
+    const state = getInitialState();
+    return state.currentTenant ? [{
+      ...state.currentTenant,
+      users: state.currentUser ? [state.currentUser] : [],
+      entities: state.entities || [],
+    }] : [];
+  },
+
+  async getAuditLogs(limit = 50): Promise<any[]> {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .select('*, users(full_name, email)')
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        if (!error && data) {
+          return data.map((d: any) => ({
+            id: d.id,
+            tenantId: d.tenant_id,
+            userId: d.user_id,
+            userName: d.users?.full_name || 'System Operator',
+            userEmail: d.users?.email || '',
+            action: d.action,
+            entityType: d.entity_type,
+            entityId: d.entity_id,
+            details: d.new_values ? JSON.stringify(d.new_values) : d.action,
+            newValues: d.new_values,
+            oldValues: d.old_values,
+            termsHash: d.old_values?.terms_hash || undefined,
+            ipAddress: d.ip_address || '127.0.0.1',
+            userAgent: d.user_agent || 'PostgreSQL Engine',
+            createdAt: d.created_at,
+          }));
+        }
+      } catch (err) {
+        console.warn('Supabase getAuditLogs error:', err);
+      }
+    }
+    const state = getInitialState();
+    return state.auditLogs || [];
+  },
+
+  async logAuditEvent(action: string, entityType: string, details?: any, entityId?: string): Promise<void> {
+    const session = this.getCurrentSession();
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('audit_logs').insert({
+          tenant_id: session?.tenantId || null,
+          user_id: session?.userId || null,
+          action,
+          entity_type: entityType,
+          entity_id: entityId || null,
+          new_values: details || {},
+          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Money Command Admin Console',
+        });
+      } catch (err) {
+        console.warn('Supabase logAuditEvent error:', err);
+      }
+    }
+  },
+
+  async getFeatureFlags(): Promise<any[]> {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('feature_flags')
+          .select('*')
+          .order('key');
+        if (!error && data) {
+          return data.map((f: any) => ({
+            id: f.id,
+            key: f.key,
+            enabled: f.enabled,
+            description: f.description || '',
+            rolloutPercentage: f.rollout_percentage ?? 100,
+            updatedAt: f.updated_at,
+          }));
+        }
+      } catch (err) {
+        console.warn('Supabase getFeatureFlags error:', err);
+      }
+    }
+    const state = getInitialState();
+    return state.featureFlags || [];
+  },
+
+  async updateFeatureFlag(flagId: string, enabled: boolean): Promise<boolean> {
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from('feature_flags')
+          .update({ enabled, updated_at: new Date().toISOString() })
+          .eq('id', flagId);
+        if (!error) {
+          await this.logAuditEvent('FEATURE_FLAG_TOGGLED', 'feature_flags', { flagId, enabled });
+          return true;
+        }
+      } catch (err) {
+        console.warn('Supabase updateFeatureFlag error:', err);
+      }
+    }
+    const state = getInitialState();
+    state.featureFlags = state.featureFlags.map((f) => (f.id === flagId ? { ...f, enabled } : f));
+    saveState(state);
+    return true;
+  },
+
+  async getSourceEvents(limit = 30): Promise<any[]> {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('source_events')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        if (!error && data) {
+          return data.map((e: any) => ({
+            id: e.id,
+            tenantId: e.tenant_id,
+            channel: e.channel,
+            providerEventId: e.provider_event_id,
+            idempotencyKey: e.idempotency_key,
+            senderPhone: e.sender_phone,
+            rawPayload: e.raw_payload,
+            status: e.status,
+            errorMessage: e.error_message,
+            createdAt: e.created_at,
+          }));
+        }
+      } catch (err) {
+        console.warn('Supabase getSourceEvents error:', err);
+      }
+    }
+    return [];
+  },
+
+  async getDatabaseSchemaCounts(): Promise<Record<string, number>> {
+    const tableNames = [
+      'tenants', 'users', 'entities', 'accounts', 'transactions', 'transaction_lines',
+      'proposals', 'source_events', 'documents', 'budgets', 'safe_to_spend_configs',
+      'obligations', 'sinking_funds', 'debts', 'investments', 'paycheck_plan_items',
+      'subscriptions', 'actions', 'authorizations', 'action_events', 'bill_negotiations',
+      'tax_profiles', 'tax_rule_versions', 'accountant_access_grants', 'audit_logs',
+      'feature_flags', 'ai_interactions', 'user_consent_records'
+    ];
+    const counts: Record<string, number> = {};
+    if (isSupabaseConfigured) {
+      await Promise.all(
+        tableNames.map(async (name) => {
+          try {
+            const { count, error } = await supabase
+              .from(name)
+              .select('*', { count: 'exact', head: true });
+            counts[name] = (!error && typeof count === 'number') ? count : 0;
+          } catch {
+            counts[name] = 0;
+          }
+        })
+      );
+    }
+    return counts;
+  },
+
+  async updateTransactionAccountantStatus(
+    txId: string,
+    status: 'unreviewed' | 'user_verified' | 'professional_reviewed'
+  ): Promise<boolean> {
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from('transactions')
+          .update({
+            accountant_status: status,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', txId);
+        if (!error) {
+          await this.logAuditEvent('TRANSACTION_ACCOUNTANT_STATUS_UPDATED', 'transactions', { txId, status }, txId);
+          return true;
+        }
+      } catch (err) {
+        console.warn('Supabase updateTransactionAccountantStatus error:', err);
+      }
+    }
+    const state = getInitialState();
+    state.transactions = state.transactions.map((t) => (t.id === txId ? { ...t, accountantStatus: status } : t));
+    saveState(state);
+    return true;
   },
 };
