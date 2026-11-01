@@ -14,9 +14,7 @@ import {
   Building2, 
   Phone,
   Loader2,
-  AlertCircle,
-  UserPlus,
-  LogIn
+  AlertCircle
 } from 'lucide-react';
 import { db, AuthSession } from '@/lib/db';
 
@@ -27,8 +25,8 @@ function LoginForm() {
 
   // 'signin' or 'register'
   const [authMode, setAuthMode] = useState<'signin' | 'register'>('signin');
-  // In signin: 'whatsapp' or 'email'
-  const [loginMethod, setLoginMethod] = useState<'whatsapp' | 'email'>('whatsapp');
+  // In signin: 'email' (default) or 'whatsapp'
+  const [loginMethod, setLoginMethod] = useState<'whatsapp' | 'email'>('email');
 
   // Signin fields
   const [whatsappPhone, setWhatsappPhone] = useState('');
@@ -163,53 +161,29 @@ function LoginForm() {
                   : 'Initialize a clean tenant, chart of accounts, and deterministic ledger.'}
               </p>
             </div>
-
-            {/* Mode Tabs: Sign In / Create Account */}
-            <div className="grid grid-cols-2 p-1 rounded-2xl bg-secondary border border-border text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('signin');
-                  setErrorMsg(null);
-                  setSuccessMsg(null);
-                }}
-                className={`py-2 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  authMode === 'signin'
-                    ? 'bg-foreground text-background shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('register');
-                  setErrorMsg(null);
-                  setSuccessMsg(null);
-                }}
-                className={`py-2 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  authMode === 'register'
-                    ? 'bg-foreground text-background shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Register</span>
-              </button>
-            </div>
           </div>
 
           {/* SIGN IN FORM */}
           {authMode === 'signin' ? (
             <form onSubmit={handleSignIn} className="space-y-4">
-              {/* Login Method Toggle: WhatsApp vs Email */}
-              <div className="flex items-center gap-2 p-1 rounded-xl bg-secondary/60 border border-border w-fit text-xs font-medium">
+              {/* Login Method Toggle: Email (Default) vs WhatsApp */}
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-secondary border border-border w-fit text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => setLoginMethod('email')}
+                  className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    loginMethod === 'email'
+                      ? 'bg-foreground text-background font-semibold shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Email Address</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => setLoginMethod('whatsapp')}
-                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                     loginMethod === 'whatsapp'
                       ? 'bg-foreground text-background font-semibold shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -217,18 +191,6 @@ function LoginForm() {
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-500" />
                   <span>WhatsApp Number</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLoginMethod('email')}
-                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                    loginMethod === 'email'
-                      ? 'bg-foreground text-background font-semibold shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>Email</span>
                 </button>
               </div>
 
@@ -339,6 +301,24 @@ function LoginForm() {
                     </>
                   )}
                 </button>
+              </div>
+
+              {/* Text link to Register at bottom of login form */}
+              <div className="text-center pt-2">
+                <p className="text-xs text-muted-foreground">
+                  Don&apos;t have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('register');
+                      setErrorMsg(null);
+                      setSuccessMsg(null);
+                    }}
+                    className="font-semibold text-foreground underline underline-offset-4 hover:text-emerald-500 transition-colors cursor-pointer"
+                  >
+                    Register here
+                  </button>
+                </p>
               </div>
             </form>
           ) : (
@@ -463,6 +443,24 @@ function LoginForm() {
                     </>
                   )}
                 </button>
+              </div>
+
+              {/* Text link to Sign In at bottom of register form */}
+              <div className="text-center pt-2">
+                <p className="text-xs text-muted-foreground">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('signin');
+                      setErrorMsg(null);
+                      setSuccessMsg(null);
+                    }}
+                    className="font-semibold text-foreground underline underline-offset-4 hover:text-emerald-500 transition-colors cursor-pointer"
+                  >
+                    Sign in here
+                  </button>
+                </p>
               </div>
             </form>
           )}
