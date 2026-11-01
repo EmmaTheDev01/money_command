@@ -93,6 +93,65 @@ const CONNECTION_CARDS_ROW_2 = [
   { id: 10, title: 'annual Figma renewal $180' },
 ];
 
+const FORMULA_VARIABLES = [
+  {
+    id: 1,
+    sign: '+',
+    signClass: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+    name: 'AVAILABLE_LIQUID_CASH',
+    amount: 'CAD 5,200.00',
+    desc: 'Liquid checking, savings & verified cash reserves',
+  },
+  {
+    id: 2,
+    sign: '+',
+    signClass: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+    name: 'EXPECTED_INCOME_WITHIN_HORIZON',
+    amount: 'CAD 3,400.00',
+    desc: 'Contracted client retainers & confirmed receivables',
+  },
+  {
+    id: 3,
+    sign: '-',
+    signClass: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+    name: 'ESSENTIAL_BILLS',
+    amount: 'CAD 1,850.00',
+    desc: 'Fixed rent, hydro, telecommunication & cloud services',
+  },
+  {
+    id: 4,
+    sign: '-',
+    signClass: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+    name: 'MINIMUM_DEBT_PAYMENTS',
+    amount: 'CAD 450.00',
+    desc: 'Mandatory principal & interest loan floors',
+  },
+  {
+    id: 5,
+    sign: '-',
+    signClass: 'text-[#fb923c] bg-[#fb923c]/10 border-[#fb923c]/20',
+    name: 'TAX_RESERVE_REQUIREMENT',
+    amount: 'CAD 2,100.00',
+    desc: 'Automated CRA GST/HST & corporate tax buffer vault',
+  },
+  {
+    id: 6,
+    sign: '-',
+    signClass: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    name: 'COMMITTED_SAVINGS',
+    amount: 'CAD 860.00',
+    desc: 'Emergency runway reserve & scheduled sinking vaults',
+  },
+  {
+    id: 7,
+    sign: '-',
+    signClass: 'text-muted-foreground bg-muted border-border',
+    name: 'USER_DEFINED_BUFFER',
+    amount: 'CAD 500.00',
+    desc: 'Custom peace-of-mind volatility floor',
+  },
+];
+
 export default function MoneyCommandLandingPage() {
   const [isDark, setIsDark] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -101,6 +160,7 @@ export default function MoneyCommandLandingPage() {
   const [toggle1, setToggle1] = useState(true);
   const [toggle2, setToggle2] = useState(true);
   const [toggle3, setToggle3] = useState(true);
+  const [activeFormulaItem, setActiveFormulaItem] = useState<number | null>(null);
 
   // Live session timer in footer
   const [secondsSpent, setSecondsSpent] = useState(25);
@@ -731,76 +791,206 @@ export default function MoneyCommandLandingPage() {
               </div>
             </div>
 
-            {/* Spotlight Card */}
-            <div className="relative max-w-4xl mx-auto py-6 sm:py-8 w-full">
-              <div className="relative z-10 w-full max-w-xl mx-auto rounded-[32px] bg-card border border-border p-6 sm:p-8 shadow-xl space-y-5 sm:space-y-6 pro-card">
-                <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
-                  <span>DETERMINISTIC FORMULA</span>
-                  <span className="text-emerald-500 font-bold">100% EXPLAINABLE</span>
-                </div>
+            {/* Creative Deterministic Formula Command Showcase */}
+            <div className="relative w-full max-w-6xl mx-auto py-4 sm:py-6">
+              {/* Subtle ambient backdrop illumination */}
+              <div aria-hidden="true" className="absolute -inset-4 bg-gradient-to-r from-emerald-500/5 via-transparent to-[#fb923c]/5 rounded-[40px] blur-2xl -z-10 pointer-events-none" />
 
-                <div className="p-4 sm:p-5 rounded-2xl bg-secondary border border-border text-[11px] sm:text-xs font-mono text-foreground space-y-1.5 leading-relaxed overflow-x-auto">
-                  <div className="font-bold pb-1 text-foreground">SAFE_TO_SPEND =</div>
-                  <div className="pl-4 text-emerald-600 dark:text-emerald-400">+ AVAILABLE_LIQUID_CASH</div>
-                  <div className="pl-4 text-emerald-600 dark:text-emerald-400">+ EXPECTED_INCOME_WITHIN_HORIZON</div>
-                  <div className="pl-4 text-rose-500">- ESSENTIAL_BILLS</div>
-                  <div className="pl-4 text-rose-500">- MINIMUM_DEBT_PAYMENTS</div>
-                  <div className="pl-4 text-[#fb923c]">- TAX_RESERVE_REQUIREMENT</div>
-                  <div className="pl-4 text-muted-foreground">- COMMITTED_SAVINGS</div>
-                  <div className="pl-4 text-muted-foreground">- USER_DEFINED_BUFFER</div>
-                </div>
-
-                {/* 30-Day Safe-to-Spend Histogram */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground uppercase">
-                    <span>SAFE-TO-SPEND &middot; 30-DAY HORIZON</span>
-                    <span className="font-bold text-foreground">CAD 2,840</span>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                {/* LEFT PANEL: THE DETERMINISTIC MATH ENGINE (Code & Formula Explorer) */}
+                <div className="lg:col-span-7 rounded-[28px] sm:rounded-[32px] bg-card/95 backdrop-blur-xl border border-border p-5 sm:p-7 shadow-xl space-y-5">
+                  {/* Terminal Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-border/80">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
+                      <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
+                      <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                      <span className="ml-2 font-mono text-[11px] text-muted-foreground/80 lowercase">safe_to_spend_engine.rs</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        100% EXPLAINABLE
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-end justify-between gap-1 h-12 sm:h-14 w-full pt-1">
-                    {safeToSpendBars.map((height, i) => {
-                      const isPeak = i === safeToSpendBars.length - 1;
-                      return (
-                        <div
-                          key={i}
-                          style={{ height: `${height}%` }}
-                          className={`w-full rounded-xs transition-all ${isPeak
-                              ? 'bg-[#fb923c] shadow-sm'
-                              : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'
+                  {/* Top Status */}
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-muted-foreground tracking-wider uppercase font-semibold">DETERMINISTIC FORMULA</span>
+                    <span className="text-[10px] text-muted-foreground/70">ZERO LLM MATH · DETERMINISTIC</span>
+                  </div>
+
+                  {/* Formula Container */}
+                  <div className="rounded-2xl bg-secondary/60 border border-border/80 p-4 sm:p-5 space-y-2 font-mono text-xs">
+                    <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                      <span className="font-bold text-sm text-foreground tracking-tight">SAFE_TO_SPEND =</span>
+                      <span className="text-[10px] text-muted-foreground">7 VERIFIED VARIABLES</span>
+                    </div>
+
+                    <div className="space-y-1.5 pt-1">
+                      {FORMULA_VARIABLES.map((item) => {
+                        const isHovered = activeFormulaItem === item.id;
+                        return (
+                          <div
+                            key={item.id}
+                            onMouseEnter={() => setActiveFormulaItem(item.id)}
+                            onMouseLeave={() => setActiveFormulaItem(null)}
+                            className={`group flex items-center justify-between gap-2 p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                              isHovered ? 'bg-background shadow-xs border border-border/80' : 'hover:bg-secondary/80'
                             }`}
-                        />
-                      );
-                    })}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold shrink-0 border ${item.signClass}`}>
+                                {item.sign}
+                              </span>
+                              <div className="min-w-0">
+                                <span className={`text-[11px] sm:text-xs font-bold block truncate transition-colors ${
+                                  isHovered ? 'text-foreground' : 'text-foreground/90'
+                                }`}>
+                                  {item.name}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground/70 block truncate">
+                                  {item.desc}
+                                </span>
+                              </div>
+                            </div>
+                            <span className={`text-[11px] sm:text-xs font-semibold tabular-nums shrink-0 ${
+                              item.sign === '+' ? 'text-emerald-600 dark:text-emerald-400' : item.name.includes('TAX') ? 'text-[#fb923c]' : 'text-muted-foreground'
+                            }`}>
+                              {item.sign} {item.amount}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Live Formula Result Banner */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 flex items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] font-mono uppercase text-emerald-600 dark:text-emerald-400 font-bold block">
+                        SAFE-TO-SPEND · 30-DAY HORIZON
+                      </span>
+                      <span className="text-xs text-muted-foreground block">
+                        Strict liquid ceiling after all tax &amp; bills
+                      </span>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-xl sm:text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
+                        CAD 2,840
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <Check className="w-3 h-3" />
+                        100% SOLVENT
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Proposed Transaction Extraction */}
-                <div className="p-4 rounded-2xl bg-secondary border border-border space-y-2 text-xs">
-                  <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
-                    <span>PROPOSED TRANSACTION</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">CONFIDENCE 0.96 &middot; USER VERIFIED</span>
+                {/* RIGHT PANEL: EXECUTION RUNTIME & VERIFIED LEDGER */}
+                <div className="lg:col-span-5 space-y-5">
+                  {/* 30-Day Safe-to-Spend Histogram Card */}
+                  <div className="rounded-[28px] sm:rounded-[32px] bg-card/95 backdrop-blur-xl border border-border p-5 sm:p-6 shadow-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-mono uppercase text-muted-foreground block font-bold">
+                          SAFE-TO-SPEND &middot; 30-DAY HORIZON
+                        </span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-extrabold text-foreground font-mono">CAD 2,840</span>
+                          <span className="text-[11px] font-mono text-emerald-500 font-semibold">+14.2% cushion</span>
+                        </div>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                      </div>
+                    </div>
+
+                    {/* Dynamic Histogram Bars */}
+                    <div className="relative pt-2">
+                      <div className="absolute top-4 inset-x-0 border-b border-dashed border-border/80 flex items-center justify-between text-[9px] font-mono text-muted-foreground/60 pointer-events-none z-10 px-1">
+                        <span>Safe Floor (CAD 1,500)</span>
+                        <span>Threshold Target</span>
+                      </div>
+                      <div className="flex items-end justify-between gap-1 h-14 sm:h-16 w-full pt-4">
+                        {safeToSpendBars.map((height, i) => {
+                          const isPeak = i === safeToSpendBars.length - 1;
+                          return (
+                            <div
+                              key={i}
+                              style={{ height: `${height}%` }}
+                              title={`Day ${i + 1}: ${Math.round(2840 * (height / 100))} CAD`}
+                              className={`w-full rounded-xs transition-all duration-200 cursor-pointer ${
+                                isPeak
+                                  ? 'bg-[#fb923c] shadow-md hover:scale-105'
+                                  : 'bg-muted-foreground/25 hover:bg-muted-foreground/60'
+                              }`}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-foreground font-medium text-xs sm:text-sm">
-                    &ldquo;Spent CAD 46 at Walmart on groceries&rdquo;
-                  </p>
-                  <div className="text-[10px] font-mono text-muted-foreground flex items-center justify-between pt-1">
-                    <span>Debit: Groceries CAD 46.00</span>
-                    <span>Credit: Checking CAD 46.00</span>
+
+                  {/* Proposed Transaction Extraction Card (WhatsApp to Double-Entry) */}
+                  <div className="rounded-[28px] sm:rounded-[32px] bg-card/95 backdrop-blur-xl border border-border p-5 sm:p-6 shadow-xl space-y-4">
+                    <div className="flex items-center justify-between text-[10px] font-mono">
+                      <span className="font-bold text-muted-foreground uppercase">PROPOSED TRANSACTION</span>
+                      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                        <Sparkles className="w-3 h-3" />
+                        CONFIDENCE 0.96 &middot; USER VERIFIED
+                      </span>
+                    </div>
+
+                    {/* WhatsApp Incoming Chat Bubble */}
+                    <div className="relative pl-3 border-l-2 border-emerald-500/60 bg-secondary/50 p-3 rounded-2xl rounded-tl-xs">
+                      <div className="flex items-center justify-between pb-1 text-[10px] font-mono text-muted-foreground">
+                        <span className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+                          <WhatsAppIcon className="w-3 h-3 text-emerald-500" />
+                          Incoming WhatsApp Voice/Text
+                        </span>
+                        <span>14:23 &middot; verified</span>
+                      </div>
+                      <p className="text-foreground font-semibold text-xs sm:text-sm">
+                        &ldquo;Spent CAD 46 at Walmart on groceries&rdquo;
+                      </p>
+                    </div>
+
+                    {/* Reconciled Double-Entry Ledger Entry */}
+                    <div className="p-3.5 rounded-2xl bg-secondary/70 border border-border/80 space-y-2">
+                      <div className="text-[10px] font-mono text-muted-foreground uppercase font-bold flex items-center justify-between">
+                        <span>Double-Entry Ledger Voucher</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Balanced (Δ = $0.00)</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div className="p-2 rounded-xl bg-background border border-border/60">
+                          <span className="text-[9px] text-muted-foreground block uppercase">Debit: Groceries</span>
+                          <span className="font-bold text-foreground block truncate">Groceries CAD 46.00</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-background border border-border/60">
+                          <span className="text-[9px] text-muted-foreground block uppercase">Credit: Checking</span>
+                          <span className="font-bold text-foreground block truncate">Checking CAD 46.00</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Link & Truth Guarantee */}
+                    <div className="space-y-3 pt-1">
+                      <Link
+                        href="/login"
+                        className="group w-full py-3 px-5 rounded-2xl bg-foreground text-background font-semibold text-xs sm:text-sm hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2"
+                      >
+                        <span>Inspect in Web Dashboard &rarr;</span>
+                      </Link>
+
+                      <div className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-secondary/40 border border-border/60 text-[11px] font-mono text-muted-foreground text-center">
+                        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>This isn’t an LLM hallucination. It’s double-entry accounting truth.</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="pt-2">
-                  <Link
-                    href="/login"
-                    className="w-full py-3 rounded-full bg-foreground text-background font-semibold text-xs sm:text-sm hover:opacity-90 transition-opacity shadow-sm block text-center"
-                  >
-                    Inspect in Web Dashboard &rarr;
-                  </Link>
-                </div>
-              </div>
-
-              <div className="pt-8 text-center text-xs font-mono text-muted-foreground">
-                This isn’t an LLM hallucination. It’s double-entry accounting truth.
               </div>
             </div>
           </div>
