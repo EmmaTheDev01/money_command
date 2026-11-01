@@ -12,6 +12,61 @@ export type ActionType = 'subscription_cancellation' | 'bill_negotiation' | 'rem
 export type NegotiationMode = 'coach_me' | 'draft_for_me' | 'initiate_for_me';
 export type AccountantReviewState = 'unreviewed' | 'user_verified' | 'professional_reviewed';
 
+// Sinking Funds
+export interface SinkingFund {
+  id: string;
+  entityId: string;
+  name: string;
+  targetMinor: number;
+  currentMinor: number;
+  targetDate: string;
+  category: string;
+}
+
+// Debt Item
+export interface DebtItem {
+  id: string;
+  entityId: string;
+  name: string;
+  type: 'credit_card' | 'loan' | 'mortgage' | 'student_debt' | 'line_of_credit';
+  balanceMinor: number;
+  interestRate: number; // e.g. 19.99%
+  minimumPaymentMinor: number;
+  dueDate: string;
+}
+
+// Investment Position
+export interface InvestmentPosition {
+  id: string;
+  entityId: string;
+  symbol: string;
+  name: string;
+  shares: number;
+  costBasisMinor: number;
+  currentValueMinor: number;
+  assetClass: 'equity' | 'etf' | 'fixed_income' | 'crypto' | 'reit';
+  returnPercentage: number;
+}
+
+// Paycheck Plan Item (Zero-based budgeting)
+export interface PaycheckPlanItem {
+  id: string;
+  entityId: string;
+  category: string;
+  allocatedMinor: number;
+  spentMinor: number;
+  type: 'need' | 'want' | 'savings' | 'debt';
+}
+
+// Goals & Rules Tracking (50/30/20, No-Spend Challenge)
+export interface BudgetRuleMetrics {
+  needsPercent: number;    // Target: 50%
+  wantsPercent: number;    // Target: 30%
+  savingsPercent: number;  // Target: 20%
+  noSpendStreakDays: number;
+  noSpendGoalDays: number;
+}
+
 export interface Tenant {
   id: string;
   name: string;

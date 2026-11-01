@@ -294,6 +294,60 @@ CREATE TABLE IF NOT EXISTS obligations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
+CREATE TABLE IF NOT EXISTS sinking_funds (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    entity_id UUID NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    target_minor BIGINT NOT NULL,
+    current_minor BIGINT NOT NULL DEFAULT 0,
+    target_date DATE NOT NULL,
+    category TEXT NOT NULL,
+    currency VARCHAR(3) NOT NULL DEFAULT 'CAD',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE TABLE IF NOT EXISTS debts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    entity_id UUID NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'credit_card', -- 'credit_card', 'loan', 'mortgage', 'student_debt', 'line_of_credit'
+    balance_minor BIGINT NOT NULL,
+    interest_rate NUMERIC(5, 2) NOT NULL,
+    minimum_payment_minor BIGINT NOT NULL,
+    due_date DATE NOT NULL,
+    currency VARCHAR(3) NOT NULL DEFAULT 'CAD',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE TABLE IF NOT EXISTS investments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    entity_id UUID NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    symbol VARCHAR(20) NOT NULL,
+    name TEXT NOT NULL,
+    shares NUMERIC(12, 4) NOT NULL,
+    cost_basis_minor BIGINT NOT NULL,
+    current_value_minor BIGINT NOT NULL,
+    asset_class TEXT NOT NULL DEFAULT 'etf', -- 'equity', 'etf', 'fixed_income', 'crypto', 'reit'
+    return_percentage NUMERIC(6, 2) NOT NULL DEFAULT 0.00,
+    currency VARCHAR(3) NOT NULL DEFAULT 'CAD',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE TABLE IF NOT EXISTS paycheck_plan_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    entity_id UUID NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    category TEXT NOT NULL,
+    allocated_minor BIGINT NOT NULL,
+    spent_minor BIGINT NOT NULL DEFAULT 0,
+    type TEXT NOT NULL DEFAULT 'need', -- 'need', 'want', 'savings', 'debt'
+    currency VARCHAR(3) NOT NULL DEFAULT 'CAD',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
 -- 7. SUBSCRIPTIONS & ACTION AUTOMATION
 CREATE TABLE IF NOT EXISTS subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -527,6 +581,10 @@ ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE budgets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE safe_to_spend_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE obligations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sinking_funds ENABLE ROW LEVEL SECURITY;
+ALTER TABLE debts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE investments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE paycheck_plan_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE actions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE authorizations ENABLE ROW LEVEL SECURITY;

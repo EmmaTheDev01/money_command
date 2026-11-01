@@ -146,5 +146,40 @@ BEGIN
         v_tenant_id, v_entity_business, 'CA_ON', 2026, 'cash', true, '829103948RT0001', 0.250
     ) ON CONFLICT (entity_id, tax_year) DO NOTHING;
 
+    -- 11. SINKING FUNDS
+    INSERT INTO sinking_funds (tenant_id, entity_id, name, target_minor, current_minor, target_date, category)
+    VALUES 
+        (v_tenant_id, v_entity_personal, 'Emergency Fund', 1500000, 1125000, '2026-12-31', 'Safety'),
+        (v_tenant_id, v_entity_personal, 'Annual Auto Insurance & Maintenance', 320000, 210000, '2026-08-15', 'Vehicle'),
+        (v_tenant_id, v_entity_personal, 'Vacation / Travel Fund', 450000, 180000, '2026-10-01', 'Lifestyle')
+    ON CONFLICT DO NOTHING;
+
+    -- 12. DEBTS
+    INSERT INTO debts (tenant_id, entity_id, name, type, balance_minor, interest_rate, minimum_payment_minor, due_date)
+    VALUES 
+        (v_tenant_id, v_entity_personal, 'Visa Infinite Cashback', 'credit_card', 285000, 19.99, 8500, '2026-11-18'),
+        (v_tenant_id, v_entity_personal, 'Home Equity Line of Credit', 'line_of_credit', 1450000, 6.95, 12500, '2026-11-28'),
+        (v_tenant_id, v_entity_personal, 'Auto Loan (Scotiabank)', 'loan', 890000, 4.99, 38500, '2026-11-15')
+    ON CONFLICT DO NOTHING;
+
+    -- 13. INVESTMENTS
+    INSERT INTO investments (tenant_id, entity_id, symbol, name, shares, cost_basis_minor, current_value_minor, asset_class, return_percentage)
+    VALUES 
+        (v_tenant_id, v_entity_personal, 'VFV.TO', 'Vanguard S&P 500 Index ETF (CAD)', 180, 1980000, 2542000, 'etf', 28.38),
+        (v_tenant_id, v_entity_personal, 'XEQT.TO', 'iShares All-Equity ETF Portfolio', 420, 1150000, 1410000, 'etf', 22.61),
+        (v_tenant_id, v_entity_personal, 'RY.TO', 'Royal Bank of Canada', 65, 850000, 1045000, 'equity', 22.94)
+    ON CONFLICT DO NOTHING;
+
+    -- 14. PAYCHECK PLAN ITEMS
+    INSERT INTO paycheck_plan_items (tenant_id, entity_id, category, allocated_minor, spent_minor, type)
+    VALUES 
+        (v_tenant_id, v_entity_personal, 'Rent / Mortgage', 240000, 240000, 'need'),
+        (v_tenant_id, v_entity_personal, 'Groceries & Household', 75000, 52000, 'need'),
+        (v_tenant_id, v_entity_personal, 'Utilities & Hydro', 22000, 21750, 'need'),
+        (v_tenant_id, v_entity_personal, 'Dining Out & Fun', 40000, 38500, 'want'),
+        (v_tenant_id, v_entity_personal, 'Emergency Fund Sinking', 50000, 50000, 'savings'),
+        (v_tenant_id, v_entity_personal, 'Extra Debt Paydown', 45000, 45000, 'debt')
+    ON CONFLICT DO NOTHING;
+
 END $$;
 

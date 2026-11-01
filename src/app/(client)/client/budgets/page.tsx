@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   PieChart, 
-  AlertTriangle 
+  AlertTriangle,
+  ArrowUpRight,
+  ShieldCheck,
+  Plus
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ClientSidebar } from '@/components/ClientSidebar';
@@ -20,9 +23,10 @@ export default function BudgetsPage() {
   const activeEntity = state.entities.find((e) => e.id === state.selectedEntityId) || state.entities[0];
   const pendingProposalsCount = state.proposals.filter((p) => p.entityId === activeEntity.id && p.status === 'pending').length;
   const entityBudgets = state.budgets.filter((b) => b.entityId === activeEntity.id);
+  const entityTransactions = state.transactions.filter((t) => t.entityId === activeEntity.id && t.type === 'expense');
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors selection:bg-foreground selection:text-background">
       <Navbar
         entities={state.entities}
         selectedEntityId={state.selectedEntityId}
@@ -37,7 +41,9 @@ export default function BudgetsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <PieChart className="w-5 h-5 text-foreground" />
+                <span className="p-2 rounded-2xl bg-secondary text-foreground">
+                  <PieChart className="w-5 h-5" />
+                </span>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Budgets & Spending Guardrails
                 </h1>
@@ -46,7 +52,7 @@ export default function BudgetsPage() {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Deterministic threshold alerts without shame or compulsive streak mechanics.
+                Deterministic threshold alerts without shame or compulsive streak mechanics for <strong className="text-foreground">{activeEntity.name}</strong>.
               </p>
             </div>
           </div>
@@ -54,7 +60,13 @@ export default function BudgetsPage() {
           {/* Budget Categories Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {entityBudgets.map((b) => {
-              const percent = Math.min(100, Math.round((b.spentMinor / b.amountMinor) * 100));
+              // Calculate actual dynamic spent from transactions for this category
+              const txSpent = entityTransactions
+                .filter((t) => t.category.toLowerCase().includes(b.category.toLowerCase().slice(0, 4)))
+                .reduce((sum, t) => sum + t.totalMinor, 0);
+
+              const effectiveSpentMinor = txSpent > 0 ? txSpent : b.spentMinor;
+              const percent = Math.min(100, Math.round((effectiveSpentMinor / b.amountMinor) * 100));
               const isOverThreshold = percent >= b.alertThresholdPercent;
 
               return (
@@ -72,7 +84,7 @@ export default function BudgetsPage() {
 
                     <div className="text-right">
                       <span className="text-xl font-bold font-mono text-foreground tabular-nums">
-                        {formatCAD(b.spentMinor)}
+                        {formatCAD(effectiveSpentMinor)}
                       </span>
                       <span className="text-xs text-muted-foreground block font-mono">
                         of {formatCAD(b.amountMinor)}
@@ -80,20 +92,22 @@ export default function BudgetsPage() {
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
+                  {/* Progress Bar with Standard App Colors */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs font-mono">
-                      <span className="text-foreground font-semibold tabular-nums">
+                      <span className={`font-semibold tabular-nums ${isOverThreshold ? 'text-orange-500' : 'text-emerald-500'}`}>
                         {percent}% utilized
                       </span>
                       <span className="text-muted-foreground tabular-nums">
-                        Remaining: {formatCAD(b.amountMinor - b.spentMinor)}
+                        Remaining: {formatCAD(Math.max(0, b.amountMinor - effectiveSpentMinor))}
                       </span>
                     </div>
 
                     <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all bg-foreground"
+                        className={`h-full rounded-full transition-all ${
+                          isOverThreshold ? 'bg-orange-500' : 'bg-emerald-500'
+                        }`}
                         style={{ width: `${percent}%` }}
                       />
                     </div>
@@ -101,10 +115,10 @@ export default function BudgetsPage() {
 
                   {/* Behaviour Engine Guardrail Alert */}
                   {isOverThreshold && (
-                    <div className="p-3.5 rounded-2xl bg-secondary/80 border border-border text-xs text-foreground flex items-center gap-2.5">
-                      <AlertTriangle className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <div className="p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-xs text-foreground flex items-center gap-2.5">
+                      <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />
                       <span>
-                        <strong>Guardrail Trigger: </strong>
+                        <strong className="text-orange-500">Guardrail Trigger: </strong>
                         You have crossed {b.alertThresholdPercent}% of your {b.category} allocation. Suggest slowing discretionary spend until next payday.
                       </span>
                     </div>

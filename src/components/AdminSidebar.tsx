@@ -10,7 +10,9 @@ import {
   Activity,
   Sliders,
   Webhook,
-  Database
+  Database,
+  Search,
+  ChevronDown
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -26,28 +28,24 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
       href: '/admin',
       icon: Activity,
       badge: unreconciledCount === 0 ? '0 Errors' : `${unreconciledCount} Errors`,
-      badgeColor: 'bg-secondary text-foreground border border-border',
     },
     {
       label: 'Tenants & Entities',
       href: '/admin/tenants',
       icon: Building,
       badge: 'Isolated',
-      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
     {
       label: 'Append-Only Audit Stream',
       href: '/admin/audit',
       icon: ScrollText,
       badge: 'SHA-256',
-      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
     {
       label: 'Meta Webhooks & Replay',
       href: '/admin/webhooks',
       icon: Webhook,
       badge: 'Meta Cloud',
-      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
     {
       label: 'Feature Flags & Risk',
@@ -60,70 +58,104 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ unreconciledCount = 
       href: '/admin/schema',
       icon: Database,
       badge: '16 Tables',
-      badgeColor: 'bg-secondary text-muted-foreground border border-border',
     },
   ];
 
   return (
-    <aside className="w-64 shrink-0 border-r border-border bg-background p-4 hidden md:flex flex-col justify-between transition-colors">
-      <div className="space-y-6">
-        <div>
-          <div className="px-3">
-            <h2 className="text-[10px] font-mono font-medium uppercase tracking-wider text-muted-foreground">
-              Admin Operations
-            </h2>
-          </div>
-          <nav className="mt-3 space-y-1">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center justify-between rounded-full px-3.5 py-2 text-xs font-medium transition-all ${
-                    isActive
-                      ? 'bg-secondary text-foreground font-semibold border border-border shadow-xs'
-                      : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-foreground' : 'text-muted-foreground'}`} />
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-medium ${
-                        item.badgeColor || 'bg-secondary text-muted-foreground border border-border'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+    <aside className="w-64 shrink-0 border-r border-border bg-card/70 backdrop-blur-md p-4 hidden md:flex flex-col justify-between transition-colors min-h-[calc(100vh-4rem)]">
+      <div className="space-y-4">
+        {/* Brand Logo */}
+        <div className="flex items-center justify-between px-1">
+          <Link href="/admin" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs tracking-tight transition-transform group-hover:scale-105 shadow-xs">
+              <ShieldAlert className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-bold text-sm tracking-tight text-foreground block">
+                Admin Console
+              </span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5 block">
+                Governance & Security
+              </span>
+            </div>
+          </Link>
         </div>
 
-        {/* PostgreSQL Engine Info */}
-        <div className="rounded-3xl border border-border bg-secondary/30 p-4 space-y-2">
-          <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-            <span>Core Database</span>
-            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-secondary border border-border">
-              PostgreSQL 16
-            </span>
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
+          <input
+            type="text"
+            placeholder="Search audit / flags..."
+            className="w-full bg-secondary/80 border border-border rounded-xl pl-9 pr-10 py-1.5 text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary font-sans transition-colors"
+          />
+          <div className="absolute right-2 top-2 flex items-center px-1.5 py-0.5 rounded-md bg-card border border-border text-[9px] font-mono text-muted-foreground">
+            <span>⌘K</span>
           </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            RLS tenant isolation, append-only trigger protection, and exact minor-unit arithmetic.
-          </p>
         </div>
+
+        {/* Navigation Menu */}
+        <nav className="space-y-0.5 text-xs">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center justify-between px-3 py-2 rounded-xl font-medium transition-all ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/70'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </div>
+                {item.badge && (
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                    isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-secondary text-muted-foreground border border-border'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Footer Info */}
-      <div className="pt-4 border-t border-border px-3 text-[11px] text-muted-foreground font-mono">
-        <div>Release Gate #1</div>
-        <div className="text-[10px] text-muted-foreground/80 mt-0.5">0 Unreconciled Journals</div>
+      {/* Database Status Card & Admin User */}
+      <div className="space-y-3 pt-3 border-t border-border">
+        <div className="rounded-2xl border border-border bg-secondary/40 p-3.5 space-y-1.5">
+          <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              PostgreSQL 16
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-card border border-border text-foreground">
+              Healthy
+            </span>
+          </div>
+          <p className="text-[10px] text-muted-foreground leading-relaxed">
+            Deterministic double-entry enforcement, row-level tenant isolation, append-only journals.
+          </p>
+        </div>
+
+        {/* User Card */}
+        <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-secondary/60 transition-colors border border-transparent">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+              SA
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-foreground truncate">Alex Tremblay</div>
+              <div className="text-[10px] text-muted-foreground truncate">Super Administrator</div>
+            </div>
+          </div>
+          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+        </div>
       </div>
     </aside>
   );

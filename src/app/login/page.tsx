@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import MoneyCommandLogo from '@/components/MoneyCommandLogo';
 import { 
   ShieldCheck, 
   Lock, 
@@ -110,9 +111,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-foreground selection:text-background transition-colors">
       {/* Top Header */}
       <header className="p-4 sm:p-6 border-b border-border flex items-center justify-between max-w-7xl mx-auto w-full">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-foreground text-background flex items-center justify-center font-bold text-xs tracking-tight">
-            MC
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="p-1.5 rounded-xl bg-secondary border border-border flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs text-foreground">
+            <MoneyCommandLogo variant="mark" className="w-5 h-5" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold tracking-tight text-sm">MONEY COMMAND</span>
