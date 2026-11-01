@@ -1458,10 +1458,11 @@ export default function MoneyCommandLandingPage() {
 
           {/* Column 3: BLUEPRINT & GOVERNANCE */}
           <div className="space-y-2.5 sm:space-y-3">
-            <span className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider block">BLUEPRINT</span>
+            <span className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider block">LEGAL & BLUEPRINT</span>
             <ul className="space-y-2 text-foreground text-xs">
-              <li><a href="#security" className="hover:text-muted-foreground transition-colors">Double-Entry Core</a></li>
-              <li><a href="#actions" className="hover:text-muted-foreground transition-colors">Permissioned Action Engine</a></li>
+              <li><Link href="/terms" className="hover:text-muted-foreground transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy Policy (PIPEDA)</Link></li>
+              <li><Link href="/compliance" className="hover:text-muted-foreground transition-colors">Security & Compliance</Link></li>
               <li><a href="#faq" className="hover:text-muted-foreground transition-colors">FAQ & Support</a></li>
             </ul>
           </div>
@@ -1479,7 +1480,15 @@ export default function MoneyCommandLandingPage() {
 
         {/* Divider & Copyright */}
         <div className="max-w-6xl mx-auto border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-muted-foreground relative z-10 text-center sm:text-left">
-          <span>&copy; 2026 Money Command. All rights reserved.</span>
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+            <span>&copy; 2026 Money Command Technologies Inc.</span>
+            <span>&middot;</span>
+            <Link href="/terms" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">Terms</Link>
+            <span>&middot;</span>
+            <Link href="/privacy" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">Privacy</Link>
+            <span>&middot;</span>
+            <Link href="/compliance" className="hover:text-foreground transition-colors underline-offset-4 hover:underline">Compliance</Link>
+          </div>
           <Link href="/client" className="hover:text-foreground transition-colors">
             Launch Dashboard OS &rarr;
           </Link>
