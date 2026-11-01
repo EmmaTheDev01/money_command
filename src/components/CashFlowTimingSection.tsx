@@ -260,14 +260,14 @@ export default function CashFlowTimingSection() {
               </div>
             </div>
 
-            {/* Floating Auto-Negotiation Pill / Toast (Patensify next-suggest-lit) */}
-            <div className="absolute -bottom-3 inset-x-2 z-30 flex items-center justify-between p-2.5 px-3.5 rounded-2xl bg-card border border-border shadow-2xl backdrop-blur-xl animate-float-slow text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                <span className="font-medium text-[11px] text-foreground">Auto-negotiation discount applied</span>
+            {/* Floating Safe-to-Spend Impact Pill (Money Command Financial OS) */}
+            <div className="absolute -bottom-16 inset-x-2 sm:inset-x-3 z-30 flex items-center justify-between p-2.5 px-3.5 rounded-2xl bg-card border border-border shadow-2xl backdrop-blur-xl animate-float-slow text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="font-medium text-[11px] text-foreground truncate">Safe-to-Spend &amp; CRA reserve verified</span>
               </div>
-              <span className="font-mono text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                -15% monthly
+              <span className="font-mono text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 shrink-0 ml-2">
+                +CAD 4,820 surplus
               </span>
             </div>
           </div>
