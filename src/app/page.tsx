@@ -120,7 +120,7 @@ export default function MoneyCommandLandingPage() {
 
   // Section scroll spy
   useEffect(() => {
-    const sectionIds = ['hero', 'connection', 'surfaces', 'safe-to-spend', 'actions', 'ledger', 'timing', 'multi-entity', 'invite-capital', 'pricing', 'faq'];
+    const sectionIds = ['hero', 'connection', 'features', 'how-it-works', 'actions', 'security', 'timing', 'multi-entity', 'invite-capital', 'pricing', 'faq'];
     const handleScroll = () => {
       const scrollPos = window.scrollY + window.innerHeight / 3;
       for (const id of sectionIds) {
@@ -160,15 +160,15 @@ export default function MoneyCommandLandingPage() {
 
   const sectionsList = [
     { id: 'hero', num: '01', label: 'start' },
-    { id: 'connection', num: '02', label: 'the connection' },
-    { id: 'surfaces', num: '03', label: '6 product surfaces' },
-    { id: 'safe-to-spend', num: '04', label: 'safe-to-spend' },
-    { id: 'actions', num: '05', label: 'permissioned actions' },
-    { id: 'ledger', num: '06', label: 'deterministic ledger' },
-    { id: 'timing', num: '07', label: 'cash flow timing' },
-    { id: 'multi-entity', num: '08', label: 'your real bottom line' },
-    { id: 'invite-capital', num: '09', label: 'the invite' },
-    { id: 'pricing', num: '10', label: 'pricing & blueprint' },
+    { id: 'connection', num: '02', label: 'connection' },
+    { id: 'features', num: '03', label: 'features' },
+    { id: 'how-it-works', num: '04', label: 'how it works' },
+    { id: 'actions', num: '05', label: 'actions' },
+    { id: 'security', num: '06', label: 'security' },
+    { id: 'timing', num: '07', label: 'timing' },
+    { id: 'multi-entity', num: '08', label: 'bottom line' },
+    { id: 'invite-capital', num: '09', label: 'invite' },
+    { id: 'pricing', num: '10', label: 'pricing' },
     { id: 'faq', num: '11', label: 'faq' },
   ];
 
@@ -247,9 +247,9 @@ export default function MoneyCommandLandingPage() {
               </Link>
 
               <nav className="hidden lg:flex items-center gap-6 xl:gap-7 text-xs font-normal text-muted-foreground">
-                <a href="#surfaces" className="hover:text-foreground transition-colors">Surfaces</a>
-                <a href="#safe-to-spend" className="hover:text-foreground transition-colors">Safe-to-Spend</a>
-                <a href="#ledger" className="hover:text-foreground transition-colors">Ledger Architecture</a>
+                <a href="#features" className="hover:text-foreground transition-colors">Features</a>
+                <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
+                <a href="#security" className="hover:text-foreground transition-colors">Security</a>
                 <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
                 <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
               </nav>
@@ -601,16 +601,17 @@ export default function MoneyCommandLandingPage() {
 
 
         {/* =========================================================================
-            SECTION 03 · THE 6 PRODUCT SURFACES
+            SECTION 03 · FEATURES & PRODUCT SURFACES
             ========================================================================= */}
-        <section id="surfaces" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
+        <section id="features" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
+          <span id="surfaces" className="sr-only pointer-events-none" />
           <div className="mx-auto w-full max-w-7xl flex flex-col justify-center gap-10 sm:gap-14 section-animate">
             <div className="act-head grid gap-x-10 gap-y-5 lg:grid-cols-12 lg:items-end">
               <div className="flex flex-col gap-3 sm:gap-4 text-left lg:col-span-7">
                 <p className="flex items-center gap-2 font-mono text-xs font-medium">
                   <span className="tabular-nums text-foreground">03</span>
                   <span aria-hidden="true" className="text-muted-foreground">·</span>
-                  <span className="text-muted-foreground lowercase">the surfaces</span>
+                  <span className="text-muted-foreground lowercase">features & surfaces</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
                   6 product surfaces.<br />One deterministic core.
@@ -656,16 +657,17 @@ export default function MoneyCommandLandingPage() {
 
 
         {/* =========================================================================
-            SECTION 04 · DETERMINISTIC INTELLIGENCE & SAFE-TO-SPEND
+            SECTION 04 · HOW IT WORKS & SAFE-TO-SPEND
             ========================================================================= */}
-        <section id="safe-to-spend" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
+        <section id="how-it-works" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
+          <span id="safe-to-spend" className="sr-only pointer-events-none" />
           <div className="mx-auto w-full max-w-7xl flex flex-col justify-center gap-10 sm:gap-14 section-animate">
             <div className="act-head grid gap-x-10 gap-y-5 lg:grid-cols-12 lg:items-end">
               <div className="flex flex-col gap-3 sm:gap-4 text-left lg:col-span-7">
                 <p className="flex items-center gap-2 font-mono text-xs font-medium">
                   <span className="tabular-nums text-foreground">04</span>
                   <span aria-hidden="true" className="text-muted-foreground">·</span>
-                  <span className="text-muted-foreground lowercase">safe-to-spend</span>
+                  <span className="text-muted-foreground lowercase">how it works & safe-to-spend</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
                   One formula<br />always protects you.
@@ -819,16 +821,17 @@ export default function MoneyCommandLandingPage() {
 
 
         {/* =========================================================================
-            SECTION 06 · THE LEDGER TRUTH
+            SECTION 06 · SECURITY & DETERMINISTIC LEDGER
             ========================================================================= */}
-        <section id="ledger" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
+        <section id="security" className="relative min-h-[90svh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-20 sm:py-28 lg:py-32 transition-colors">
+          <span id="ledger" className="sr-only pointer-events-none" />
           <div className="mx-auto w-full max-w-7xl flex flex-col justify-center gap-10 sm:gap-14 section-animate">
             <div className="act-head grid gap-x-10 gap-y-5 lg:grid-cols-12 lg:items-end">
               <div className="flex flex-col gap-3 sm:gap-4 text-left lg:col-span-7">
                 <p className="flex items-center gap-2 font-mono text-xs font-medium">
                   <span className="tabular-nums text-foreground">06</span>
                   <span aria-hidden="true" className="text-muted-foreground">·</span>
-                  <span className="text-muted-foreground lowercase">the ledger truth</span>
+                  <span className="text-muted-foreground lowercase">security & ledger truth</span>
                 </p>
                 <h2 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl text-foreground leading-[1.08]">
                   Double-entry source of truth.<br />Non-negotiable ledger.
@@ -1127,8 +1130,9 @@ export default function MoneyCommandLandingPage() {
           <div className="space-y-2.5 sm:space-y-3">
             <span className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider block">PRODUCT</span>
             <ul className="space-y-2 text-foreground text-xs">
-              <li><a href="#safe-to-spend" className="hover:text-muted-foreground transition-colors">Safe-to-Spend Engine</a></li>
-              <li><a href="#surfaces" className="hover:text-muted-foreground transition-colors">WhatsApp & Web OS</a></li>
+              <li><a href="#features" className="hover:text-muted-foreground transition-colors">Features</a></li>
+              <li><a href="#how-it-works" className="hover:text-muted-foreground transition-colors">How It Works</a></li>
+              <li><a href="#security" className="hover:text-muted-foreground transition-colors">Security</a></li>
               <li><a href="#pricing" className="hover:text-muted-foreground transition-colors">Launch Pricing</a></li>
             </ul>
           </div>
@@ -1137,9 +1141,9 @@ export default function MoneyCommandLandingPage() {
           <div className="space-y-2.5 sm:space-y-3">
             <span className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider block">BLUEPRINT</span>
             <ul className="space-y-2 text-foreground text-xs">
-              <li><a href="#ledger" className="hover:text-muted-foreground transition-colors">Double-Entry Core</a></li>
+              <li><a href="#security" className="hover:text-muted-foreground transition-colors">Double-Entry Core</a></li>
               <li><a href="#actions" className="hover:text-muted-foreground transition-colors">Permissioned Action Engine</a></li>
-              <li><a href="#tax" className="hover:text-muted-foreground transition-colors">CRA Tax Readiness</a></li>
+              <li><a href="#faq" className="hover:text-muted-foreground transition-colors">FAQ & Support</a></li>
             </ul>
           </div>
 
